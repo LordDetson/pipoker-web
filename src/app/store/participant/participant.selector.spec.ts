@@ -1,26 +1,27 @@
 import * as ParticipantSelector from "./participant.selector";
-import {CurrentParticipantState, CurrentParticipantStatus} from "./current-participant-state";
-import {currentParticipantStateNode} from "../intex";
+import {appState, participant} from "../../testing/test-data";
+import {CurrentParticipantStatus} from "./current-participant-state";
 
 describe("participant selectors", () => {
 
-  function state(currentParticipant: CurrentParticipantState["currentParticipant"]) {
-    return {
-      [currentParticipantStateNode]: {
-        currentParticipant,
-        selectedCard: undefined,
-        error: undefined,
-        status: CurrentParticipantStatus.success
-      }
-    };
-  }
+  it("select parts of the current participant state", () => {
+    const state = appState({}, {
+      currentParticipant: participant("Alex", true),
+      selectedCard: {value: "1h"},
+      status: CurrentParticipantStatus.loading
+    });
+
+    expect(ParticipantSelector.currentParticipantSelector(state)).toEqual(participant("Alex", true));
+    expect(ParticipantSelector.statusSelector(state)).toBe(CurrentParticipantStatus.loading);
+    expect(ParticipantSelector.selectedCardSelector(state)).toEqual({value: "1h"});
+  });
 
   it("tells whether the current participant is a watcher", () => {
-    expect(ParticipantSelector.currentWatcherSelector(state({nickname: "Alex", watcher: true}))).toBeTrue();
-    expect(ParticipantSelector.currentWatcherSelector(state({nickname: "Alex", watcher: false}))).toBeFalse();
+    expect(ParticipantSelector.currentWatcherSelector(appState({}, {currentParticipant: participant("Alex", true)}))).toBeTrue();
+    expect(ParticipantSelector.currentWatcherSelector(appState({}, {currentParticipant: participant("Alex")}))).toBeFalse();
   });
 
   it("treats someone who has not joined yet as a watcher", () => {
-    expect(ParticipantSelector.currentWatcherSelector(state(undefined))).toBeTrue();
+    expect(ParticipantSelector.currentWatcherSelector(appState({}, {currentParticipant: undefined}))).toBeTrue();
   });
 });

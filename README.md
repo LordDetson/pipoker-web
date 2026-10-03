@@ -14,6 +14,15 @@ PiPoker is a comprehensive web application designed to facilitate the estimation
 
 **Private Rooms:** PiPoker introduces a feature that allows users to create private rooms for their teams. These private rooms provide a dedicated space where team members can collaborate and engage in the estimation process with ease and confidentiality.
 
+## Tests
+Run the tests with `npx ng test --watch=false --code-coverage` (add `--browsers=ChromeHeadlessCI` where there is no display).
+The coverage report is written to `coverage/pipoker-web`.
+
+- Unit tests sit next to the code they test: services, NgRx reducers, selectors and effects, and every component.
+- Integration tests in `src/app/integration` run the whole client (components, store, effects and services)
+  against an in-memory imitation of the pipoker-app STOMP API from `src/app/testing/fake-stomp.ts`.
+  Only the STOMP connection is replaced, so no backend is needed.
+
 ## Contributing
 We welcome contributions from the community to enhance PiPoker Web Application. If you have any ideas, bug reports, or feature requests, please feel free to submit them in the Issues section of our GitHub repository. We appreciate your support in making PiPoker even better.
 

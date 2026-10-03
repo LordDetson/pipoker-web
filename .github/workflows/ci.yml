@@ -23,7 +23,7 @@ jobs:
         run: npm ci
 
       - name: Test
-        run: npx ng test --watch=false --browsers=ChromeHeadlessCI
+        run: npx ng test --watch=false --browsers=ChromeHeadlessCI --code-coverage
 
       - name: Build
         run: npx ng build --configuration prod
