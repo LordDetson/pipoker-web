@@ -220,6 +220,28 @@ describe("RoomService", () => {
     expect(removed).toEqual({nickname: "dmitry", watcher: false});
   });
 
+  it("returns to the seat when the server confirms it to this tab", () => {
+    let returned: Participant | undefined;
+    service.returnParticipant(roomId, {nickname: "alex", watcher: false}).subscribe(result => returned = result);
+
+    expect(webSocket.sent).toEqual([{destination: "/app/room/" + roomId + "/participants/return", body: "alex"}]);
+    webSocket.emit("/user/topic/room.returned", {roomId: "other", eventType: RoomEventType.participantReturned, participant: {nickname: "Alex", watcher: true}});
+    webSocket.emit("/user/topic/room.returned", {roomId, eventType: RoomEventType.participantReturned, participant: {nickname: "Kate", watcher: true}});
+    expect(returned).toBeUndefined();
+    webSocket.emit("/user/topic/room.returned", {roomId, eventType: RoomEventType.participantReturned, participant: {nickname: "Alex", watcher: true}});
+
+    expect(returned).toEqual({nickname: "Alex", watcher: true});
+  });
+
+  it("fails to return to a seat that is gone", () => {
+    let error: any;
+    service.returnParticipant(roomId, {nickname: "Alex", watcher: false}).subscribe({error: e => error = e});
+
+    webSocket.emit("/user/topic/room.errors", {destination: "/app/room/" + roomId + "/participants/return", message: "Participant \"Alex\" is not in the room"});
+
+    expect(error.message).toBe("Participant \"Alex\" is not in the room");
+  });
+
   it("ignores votes of other participants", () => {
     let vote: Vote | undefined;
     service.vote(roomId, {nickname: "Dmitry", watcher: false}, {value: "1d"}).subscribe(result => vote = result);

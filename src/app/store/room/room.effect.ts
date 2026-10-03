@@ -3,12 +3,14 @@ import {Actions, createEffect, ofType} from "@ngrx/effects";
 import {RoomService} from "../../services/room.service";
 import * as RoomAction from "./room.action";
 import * as ParticipantAction from "../participant/participant.action";
-import {catchError, filter, map, mergeMap, of, switchMap, tap, withLatestFrom} from "rxjs";
+import {catchError, concat, EMPTY, filter, ignoreElements, map, mergeMap, of, switchMap, tap, withLatestFrom} from "rxjs";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import * as RoomSelector from "./room.selector";
 import * as ParticipantSelector from "../participant/participant.selector";
 import {RoomWebSocketService} from "../../services/room-web-socket.service";
+import {CurrentParticipantStatus} from "../participant/current-participant-state";
+import {SeatStorage} from "../../common/seat-storage";
 
 @Injectable()
 export class RoomEffect {
@@ -74,16 +76,34 @@ export class RoomEffect {
     )
   );
 
+  // Events sent while the connection was gone never arrived. The participant takes the seat back,
+  // if the server still keeps it for them, and the room is loaded again.
   refreshAfterReconnect$ = createEffect(() =>
     this.roomWebSocketService.reconnected$.pipe(
-      withLatestFrom(this.store.select(RoomSelector.idSelector)),
+      withLatestFrom(
+        this.store.select(RoomSelector.idSelector),
+        this.store.select(ParticipantSelector.currentParticipantFeatureSelector)
+      ),
       filter(([, roomId]) => !!roomId),
-      switchMap(([, roomId]) =>
-        this.roomService.get(roomId).pipe(
-          map(room => RoomAction.refreshSuccess({room})),
-          catchError(error => of(RoomAction.initFailure({error})))
-        )
-      )
+      switchMap(([, roomId, {currentParticipant, status}]) => {
+        const seat = SeatStorage.find(roomId);
+        if (status === CurrentParticipantStatus.returning && seat) {
+          // The answer to the first attempt was lost with the connection
+          return of(ParticipantAction.returnToSeat({roomId, participant: seat}));
+        }
+        return concat(
+          currentParticipant
+            ? this.roomService.returnParticipant(roomId, currentParticipant).pipe(
+              ignoreElements(),
+              catchError(() => of(ParticipantAction.seatLost({roomId, participant: currentParticipant})))
+            )
+            : EMPTY,
+          this.roomService.get(roomId).pipe(
+            map(room => RoomAction.refreshSuccess({room})),
+            catchError(error => of(RoomAction.initFailure({error})))
+          )
+        );
+      })
     )
   );
 

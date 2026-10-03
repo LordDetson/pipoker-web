@@ -29,11 +29,15 @@ const _currentParticipantReducer = createReducer<CurrentParticipantState>(initia
     ...state,
     status: CurrentParticipantStatus.loading,
   })),
-  on(ParticipantAction.destroySuccess, (state) => ({
+  on(ParticipantAction.destroySuccess, ParticipantAction.seatLost, (state) => ({
     ...state,
     currentParticipant: undefined,
     selectedCard: undefined,
     status: CurrentParticipantStatus.success,
+  })),
+  on(ParticipantAction.returnToSeat, (state) => ({
+    ...state,
+    status: CurrentParticipantStatus.returning,
   })),
   on(ParticipantAction.initSelectedCurdSuccess, (state, {card}) => ({
     ...state,

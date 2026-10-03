@@ -4,7 +4,7 @@ import {Router} from "@angular/router";
 import {Location} from "@angular/common";
 import {ReactiveFormsModule} from "@angular/forms";
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
-import {Store, StoreModule} from "@ngrx/store";
+import {StoreModule} from "@ngrx/store";
 import {EffectsModule} from "@ngrx/effects";
 import {NgChartsModule} from "ng2-charts";
 import {AppComponent} from "../app.component";
@@ -23,8 +23,9 @@ import {VotingResultChartComponent} from "../room/voting-result-chart/voting-res
 import {metaReducers, reducers} from "../store/intex";
 import {RoomEffect} from "../store/room/room.effect";
 import {ParticipantEffect} from "../store/participant/participant.effect";
-import * as ParticipantAction from "../store/participant/participant.action";
-import {STOMP_CLIENT_FACTORY} from "../services/room-web-socket.service";
+import {RECONNECT_DELAYS, STOMP_CLIENT_FACTORY} from "../services/room-web-socket.service";
+import {SeatStorage} from "../common/seat-storage";
+import {AppConstants} from "../common/app-constants";
 import {FakePipokerServer} from "../testing/fake-stomp";
 import {participant} from "../testing/test-data";
 
@@ -37,6 +38,7 @@ describe("PiPoker room (integration)", () => {
 
   beforeEach(async () => {
     localStorage.clear();
+    sessionStorage.clear();
     server = new FakePipokerServer();
     await TestBed.configureTestingModule({
       declarations: [
@@ -67,7 +69,10 @@ describe("PiPoker room (integration)", () => {
         EffectsModule.forRoot([RoomEffect, ParticipantEffect]),
         NgChartsModule
       ],
-      providers: [{provide: STOMP_CLIENT_FACTORY, useValue: server.createClient}]
+      providers: [
+        {provide: STOMP_CLIENT_FACTORY, useValue: server.createClient},
+        {provide: RECONNECT_DELAYS, useValue: [0]}
+      ]
     }).compileComponents();
     fixture = TestBed.createComponent(AppComponent);
     // Like in the browser, the page is re-rendered after every event, not only when a test asks for it.
@@ -75,7 +80,10 @@ describe("PiPoker room (integration)", () => {
     page = fixture.nativeElement;
   });
 
-  afterEach(() => localStorage.clear());
+  afterEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
 
   // Lets the fake server answer and the application react, one network hop at a time.
   async function settle(): Promise<void> {
@@ -273,17 +281,61 @@ describe("PiPoker room (integration)", () => {
     expect(deckCards()).toEqual([]);
   });
 
-  it("leaves the room when the page is closed", async () => {
+  it("takes the seat back after the page is reloaded", async () => {
+    const roomId = server.addRoom("Planning", ["S", "M"], [participant("Dmitry"), participant("Alex")], [{nickname: "Alex", card: "M"}]);
+    // What this tab remembered before the reload
+    SeatStorage.save(roomId, participant("Alex"));
+
+    await open("/room/" + roomId);
+
+    expect(button("Join Room")).withContext("no need to join again").toBeUndefined();
+    expect(tableCards()).toEqual([
+      {nickname: "Dmitry", voted: false, value: undefined},
+      {nickname: "Alex", voted: true, value: undefined}
+    ]);
+    expect(deckCard("M").classList).withContext("the vote made before the reload").toContain("selected");
+    expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry"), participant("Alex")]);
+  });
+
+  it("stays at the table after a short connection loss and sees what happened meanwhile", async () => {
     const roomId = await createRoom("Dmitry", "Sprint", "1h; 1d");
+    await click(deckCard("1d").querySelector(".card-body")!);
+
+    server.loseConnections();
     server.join(roomId, participant("Alex"));
+    server.vote(roomId, "Alex", "1h");
+    server.showVotes(roomId);
     await settle();
 
-    // What RoomComponent does on beforeunload.
-    TestBed.inject(Store).dispatch(ParticipantAction.destroy());
+    expect(button("Join Room")).toBeUndefined();
+    expect(tableCards()).toEqual([
+      {nickname: "Dmitry", voted: true, value: "1d"},
+      {nickname: "Alex", voted: true, value: "1h"}
+    ]);
+    expect(button("Start New Voting")).toBeDefined();
+  });
+
+  it("offers to join again with the same nickname after a long connection loss", async () => {
+    const roomId = await createRoom("Kate", "Sprint", "1h; 1d", true);
+    server.join(roomId, participant("Dmitry"));
+    await settle();
+    // The nickname typed in another tab later does not matter
+    localStorage.setItem(AppConstants.lastNickname, "Someone");
+
+    server.loseConnections();
+    // The server let the seat go before the connection came back
+    server.leave(roomId, "Kate");
     await settle();
 
-    expect(server.rooms.get(roomId)!.participants).toEqual([participant("Alex")]);
-    expect(button("Join Room")).withContext("asks for a nickname to come back").toBeDefined();
+    expect(tableCards()).toEqual([]);
+    expect(page.querySelector<HTMLInputElement>("#nicknameInput")!.value).toBe("Kate");
+    expect(page.querySelector<HTMLInputElement>("#watcherInput")!.checked).toBeTrue();
+    expect(button("Join Room").disabled).toBeFalse();
+
+    await click(button("Join Room"));
+
+    expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry"), participant("Kate", true)]);
+    expect(tableCards().map(card => card.nickname)).toEqual(["Dmitry", "Kate"]);
   });
 
   it("explains invalid input before anything is sent to the server", async () => {

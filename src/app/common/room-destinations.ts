@@ -3,6 +3,7 @@ export class RoomDestinations {
   public static readonly roomTopicPrefix: string = "/topic/room.";
   public static readonly created: string = "/user/topic/room.created";
   public static readonly errors: string = "/user/topic/room.errors";
+  public static readonly returned: string = "/user/topic/room.returned";
 
   public static create(): string {
     return RoomDestinations.appPrefix + "/create";
@@ -22,6 +23,10 @@ export class RoomDestinations {
 
   public static removeParticipant(roomId: string): string {
     return RoomDestinations.room(roomId) + "/participants/remove";
+  }
+
+  public static returnParticipant(roomId: string): string {
+    return RoomDestinations.room(roomId) + "/participants/return";
   }
 
   public static addVote(roomId: string): string {

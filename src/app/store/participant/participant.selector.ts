@@ -1,5 +1,5 @@
 import {createFeatureSelector, createSelector} from "@ngrx/store";
-import {CurrentParticipantState} from "./current-participant-state";
+import {CurrentParticipantState, CurrentParticipantStatus} from "./current-participant-state";
 import {currentParticipantStateNode} from "../intex";
 import {Participant} from "../../models/participant.model";
 import {Card} from "../../models/card.model";
@@ -22,6 +22,10 @@ export const selectedCardSelector = createSelector(
 export const currentWatcherSelector = createSelector(
   currentParticipantFeatureSelector,
   (state: CurrentParticipantState): boolean => state.currentParticipant?.watcher ?? true
+);
+export const returningSelector = createSelector(
+  currentParticipantFeatureSelector,
+  (state: CurrentParticipantState): boolean => state.status === CurrentParticipantStatus.returning
 );
 export const joinedSelector = createSelector(
   currentParticipantFeatureSelector,

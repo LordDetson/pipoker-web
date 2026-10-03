@@ -76,7 +76,7 @@ describe("RoomWebSocketService", () => {
 
       first.failConnect();
       expect(first.unsubscribed).withContext("a dead connection is not unsubscribed").toEqual([]);
-      tick(4999);
+      tick(999);
       expect(clients.length).toBe(1);
       tick(1);
       expect(clients.length).toBe(2);
@@ -85,6 +85,46 @@ describe("RoomWebSocketService", () => {
       second.deliver("/topic/test", "after reconnect");
 
       expect(messages).toEqual(["after reconnect"]);
+    }));
+
+    it("waits longer after every failed attempt and starts over once connected", fakeAsync(() => {
+      service.watch("/topic/test").subscribe();
+      connectedClient().failConnect();
+
+      [1000, 2000, 4000, 5000, 5000].forEach((delay, attempt) => {
+        tick(delay - 1);
+        expect(clients.length).withContext("before attempt " + (attempt + 1)).toBe(attempt + 1);
+        tick(1);
+        expect(clients.length).withContext("attempt " + (attempt + 1)).toBe(attempt + 2);
+        clients[clients.length - 1].failConnect();
+      });
+
+      tick(5000);
+      connectedClient().failConnect();
+      tick(1000);
+      expect(clients.length).withContext("the first delay again").toBe(8);
+    }));
+
+    it("connects at once when the browser is back online", fakeAsync(() => {
+      service.watch("/topic/test").subscribe();
+      connectedClient().failConnect();
+
+      window.dispatchEvent(new Event("online"));
+
+      expect(clients.length).toBe(2);
+      tick(1000);
+      expect(clients.length).withContext("the waiting attempt is dropped").toBe(2);
+    }));
+
+    it("does not connect again after leaving", fakeAsync(() => {
+      service.watch("/topic/test").subscribe();
+      connectedClient().failConnect();
+
+      service.disconnect();
+      tick(5000);
+      window.dispatchEvent(new Event("online"));
+
+      expect(clients.length).toBe(1);
     }));
 
     it("tells when a lost connection is back, but not on the first connection", fakeAsync(() => {

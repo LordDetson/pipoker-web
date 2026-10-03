@@ -10,6 +10,8 @@ import * as ParticipantAction from "../participant/participant.action";
 import {RoomService} from "../../services/room.service";
 import {RoomWebSocketService} from "../../services/room-web-socket.service";
 import {appState, cards, participant, room, ROOM_ID} from "../../testing/test-data";
+import {CurrentParticipantStatus} from "../participant/current-participant-state";
+import {SeatStorage} from "../../common/seat-storage";
 
 describe("RoomEffect", () => {
   let actions$: ReplaySubject<Action>;
@@ -26,7 +28,7 @@ describe("RoomEffect", () => {
   beforeEach(() => {
     actions$ = new ReplaySubject<Action>();
     roomService = jasmine.createSpyObj<RoomService>("RoomService",
-      ["create", "get", "addParticipant", "removeParticipant", "vote", "clearVotingResult", "showVotingResult"]);
+      ["create", "get", "addParticipant", "removeParticipant", "returnParticipant", "vote", "clearVotingResult", "showVotingResult"]);
     reconnected$ = new Subject<void>();
     webSocket = jasmine.createSpyObj<RoomWebSocketService>("RoomWebSocketService", ["connect"], {reconnected$});
     router = jasmine.createSpyObj<Router>("Router", ["navigate"]);
@@ -51,18 +53,59 @@ describe("RoomEffect", () => {
   }
 
   describe("refreshAfterReconnect$", () => {
-    it("loads the room again when the connection is back", () => {
+    afterEach(() => sessionStorage.clear());
+
+    it("takes the seat back and loads the room again when the connection is back", () => {
       const fresh = room({participants: [participant("Dmitry"), participant("Carol")]});
+      roomService.returnParticipant.and.returnValue(of(participant("Dmitry")));
       roomService.get.and.returnValue(of(fresh));
       const actions = collect(effects.refreshAfterReconnect$);
 
       reconnected$.next();
 
+      expect(roomService.returnParticipant).toHaveBeenCalledWith(ROOM_ID, participant("Dmitry"));
       expect(roomService.get).toHaveBeenCalledWith(ROOM_ID);
       expect(actions).toEqual([RoomAction.refreshSuccess({room: fresh})]);
     });
 
+    it("asks for the nickname again when the participant has left the room meanwhile", () => {
+      const fresh = room({participants: [participant("Carol")]});
+      roomService.returnParticipant.and.returnValue(throwError(() => ({message: "Participant \"Dmitry\" is not in the room"})));
+      roomService.get.and.returnValue(of(fresh));
+      const actions = collect(effects.refreshAfterReconnect$);
+
+      reconnected$.next();
+
+      expect(actions).toEqual([
+        ParticipantAction.seatLost({roomId: ROOM_ID, participant: participant("Dmitry")}),
+        RoomAction.refreshSuccess({room: fresh})
+      ]);
+    });
+
+    it("only loads the room when nobody has joined from this tab", () => {
+      store.setState(appState({}, {currentParticipant: undefined}));
+      roomService.get.and.returnValue(of(room()));
+      const actions = collect(effects.refreshAfterReconnect$);
+
+      reconnected$.next();
+
+      expect(roomService.returnParticipant).not.toHaveBeenCalled();
+      expect(actions).toEqual([RoomAction.refreshSuccess({room: room()})]);
+    });
+
+    it("tries to return to the seat again when the answer was lost with the connection", () => {
+      SeatStorage.save(ROOM_ID, participant("Alex"));
+      store.setState(appState({}, {currentParticipant: undefined, status: CurrentParticipantStatus.returning}));
+      const actions = collect(effects.refreshAfterReconnect$);
+
+      reconnected$.next();
+
+      expect(actions).toEqual([ParticipantAction.returnToSeat({roomId: ROOM_ID, participant: participant("Alex")})]);
+      expect(roomService.get).not.toHaveBeenCalled();
+    });
+
     it("reports a room that is gone", () => {
+      store.setState(appState({}, {currentParticipant: undefined}));
       roomService.get.and.returnValue(throwError(() => error));
       const actions = collect(effects.refreshAfterReconnect$);
 

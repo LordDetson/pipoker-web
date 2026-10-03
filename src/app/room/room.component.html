@@ -1,6 +1,13 @@
-<ng-container *ngIf="!(joined$ | async); else room">
-  <app-add-participant/>
-</ng-container>
+<div *ngIf="returning$ | async; else seat" class="d-flex justify-content-center mt-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Returning to the table</span>
+  </div>
+</div>
+<ng-template #seat>
+  <ng-container *ngIf="!(joined$ | async); else room">
+    <app-add-participant/>
+  </ng-container>
+</ng-template>
 <ng-template #room>
   <app-buttons/>
   <app-table/>
