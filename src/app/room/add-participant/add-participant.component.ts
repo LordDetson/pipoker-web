@@ -2,7 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {RoomService} from "../../services/room.service";
 import {AbstractControl, AsyncValidatorFn, FormControl, FormGroup, ValidationErrors} from "@angular/forms";
-import {map, Observable, Subject, takeUntil} from "rxjs";
+import {filter, map, Observable, startWith, Subject, take, takeUntil} from "rxjs";
 import {Store} from "@ngrx/store";
 import * as RoomAction from "../../store/room/room.action";
 import {Participant} from "../../models/participant.model";
@@ -57,7 +57,18 @@ export class AddParticipantComponent implements OnInit, OnDestroy {
     return validationMessage(this.joinToRoomForm.controls["nickname"].errors, "Nickname");
   }
 
+  // The nickname is checked with the server while the person types, so Join or Enter right after typing
+  // arrives before the check is done. Join as soon as it is, instead of ignoring the click.
   addParticipant(): void {
+    this.joinToRoomForm.statusChanges.pipe(
+      startWith(this.joinToRoomForm.status),
+      filter(status => status !== "PENDING"),
+      take(1),
+      takeUntil(this.ngDestroyed$)
+    ).subscribe(() => this.join());
+  }
+
+  private join(): void {
     if (this.joinToRoomForm.valid) {
       const participant: Participant = {
         nickname: this.joinToRoomForm.value.nickname.trim(),
