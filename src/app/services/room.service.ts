@@ -68,6 +68,17 @@ export class RoomService {
     );
   }
 
+  // Takes the seat back after a page refresh or a lost connection. Fails when the participant has left the room meanwhile.
+  returnParticipant(id: string, participant: Participant): Observable<Participant> {
+    return this.exchange(RoomDestinations.returnParticipant(id), participant.nickname,
+      this.roomWebSocketService.watch<RoomEvent>(RoomDestinations.returned).pipe(
+        filter(event => event.roomId === id && event.participant !== undefined
+          && sameNickname(event.participant.nickname, participant.nickname)),
+        map(event => event.participant!)
+      )
+    );
+  }
+
   vote(id: string, participant: Participant, card: Card): Observable<Vote> {
     return this.exchange(RoomDestinations.addVote(id), {nickname: participant.nickname, card: card.value},
       this.roomEvents(id, RoomEventType.voteAdded).pipe(

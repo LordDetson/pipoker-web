@@ -4,6 +4,7 @@ import {VoteDto} from "./room-dto.model";
 export enum RoomEventType {
   participantAdded = "PARTICIPANT_ADDED",
   participantRemoved = "PARTICIPANT_REMOVED",
+  participantReturned = "PARTICIPANT_RETURNED",
   voteAdded = "VOTE_ADDED",
   voteRemoved = "VOTE_REMOVED",
   clearVotes = "CLEAR_VOTES",

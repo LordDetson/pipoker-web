@@ -25,6 +25,11 @@ describe("participant selectors", () => {
     expect(ParticipantSelector.currentWatcherSelector(appState({}, {currentParticipant: undefined}))).toBeTrue();
   });
 
+  it("tells whether the participant is returning to the seat", () => {
+    expect(ParticipantSelector.returningSelector(appState({}, {status: CurrentParticipantStatus.returning}))).toBeTrue();
+    expect(ParticipantSelector.returningSelector(appState({}, {status: CurrentParticipantStatus.loading}))).toBeFalse();
+  });
+
   it("tells whether the participant has joined", () => {
     expect(ParticipantSelector.joinedSelector(appState())).toBeTrue();
     expect(ParticipantSelector.joinedSelector(appState({}, {currentParticipant: undefined}))).toBeFalse();

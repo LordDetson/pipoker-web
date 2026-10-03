@@ -39,6 +39,13 @@ export class FakeStompClient {
     this.onError!(error);
   }
 
+  // The connection breaks: nothing sent to it arrives anymore
+  lose() {
+    this.subscriptions = {};
+    this.server?.disconnected(this);
+    this.failConnect();
+  }
+
   subscribe(destination: string, callback: (message: { body: string }) => void) {
     const id = "sub-" + this.nextId++;
     this.subscriptions[id] = callback;
@@ -127,8 +134,17 @@ export class FakePipokerServer {
     this.received(undefined, "/app/room/" + roomId + "/votes/clear", roomId);
   }
 
+  // Every open connection breaks at once, like when the network is gone
+  loseConnections() {
+    [...this.clients].forEach(client => client.lose());
+  }
+
   connected(client: FakeStompClient) {
     later(() => client.completeConnect());
+  }
+
+  disconnected(client: FakeStompClient) {
+    this.clients.splice(this.clients.indexOf(client), 1);
   }
 
   subscribed(client: FakeStompClient, subscriptionId: string, destination: string) {
@@ -176,6 +192,16 @@ export class FakePipokerServer {
         }
         room.participants.push(participant);
         this.broadcast(room, RoomEventType.participantAdded, {participant});
+        break;
+      }
+      case "participants/return": {
+        const participant = room.participants.find(existing => sameNickname(existing.nickname, body));
+        if (!participant) {
+          this.error(client, destination, "Participant \"" + body + "\" is not in the room \"" + roomId + "\"");
+          return;
+        }
+        const event: RoomEvent = {roomId, eventType: RoomEventType.participantReturned, participant};
+        later(() => client?.deliver("/user/topic/room.returned", event));
         break;
       }
       case "participants/remove": {

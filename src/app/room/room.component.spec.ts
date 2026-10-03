@@ -7,13 +7,17 @@ import * as RoomAction from "../store/room/room.action";
 import * as ParticipantAction from "../store/participant/participant.action";
 import {RoomStatus} from "../store/room/room-state";
 import {CurrentParticipantStatus} from "../store/participant/current-participant-state";
-import {appState, ROOM_ID} from "../testing/test-data";
+import {appState, participant, ROOM_ID} from "../testing/test-data";
+import {SeatStorage} from "../common/seat-storage";
 
 describe("RoomComponent", () => {
   let fixture: ComponentFixture<RoomComponent>;
   let store: MockStore;
 
+  afterEach(() => sessionStorage.clear());
+
   beforeEach(() => {
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       declarations: [RoomComponent],
       providers: [
@@ -78,14 +82,42 @@ describe("RoomComponent", () => {
     expect(renderedChildren()).toEqual(["app-buttons", "app-table", "app-voting-result-chart"]);
   });
 
-  it("leaves the room when the page is closed", () => {
-    // A real beforeunload event would make Karma report a page reload, so the listener is called directly.
-    const addEventListener = spyOn(window, "addEventListener");
+  it("takes the seat back after the page is reloaded", () => {
+    SeatStorage.save(ROOM_ID, participant("Alex", true));
+    store.setState(appState({status: RoomStatus.pending}, {currentParticipant: undefined, status: CurrentParticipantStatus.pending}));
     create();
-    const [, listener] = addEventListener.calls.allArgs().find(([type]) => type === "beforeunload")!;
 
-    (listener as () => void)();
+    expect(store.dispatch).toHaveBeenCalledWith(ParticipantAction.returnToSeat({roomId: ROOM_ID, participant: participant("Alex", true)}));
+  });
 
-    expect(store.dispatch).toHaveBeenCalledWith(ParticipantAction.destroy());
+  it("asks for a nickname when this tab has no seat in the room", () => {
+    SeatStorage.save("another-room", participant("Alex"));
+    store.setState(appState({status: RoomStatus.pending}, {currentParticipant: undefined, status: CurrentParticipantStatus.pending}));
+    create();
+
+    expect(store.dispatch).not.toHaveBeenCalledWith(jasmine.objectContaining({type: ParticipantAction.returnToSeat.type}));
+  });
+
+  it("does not return to a seat it already has", () => {
+    SeatStorage.save(ROOM_ID, participant("Dmitry"));
+    create();
+
+    expect(store.dispatch).not.toHaveBeenCalledWith(jasmine.objectContaining({type: ParticipantAction.returnToSeat.type}));
+  });
+
+  it("shows only a spinner while returning to the table", () => {
+    store.setState(appState({}, {currentParticipant: undefined, status: CurrentParticipantStatus.returning}));
+    create();
+
+    expect(renderedChildren()).toEqual(["div"]);
+    expect(fixture.nativeElement.querySelector(".spinner-border")).not.toBeNull();
+  });
+
+  it("does not leave the room when the page is closed or reloaded", () => {
+    // The server lets the seat go a few seconds after the connection is gone, unless the page comes back
+    const addEventListener = spyOn(window, "addEventListener").and.callThrough();
+    create();
+
+    expect(addEventListener.calls.allArgs().map(([type]) => type)).not.toContain("beforeunload");
   });
 });

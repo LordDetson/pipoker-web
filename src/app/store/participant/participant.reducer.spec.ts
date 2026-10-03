@@ -42,6 +42,27 @@ describe("currentParticipantReducer", () => {
     expect(state.status).toBe(CurrentParticipantStatus.success);
   });
 
+  it("is returning to the seat after the page was reloaded", () => {
+    const state = currentParticipantReducer(
+      currentParticipantState({currentParticipant: undefined, status: CurrentParticipantStatus.pending}),
+      ParticipantAction.returnToSeat({roomId: "room", participant: participant("Alex")})
+    );
+
+    expect(state.currentParticipant).withContext("not seated until the server agrees").toBeUndefined();
+    expect(state.status).toBe(CurrentParticipantStatus.returning);
+  });
+
+  it("forgets the participant and the selected card when the seat is lost", () => {
+    const state = currentParticipantReducer(
+      currentParticipantState({selectedCard: {value: "1h"}}),
+      ParticipantAction.seatLost({roomId: "room", participant: participant("Dmitry")})
+    );
+
+    expect(state.currentParticipant).toBeUndefined();
+    expect(state.selectedCard).toBeUndefined();
+    expect(state.status).toBe(CurrentParticipantStatus.success);
+  });
+
   it("stores and clears the selected card", () => {
     let state = currentParticipantReducer(currentParticipantState(), ParticipantAction.initSelectedCurdSuccess({card: {value: "1d"}}));
     expect(state.selectedCard).toEqual({value: "1d"});

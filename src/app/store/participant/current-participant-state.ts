@@ -11,6 +11,8 @@ export interface CurrentParticipantState {
 export enum CurrentParticipantStatus {
   pending = "pending",
   loading = "loading",
+  // Taking the seat back after the page was reloaded
+  returning = "returning",
   success = "success",
   error = "error"
 }

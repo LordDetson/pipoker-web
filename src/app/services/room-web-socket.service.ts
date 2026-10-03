@@ -1,4 +1,4 @@
-import {Inject, Injectable, InjectionToken, NgZone} from '@angular/core';
+import {inject, Inject, Injectable, InjectionToken, NgZone, OnDestroy} from '@angular/core';
 import * as SockJS from "sockjs-client";
 import * as Stomp from "stompjs";
 import {BehaviorSubject, EMPTY, filter, Observable, Subject, Subscription, switchMap, take} from "rxjs";
@@ -7,17 +7,32 @@ import {Store} from "@ngrx/store";
 import * as RoomAction from "../store/room/room.action";
 import {environment} from "../../env/env";
 import {RoomDestinations} from "../common/room-destinations";
+import {tickHeartbeatInWorker} from "./worker-heartbeat";
 
 // Creates the STOMP client the service talks through; tests replace it with a fake client.
 export const STOMP_CLIENT_FACTORY = new InjectionToken<() => any>("STOMP client factory", {
   providedIn: "root",
-  factory: () => () => Stomp.over(new SockJS(environment.wsUrl))
+  factory: () => {
+    // stompjs takes its heartbeat timers from the Stomp object it puts on window
+    const stomp = (window as any).Stomp;
+    if (stomp) {
+      inject(NgZone).runOutsideAngular(() => tickHeartbeatInWorker(stomp));
+    }
+    return () => Stomp.over(new SockJS(environment.wsUrl));
+  }
+});
+
+// Pauses before each new attempt to connect after the connection is lost. The first ones are short,
+// so a page that lost the connection for a moment is back before the server gives its seat away.
+export const RECONNECT_DELAYS = new InjectionToken<number[]>("Delays before reconnecting", {
+  providedIn: "root",
+  factory: () => [1000, 2000, 4000, 5000]
 });
 
 @Injectable({
   providedIn: 'root'
 })
-export class RoomWebSocketService {
+export class RoomWebSocketService implements OnDestroy {
 
   stompClient: any = null;
   // Emits when a lost connection is back: events sent in between never arrived, so the room has to be loaded again
@@ -25,12 +40,23 @@ export class RoomWebSocketService {
   private connected$ = new BehaviorSubject<boolean>(false);
   private connectedBefore = false;
   private roomSubscription: Subscription | undefined;
+  private failedAttempts = 0;
+  private reconnectTimer: any;
+  private readonly onOnline = () => this.reconnectNow();
 
   constructor(
     private store: Store,
     private zone: NgZone,
-    @Inject(STOMP_CLIENT_FACTORY) private createStompClient: () => any
+    @Inject(STOMP_CLIENT_FACTORY) private createStompClient: () => any,
+    @Inject(RECONNECT_DELAYS) private reconnectDelays: number[]
   ) {
+    // No need to wait for the next attempt when the browser is back online
+    window.addEventListener("online", this.onOnline);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener("online", this.onOnline);
+    this.disconnect();
   }
 
   connect(roomId: string) {
@@ -118,6 +144,9 @@ export class RoomWebSocketService {
   }
 
   disconnect() {
+    clearTimeout(this.reconnectTimer);
+    this.reconnectTimer = undefined;
+    this.failedAttempts = 0;
     this.roomSubscription?.unsubscribe();
     this.roomSubscription = undefined;
     if (this.stompClient !== null) {
@@ -137,6 +166,7 @@ export class RoomWebSocketService {
     stompClient.connect({}, () => {
       const reconnected = this.connectedBefore;
       this.connectedBefore = true;
+      this.failedAttempts = 0;
       this.zone.run(() => {
         this.connected$.next(true);
         if (reconnected) {
@@ -149,7 +179,18 @@ export class RoomWebSocketService {
       }
       this.stompClient = null;
       this.zone.run(() => this.connected$.next(false));
-      setTimeout(() => this.openConnection(), 5000);
+      const delay = this.reconnectDelays[Math.min(this.failedAttempts, this.reconnectDelays.length - 1)];
+      this.failedAttempts++;
+      this.reconnectTimer = setTimeout(() => this.reconnectNow(), delay);
     });
+  }
+
+  private reconnectNow() {
+    if (this.reconnectTimer === undefined) {
+      return;
+    }
+    clearTimeout(this.reconnectTimer);
+    this.reconnectTimer = undefined;
+    this.openConnection();
   }
 }
