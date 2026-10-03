@@ -38,4 +38,16 @@ describe("ParticipantEffect", () => {
     expect(dispatched).toHaveBeenCalledWith(RoomAction.removeParticipant({roomId: ROOM_ID, participant: participant("Alex")}));
     expect(actions).toEqual([ParticipantAction.destroySuccess()]);
   });
+
+  it("has nobody to remove when the page is left without joining", () => {
+    store.setState(appState({}, {currentParticipant: undefined}));
+    const dispatched = spyOn(store, "dispatch");
+    const actions: Action[] = [];
+    actions$.next(ParticipantAction.destroy());
+
+    effects.destroy$.subscribe(action => actions.push(action));
+
+    expect(dispatched).not.toHaveBeenCalled();
+    expect(actions).toEqual([ParticipantAction.destroySuccess()]);
+  });
 });

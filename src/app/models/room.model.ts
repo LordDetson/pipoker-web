@@ -8,4 +8,5 @@ export interface Room {
   deck: Deck;
   participants: Participant[];
   votingResult: VotingResult;
+  votesShown?: boolean;
 }

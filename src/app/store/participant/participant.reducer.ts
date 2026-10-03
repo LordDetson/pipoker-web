@@ -1,6 +1,7 @@
 import {CurrentParticipantState, CurrentParticipantStatus} from "./current-participant-state";
 import {Action, createReducer, on} from "@ngrx/store";
 import * as ParticipantAction from "./participant.action";
+import * as RoomAction from "../room/room.action";
 
 const initialState: CurrentParticipantState = {
   currentParticipant: undefined,
@@ -48,6 +49,11 @@ const _currentParticipantReducer = createReducer<CurrentParticipantState>(initia
     ...state,
     selectedCard: undefined,
     status: CurrentParticipantStatus.success,
+  })),
+  // Votes may have been made or cleared while the connection was gone
+  on(RoomAction.refreshSuccess, (state, {room}) => ({
+    ...state,
+    selectedCard: state.currentParticipant ? room.votingResult.map.get(state.currentParticipant.nickname) : undefined
   })),
   on(ParticipantAction.destroySelectedCurdFailure, (state, {error}) => ({
     ...state,

@@ -87,6 +87,33 @@ describe("RoomWebSocketService", () => {
       expect(messages).toEqual(["after reconnect"]);
     }));
 
+    it("tells when a lost connection is back, but not on the first connection", fakeAsync(() => {
+      let reconnects = 0;
+      service.reconnected$.subscribe(() => reconnects++);
+      service.watch("/topic/test").subscribe();
+      const first = connectedClient();
+      expect(reconnects).toBe(0);
+
+      first.failConnect();
+      tick(5000);
+      connectedClient();
+
+      expect(reconnects).toBe(1);
+    }));
+
+    it("does not count a new connection after leaving as a reconnect", () => {
+      let reconnects = 0;
+      service.reconnected$.subscribe(() => reconnects++);
+      service.watch("/topic/test").subscribe();
+      connectedClient();
+      service.disconnect();
+
+      service.watch("/topic/test").subscribe();
+      connectedClient();
+
+      expect(reconnects).toBe(0);
+    });
+
     it("ignores errors of a connection it no longer uses", fakeAsync(() => {
       service.watch("/topic/test").subscribe();
       const first = connectedClient();
