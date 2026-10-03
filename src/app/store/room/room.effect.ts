@@ -21,7 +21,11 @@ export class RoomEffect {
           switchMap(room =>
             of(
               RoomAction.initSuccess({room}),
-              ParticipantAction.initSuccess({participant: room.participants[0]})
+              ParticipantAction.initSuccess({
+                participant: room.participants.find(participant =>
+                  participant.nickname.toLowerCase() === action.createRoomInfo.nickname.trim().toLowerCase()
+                ) ?? room.participants[0]
+              })
             )
           ),
           catchError(error =>
@@ -92,7 +96,7 @@ export class RoomEffect {
       ofType(RoomAction.removeParticipant),
       mergeMap(action =>
         this.roomService.removeParticipant(action.roomId, action.participant).pipe(
-          map(participant => RoomAction.doNothing),
+          map(participant => RoomAction.doNothing()),
           catchError(error => of(RoomAction.removeParticipantFailure({error})))
         )
       )
