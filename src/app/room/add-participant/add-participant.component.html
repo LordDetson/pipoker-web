@@ -8,13 +8,12 @@
              id="nicknameInput"
              formControlName="nickname"
              placeholder="Choose your display name"
-             minlength="2"
              maxlength="32"
-             required
              [ngClass]="{'is-invalid': this.joinToRoomForm.controls['nickname'].touched &&
                  this.joinToRoomForm.controls['nickname'].errors,
                  'is-valid': this.joinToRoomForm.controls['nickname'].valid &&
                  this.joinToRoomForm.controls['nickname'].touched}">
+      <div class="invalid-feedback">{{nicknameError()}}</div>
     </div>
     <div class="form-check mb-3">
       <input class="form-check-input common-transition"
@@ -25,6 +24,7 @@
         Join as watcher
       </label>
     </div>
+    <div *ngIf="error$ | async as error" class="alert alert-danger" role="alert">{{error}}</div>
     <div class="d-grid gap-2">
       <button class="btn btn-primary" type="submit" [disabled]="joinToRoomForm.invalid">Join Room</button>
     </div>

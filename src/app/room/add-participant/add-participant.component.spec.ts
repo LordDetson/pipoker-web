@@ -8,6 +8,7 @@ import {RoomService} from "../../services/room.service";
 import {AppConstants} from "../../common/app-constants";
 import * as RoomAction from "../../store/room/room.action";
 import {appState, participant, ROOM_ID} from "../../testing/test-data";
+import {RoomStatus} from "../../store/room/room-state";
 
 describe("AddParticipantComponent", () => {
   let fixture: ComponentFixture<AddParticipantComponent>;
@@ -70,7 +71,33 @@ describe("AddParticipantComponent", () => {
 
     expect(roomService.checkIfNicknameExist).toHaveBeenCalledWith(ROOM_ID, "Dmitry");
     expect(nicknameInput().classList).toContain("is-invalid");
+    expect(fixture.nativeElement.querySelector(".invalid-feedback").textContent).toBe("Dmitry is already in the room");
     expect(joinButton().disabled).toBeTrue();
+  });
+
+  it("rejects a nickname that is too short without spaces around it", () => {
+    create();
+    type(" a ");
+
+    expect(fixture.nativeElement.querySelector(".invalid-feedback").textContent).toBe("Nickname must be at least 2 characters long");
+    expect(joinButton().disabled).toBeTrue();
+  });
+
+  it("joins with the nickname without spaces around it", () => {
+    create();
+    type(" Alex ");
+
+    joinButton().click();
+
+    expect(store.dispatch).toHaveBeenCalledWith(RoomAction.addParticipant({roomId: ROOM_ID, participant: participant("Alex")}));
+  });
+
+  it("shows why the server refused to let the participant join", () => {
+    create();
+    store.setState(appState({status: RoomStatus.error, error: {message: "Alex is already in the room"}}));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector(".alert-danger").textContent).toBe("Alex is already in the room");
   });
 
   it("joins the room with the chosen nickname and role", () => {

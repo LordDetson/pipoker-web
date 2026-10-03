@@ -1,4 +1,4 @@
-<ng-container *ngIf="(participantStatus$ | async) == 'pending'; else room">
+<ng-container *ngIf="!(joined$ | async); else room">
   <app-add-participant/>
 </ng-container>
 <ng-template #room>

@@ -24,4 +24,10 @@ describe("room selectors", () => {
     expect(RoomSelector.votingResultSelector(state).map).toEqual(votes({Dmitry: "1h"}));
     expect(RoomSelector.showVotingResultSelector(state)).toBeTrue();
   });
+
+  it("describe the error only while the room is in the error state", () => {
+    expect(RoomSelector.errorSelector(appState({status: RoomStatus.error, error: {destination: "/app/room/create", message: "invalid deck"}})))
+      .toBe("invalid deck");
+    expect(RoomSelector.errorSelector(appState({status: RoomStatus.loading, error: {message: "invalid deck"}}))).toBeUndefined();
+  });
 });

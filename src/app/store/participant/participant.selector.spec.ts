@@ -24,4 +24,9 @@ describe("participant selectors", () => {
   it("treats someone who has not joined yet as a watcher", () => {
     expect(ParticipantSelector.currentWatcherSelector(appState({}, {currentParticipant: undefined}))).toBeTrue();
   });
+
+  it("tells whether the participant has joined", () => {
+    expect(ParticipantSelector.joinedSelector(appState())).toBeTrue();
+    expect(ParticipantSelector.joinedSelector(appState({}, {currentParticipant: undefined}))).toBeFalse();
+  });
 });

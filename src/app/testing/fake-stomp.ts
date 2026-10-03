@@ -146,6 +146,11 @@ export class FakePipokerServer {
   received(client: FakeStompClient | undefined, destination: string, body: string) {
     if (destination === "/app/room/create") {
       const creation = JSON.parse(body);
+      const problem = roomProblem(creation.name, creation.deck.cards, creation.participants);
+      if (problem) {
+        this.error(client, destination, problem);
+        return;
+      }
       const id = this.addRoom(creation.name, creation.deck.cards, creation.participants);
       later(() => client?.deliver("/user/topic/room.created", toDto(this.rooms.get(id)!)));
       return;
@@ -159,6 +164,11 @@ export class FakePipokerServer {
     switch (action) {
       case "participants/add": {
         const participant: Participant = JSON.parse(body);
+        const problem = nameProblem("nickname", participant.nickname);
+        if (problem) {
+          this.error(client, destination, problem);
+          return;
+        }
         if (room.participants.some(existing => sameNickname(existing.nickname, participant.nickname))) {
           this.error(client, destination, participant.nickname + " is already in the room");
           return;
@@ -210,6 +220,26 @@ function toDto(room: ServerRoom): RoomDto {
     participants: room.participants.map(participant => ({...participant})),
     votes: room.votes.map(vote => ({...vote}))
   };
+}
+
+// The checks pipoker-app makes since LordDetson/pipoker-app#11.
+function roomProblem(name: string, cards: string[], participants: Participant[]): string | undefined {
+  if (cards.length < 1 || cards.length > 20) {
+    return "deck.cards - size must be between 1 and 20";
+  }
+  if (cards.some(card => card.trim().length === 0)) {
+    return "value - must not be blank";
+  }
+  if (cards.some(card => card.trim().length > 6)) {
+    return "value - size must be between 1 and 6";
+  }
+  return nameProblem("name", name)
+    ?? participants.map(participant => nameProblem("nickname", participant.nickname)).find(problem => problem);
+}
+
+function nameProblem(field: string, value: string): string | undefined {
+  const length = value.trim().length;
+  return length < 2 || length > 32 ? field + " - size must be between 2 and 32" : undefined;
 }
 
 function sameNickname(nickname1: string, nickname2: string): boolean {

@@ -267,6 +267,42 @@ describe("PiPoker room (integration)", () => {
     await settle();
 
     expect(server.rooms.get(roomId)!.participants).toEqual([participant("Alex")]);
-    expect(tableCards().map(card => card.nickname)).toEqual(["Alex"]);
+    expect(button("Join Room")).withContext("asks for a nickname to come back").toBeDefined();
+  });
+
+  it("explains invalid input before anything is sent to the server", async () => {
+    await open("/");
+    await type("#nicknameInput", " a ");
+    await type("#roomNameInput", "Sprint");
+    await type("#deckInput", "1h; 2h; forever");
+
+    expect(page.querySelector("#nicknameInput + .invalid-feedback")!.textContent).toBe("Nickname must be at least 2 characters long");
+    expect(page.querySelector("#deckInput + .invalid-feedback")!.textContent).toBe("Card values can be at most 6 characters long: forever");
+    expect(button("Create Room").disabled).toBeTrue();
+
+    await type("#nicknameInput", " Dmitry ");
+    await type("#deckInput", " 1h ;2h;; 1d ");
+    await click(button("Create Room"));
+
+    const roomId = path().replace("/room/", "");
+    expect(server.rooms.get(roomId)).toEqual(jasmine.objectContaining({
+      cards: ["1h", "2h", "1d"],
+      participants: [participant("Dmitry")]
+    }));
+  });
+
+  it("shows why the server refused to let a participant join", async () => {
+    const roomId = server.addRoom("Planning", ["S", "M"], [participant("Dmitry")]);
+    await open("/room/" + roomId);
+    await type("#nicknameInput", "Alex");
+
+    // Someone else takes the nickname after it was checked.
+    server.join(roomId, participant("alex"));
+    await settle();
+    await click(button("Join Room"));
+
+    expect(page.querySelector(".alert-danger")!.textContent).toBe("Alex is already in the room");
+    expect(button("Join Room")).withContext("the form stays to try another nickname").toBeDefined();
+    expect(page.querySelector("app-table")).toBeNull();
   });
 });
