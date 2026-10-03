@@ -186,6 +186,28 @@ describe("RoomWebSocketService", () => {
       expect(client.unsubscribed).toEqual([]);
     });
 
+    it("asks again on the new connection when the connection is lost before the answer", fakeAsync(() => {
+      const replies: any[] = [];
+      let completed = false;
+      service.request("/app/room/" + ROOM_ID).subscribe({
+        next: reply => replies.push(reply),
+        complete: () => completed = true
+      });
+      const first = connectedClient();
+
+      first.lose();
+      tick(1000);
+      const second = connectedClient();
+      expect(second.isSubscribed("/app/room/" + ROOM_ID)).toBeTrue();
+      second.deliver("/app/room/" + ROOM_ID, {id: ROOM_ID});
+
+      expect(replies).toEqual([{id: ROOM_ID}]);
+      expect(completed).toBeTrue();
+      expect(second.isSubscribed("/app/room/" + ROOM_ID)).toBeFalse();
+      expect(first.unsubscribed).toEqual([]);
+      expect(second.unsubscribed).toEqual([]);
+    }));
+
     it("drops the subscription when the caller gives up", () => {
       const subscription = service.request("/app/room/" + ROOM_ID).subscribe();
       const client = connectedClient();

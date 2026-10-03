@@ -83,12 +83,11 @@ export class RoomWebSocketService implements OnDestroy {
 
   // Subscriptions to application destinations (/app/...) are answered once by the server
   // and are not known to the message broker, so they are dropped locally without UNSUBSCRIBE.
+  // An answer still awaited when the connection is lost is lost with it, so the request is made again on the new one.
   request<T>(destination: string): Observable<T> {
     this.openConnection();
     return this.connected$.pipe(
-      filter(connected => connected),
-      take(1),
-      switchMap(() => new Observable<T>(subscriber => {
+      switchMap(connected => !connected ? EMPTY : new Observable<T>(subscriber => {
         const stompClient = this.stompClient;
         const subscription = stompClient.subscribe(destination, (message: any) => {
           delete stompClient.subscriptions[subscription.id];
@@ -98,7 +97,8 @@ export class RoomWebSocketService implements OnDestroy {
           });
         });
         return () => delete stompClient.subscriptions[subscription.id];
-      }))
+      })),
+      take(1)
     );
   }
 

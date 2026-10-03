@@ -260,6 +260,23 @@ describe("PiPoker room (integration)", () => {
     expect(button("Reveal Cards")).toBeDefined();
   });
 
+  it("finishes checking the nickname when the connection is lost during the check", async () => {
+    const roomId = server.addRoom("Planning", ["S", "M", "L"], [participant("Dmitry")]);
+    await open("/room/" + roomId);
+
+    const input = page.querySelector<HTMLInputElement>("#nicknameInput")!;
+    input.value = "Alex";
+    input.dispatchEvent(new Event("input"));
+    // The answer to the check is lost with the connection
+    server.loseConnections();
+    input.dispatchEvent(new Event("blur"));
+    await settle();
+
+    expect(input.classList).toContain("is-valid");
+    await click(button("Join Room"));
+    expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry"), participant("Alex")]);
+  });
+
   it("does not show the deck to a watcher who joined by the invitation link", async () => {
     const roomId = server.addRoom("Planning", ["S", "M", "L"], [participant("Dmitry")]);
     await open("/room/" + roomId);
