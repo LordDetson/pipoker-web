@@ -35,9 +35,11 @@ export class RoomService {
 
   get(id: string): Observable<Room> {
     const destination = RoomDestinations.room(id);
+    // Errors are subscribed to first. The server handles the frames of a connection in order, so if the request came
+    // first, its error would be sent while nothing was subscribed to receive it.
     return merge(
-      this.roomWebSocketService.request<RoomDto>(destination),
-      this.errors(destination)
+      this.errors(destination),
+      this.roomWebSocketService.request<RoomDto>(destination)
     ).pipe(
       take(1),
       map(room => toRoom(room))

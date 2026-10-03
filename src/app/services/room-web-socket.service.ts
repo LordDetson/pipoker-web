@@ -1,7 +1,7 @@
 import {inject, Inject, Injectable, InjectionToken, NgZone, OnDestroy} from '@angular/core';
 import * as SockJS from "sockjs-client";
 import * as Stomp from "stompjs";
-import {BehaviorSubject, EMPTY, filter, Observable, Subject, Subscription, switchMap, take} from "rxjs";
+import {BehaviorSubject, EMPTY, filter, Observable, share, Subject, Subscription, switchMap, take} from "rxjs";
 import {RoomEvent, RoomEventType} from "../models/room-event";
 import {Store} from "@ngrx/store";
 import * as RoomAction from "../store/room/room.action";
@@ -40,6 +40,8 @@ export class RoomWebSocketService implements OnDestroy {
   private connected$ = new BehaviorSubject<boolean>(false);
   private connectedBefore = false;
   private roomSubscription: Subscription | undefined;
+  // One subscription to the broker per destination, shared by everyone who watches it
+  private readonly watched = new Map<string, Observable<any>>();
   private failedAttempts = 0;
   private reconnectTimer: any;
   private readonly onOnline = () => this.reconnectNow();
@@ -63,22 +65,35 @@ export class RoomWebSocketService implements OnDestroy {
     this.roomSubscription?.unsubscribe();
     this.roomSubscription = this.watch<RoomEvent>(RoomDestinations.roomTopic(roomId))
       .subscribe(event => this.handleEvent(event));
+    // Errors are watched while the room is open, so checking a nickname or voting doesn't subscribe and unsubscribe
+    // each time. RabbitMQ answers an UNSUBSCRIBE that overtakes its SUBSCRIBE with ERROR, which closes the connection.
+    this.roomSubscription.add(this.watch(RoomDestinations.errors).subscribe());
   };
 
+  // Everyone watching a destination shares one subscription to the broker. It is made when the first one starts
+  // watching, and UNSUBSCRIBE is sent when the last one stops. So a temporary watcher, like the one waiting for
+  // the confirmation of a vote, causes no UNSUBSCRIBE while the room still receives events: RabbitMQ answers
+  // an event that reaches a cancelled subscription with ERROR.
   watch<T>(destination: string): Observable<T> {
     this.openConnection();
-    return this.connected$.pipe(
-      switchMap(connected => !connected ? EMPTY : new Observable<T>(subscriber => {
-        const subscription = this.stompClient.subscribe(destination, (message: any) => {
-          this.zone.run(() => subscriber.next(JSON.parse(message.body)));
-        });
-        return () => {
-          if (this.connected$.value) {
-            subscription.unsubscribe();
-          }
-        };
-      }))
-    );
+    let watched = this.watched.get(destination);
+    if (!watched) {
+      watched = this.connected$.pipe(
+        switchMap(connected => !connected ? EMPTY : new Observable<T>(subscriber => {
+          const subscription = this.stompClient.subscribe(destination, (message: any) => {
+            this.zone.run(() => subscriber.next(JSON.parse(message.body)));
+          });
+          return () => {
+            if (this.connected$.value) {
+              subscription.unsubscribe();
+            }
+          };
+        })),
+        share()
+      );
+      this.watched.set(destination, watched);
+    }
+    return watched;
   }
 
   // Subscriptions to application destinations (/app/...) are answered once by the server
