@@ -29,6 +29,11 @@ export const RECONNECT_DELAYS = new InjectionToken<number[]>("Delays before reco
   factory: () => [1000, 2000, 4000, 5000]
 });
 
+// How often the browser and the server tell each other they are still there, in milliseconds. The server notices
+// a lost connection after two or three missed beats and keeps the seat 10 s more, so someone whose internet is gone
+// leaves the table 16-19 s later. A drop shorter than that keeps the connection, or the page connects again in time.
+export const HEARTBEAT = 3000;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -45,6 +50,7 @@ export class RoomWebSocketService implements OnDestroy {
   private failedAttempts = 0;
   private reconnectTimer: any;
   private readonly onOnline = () => this.reconnectNow();
+  private readonly onPageHide = (event: PageTransitionEvent) => this.sayPageClosed(event);
 
   constructor(
     private store: Store,
@@ -54,10 +60,12 @@ export class RoomWebSocketService implements OnDestroy {
   ) {
     // No need to wait for the next attempt when the browser is back online
     window.addEventListener("online", this.onOnline);
+    window.addEventListener("pagehide", this.onPageHide);
   }
 
   ngOnDestroy() {
     window.removeEventListener("online", this.onOnline);
+    window.removeEventListener("pagehide", this.onPageHide);
     this.disconnect();
   }
 
@@ -177,6 +185,8 @@ export class RoomWebSocketService implements OnDestroy {
       return;
     }
     const stompClient = this.createStompClient();
+    stompClient.heartbeat.outgoing = HEARTBEAT;
+    stompClient.heartbeat.incoming = HEARTBEAT;
     this.stompClient = stompClient;
     stompClient.connect({}, () => {
       const reconnected = this.connectedBefore;
@@ -198,6 +208,16 @@ export class RoomWebSocketService implements OnDestroy {
       this.failedAttempts++;
       this.reconnectTimer = setTimeout(() => this.reconnectNow(), delay);
     });
+  }
+
+  // Tells the server that the page is being closed or refreshed, so the person leaves the table at once. Otherwise
+  // the server can't tell it from a lost connection and keeps the seat. It is sent on the open connection only:
+  // a new one would not be ready before the page is gone. A page kept in the back-forward cache can come back,
+  // so it says nothing; if its connection is closed meanwhile, the server keeps the seat as for a lost connection.
+  private sayPageClosed(event: PageTransitionEvent) {
+    if (!event.persisted && this.stompClient !== null && this.connected$.value) {
+      this.stompClient.send(RoomDestinations.pageClosed, {}, "");
+    }
   }
 
   private reconnectNow() {

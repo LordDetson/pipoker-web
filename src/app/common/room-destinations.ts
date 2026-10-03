@@ -4,6 +4,7 @@ export class RoomDestinations {
   public static readonly created: string = "/user/topic/room.created";
   public static readonly errors: string = "/user/topic/room.errors";
   public static readonly returned: string = "/user/topic/room.returned";
+  public static readonly pageClosed: string = "/app/presence/page-closed";
 
   public static create(): string {
     return RoomDestinations.appPrefix + "/create";

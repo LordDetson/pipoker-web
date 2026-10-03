@@ -114,7 +114,7 @@ describe("RoomComponent", () => {
   });
 
   it("does not leave the room when the page is closed or reloaded", () => {
-    // The server lets the seat go a few seconds after the connection is gone, unless the page comes back
+    // RoomWebSocketService tells the server when the page is closed, which beforeunload can't do reliably
     const addEventListener = spyOn(window, "addEventListener").and.callThrough();
     create();
 
