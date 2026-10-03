@@ -69,6 +69,25 @@ describe("RoomWebSocketService", () => {
       expect(client.isSubscribed("/topic/test")).toBeFalse();
     });
 
+    it("shares one subscription to the broker between everyone watching a destination", () => {
+      const first: any[] = [];
+      const second: any[] = [];
+      const firstSubscription = service.watch("/topic/test").subscribe(message => first.push(message));
+      const secondSubscription = service.watch("/topic/test").subscribe(message => second.push(message));
+      const client = connectedClient();
+      expect(Object.values(client.destinations)).toEqual(["/topic/test"]);
+
+      client.deliver("/topic/test", {value: 1});
+      secondSubscription.unsubscribe();
+      expect(client.unsubscribed).withContext("someone still watches").toEqual([]);
+      client.deliver("/topic/test", {value: 2});
+      firstSubscription.unsubscribe();
+
+      expect(first).toEqual([{value: 1}, {value: 2}]);
+      expect(second).toEqual([{value: 1}]);
+      expect(client.unsubscribed).toEqual(["/topic/test"]);
+    });
+
     it("resubscribes after reconnecting", fakeAsync(() => {
       const messages: any[] = [];
       service.watch("/topic/test").subscribe(message => messages.push(message));
@@ -279,6 +298,16 @@ describe("RoomWebSocketService", () => {
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.voteRemoved, vote: {nickname: "Alex", card: "1d"}});
 
       expect(store.dispatch).not.toHaveBeenCalled();
+    });
+
+    it("keeps watching errors while the room is open, so a check or a vote doesn't unsubscribe from them", () => {
+      const client = connectedClient();
+      expect(client.isSubscribed("/user/topic/room.errors")).toBeTrue();
+
+      service.watch("/user/topic/room.errors").subscribe().unsubscribe();
+      service.watch(roomTopic).subscribe().unsubscribe();
+
+      expect(client.unsubscribed).toEqual([]);
     });
 
     it("listens to one room at a time", () => {

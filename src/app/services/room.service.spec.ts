@@ -1,5 +1,5 @@
 import {TestBed} from "@angular/core/testing";
-import {Observable, Subject} from "rxjs";
+import {defer, Observable, Subject} from "rxjs";
 import {RoomService} from "./room.service";
 import {RoomWebSocketService} from "./room-web-socket.service";
 import {Room} from "../models/room.model";
@@ -9,10 +9,15 @@ import {RoomEventType} from "../models/room-event";
 
 class FakeRoomWebSocketService {
   sent: { destination: string, body: any }[] = [];
+  // Destinations in the order they were subscribed to
+  subscribed: string[] = [];
   private destinations = new Map<string, Subject<any>>();
 
   watch<T>(destination: string): Observable<T> {
-    return this.destination(destination).asObservable();
+    return defer(() => {
+      this.subscribed.push(destination);
+      return this.destination(destination).asObservable();
+    });
   }
 
   request<T>(destination: string): Observable<T> {
@@ -163,6 +168,12 @@ describe("RoomService", () => {
     ]);
     expect(webSocket.sent[0].body).toBe("Dmitry");
   });
+  it("subscribes to errors before asking for a room, so the error for the request has somewhere to go", () => {
+    service.get(roomId).subscribe();
+
+    expect(webSocket.subscribed).toEqual(["/user/topic/room.errors", "/app/room/" + roomId]);
+  });
+
   it("fails to load a room the server does not know", () => {
     let error: any;
     service.get(roomId).subscribe({error: e => error = e});
