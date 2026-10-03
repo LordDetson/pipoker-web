@@ -1,4 +1,4 @@
-import {Injectable, NgZone} from '@angular/core';
+import {Inject, Injectable, InjectionToken, NgZone} from '@angular/core';
 import * as SockJS from "sockjs-client";
 import * as Stomp from "stompjs";
 import {BehaviorSubject, EMPTY, filter, Observable, Subscription, switchMap, take} from "rxjs";
@@ -7,6 +7,12 @@ import {Store} from "@ngrx/store";
 import * as RoomAction from "../store/room/room.action";
 import {environment} from "../../env/env";
 import {RoomDestinations} from "../common/room-destinations";
+
+// Creates the STOMP client the service talks through; tests replace it with a fake client.
+export const STOMP_CLIENT_FACTORY = new InjectionToken<() => any>("STOMP client factory", {
+  providedIn: "root",
+  factory: () => () => Stomp.over(new SockJS(environment.wsUrl))
+});
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +25,8 @@ export class RoomWebSocketService {
 
   constructor(
     private store: Store,
-    private zone: NgZone
+    private zone: NgZone,
+    @Inject(STOMP_CLIENT_FACTORY) private createStompClient: () => any
   ) {
   }
 
@@ -121,7 +128,7 @@ export class RoomWebSocketService {
     if (this.stompClient !== null) {
       return;
     }
-    const stompClient = Stomp.over(new SockJS(environment.wsUrl));
+    const stompClient = this.createStompClient();
     this.stompClient = stompClient;
     stompClient.connect({}, () => {
       this.zone.run(() => this.connected$.next(true));

@@ -153,4 +153,81 @@ describe("RoomService", () => {
     ]);
     expect(webSocket.sent[0].body).toBe("Dmitry");
   });
+  it("fails to load a room the server does not know", () => {
+    let error: any;
+    service.get(roomId).subscribe({error: e => error = e});
+
+    webSocket.emit("/user/topic/room.errors", {destination: "/app/room/other", message: "other"});
+    expect(error).toBeUndefined();
+    webSocket.emit("/user/topic/room.errors", {destination: "/app/room/" + roomId, message: "not found"});
+
+    expect(error.message).toBe("not found");
+  });
+
+  it("fails to create a room when the server rejects it", () => {
+    let error: any;
+    service.create({nickname: "Dmitry", roomName: "Sprint", deck: {cards: []}, watcher: false})
+      .subscribe({error: e => error = e});
+
+    webSocket.emit("/user/topic/room.errors", {destination: "/app/room/create", message: "invalid deck"});
+
+    expect(error.message).toBe("invalid deck");
+  });
+
+  it("treats a missing participant list as an empty room", () => {
+    let room: Room | undefined;
+    service.get(roomId).subscribe(result => room = result);
+
+    webSocket.emit("/app/room/" + roomId, {id: roomId, name: "Sprint", deck: {cards: []}});
+
+    expect(room!.participants).toEqual([]);
+    expect(room!.votingResult.map.size).toBe(0);
+  });
+
+  it("reports a free nickname", () => {
+    const results: boolean[] = [];
+    service.checkIfNicknameExist(roomId, "Alex").subscribe(result => results.push(result));
+
+    webSocket.emit("/app/room/" + roomId, {
+      id: roomId,
+      name: "Sprint",
+      deck: {cards: ["1h"]},
+      participants: [{nickname: "Dmitry", watcher: false}]
+    });
+
+    expect(results).toEqual([false]);
+  });
+
+  it("resolves leaving when the server confirms the removal of the participant", () => {
+    let removed: Participant | undefined;
+    service.removeParticipant(roomId, {nickname: "Dmitry", watcher: false}).subscribe(result => removed = result);
+
+    webSocket.emit("/topic/room." + roomId, {roomId, eventType: RoomEventType.participantRemoved});
+    webSocket.emit("/topic/room." + roomId, {roomId, eventType: RoomEventType.participantRemoved, participant: {nickname: "Alex", watcher: false}});
+    expect(removed).toBeUndefined();
+    webSocket.emit("/topic/room." + roomId, {roomId, eventType: RoomEventType.participantRemoved, participant: {nickname: "dmitry", watcher: false}});
+
+    expect(removed).toEqual({nickname: "dmitry", watcher: false});
+  });
+
+  it("ignores votes of other participants", () => {
+    let vote: Vote | undefined;
+    service.vote(roomId, {nickname: "Dmitry", watcher: false}, {value: "1d"}).subscribe(result => vote = result);
+
+    webSocket.emit("/topic/room." + roomId, {roomId, eventType: RoomEventType.voteAdded, vote: {nickname: "Alex", card: "1h"}});
+
+    expect(vote).toBeUndefined();
+  });
+
+  it("resolves clearing when the votes are cleared", () => {
+    let cleared = false;
+    service.clearVotingResult(roomId).subscribe(() => cleared = true);
+
+    webSocket.emit("/topic/room." + roomId, {roomId, eventType: RoomEventType.showVotes});
+    expect(cleared).toBeFalse();
+    webSocket.emit("/topic/room." + roomId, {roomId, eventType: RoomEventType.clearVotes});
+
+    expect(cleared).toBeTrue();
+    expect(webSocket.sent).toEqual([{destination: "/app/room/" + roomId + "/votes/clear", body: roomId}]);
+  });
 });

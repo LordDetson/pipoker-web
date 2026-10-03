@@ -94,6 +94,9 @@
               "src/test-polyfills.ts"
             ],
             "tsConfig": "tsconfig.spec.json",
+            "codeCoverageExclude": [
+              "src/app/testing/**"
+            ],
             "assets": [
               "src/assets"
             ],
