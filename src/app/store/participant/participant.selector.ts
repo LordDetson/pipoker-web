@@ -23,3 +23,7 @@ export const currentWatcherSelector = createSelector(
   currentParticipantFeatureSelector,
   (state: CurrentParticipantState): boolean => state.currentParticipant?.watcher ?? true
 );
+export const joinedSelector = createSelector(
+  currentParticipantFeatureSelector,
+  (state: CurrentParticipantState): boolean => state.currentParticipant !== undefined
+);

@@ -6,6 +6,7 @@ import {RoomService} from "../services/room.service";
 import {AppConstants} from "../common/app-constants";
 import * as RoomAction from "../store/room/room.action";
 import {appState, cards} from "../testing/test-data";
+import {RoomStatus} from "../store/room/room-state";
 
 describe("CreateRoomComponent", () => {
   let fixture: ComponentFixture<CreateRoomComponent>;
@@ -40,6 +41,10 @@ describe("CreateRoomComponent", () => {
     input(id).value = value;
     input(id).dispatchEvent(new Event("input"));
     fixture.detectChanges();
+  }
+
+  function feedback(id: string): string {
+    return fixture.nativeElement.querySelector("#" + id + " + .invalid-feedback").textContent;
   }
 
   function submitButton(): HTMLButtonElement {
@@ -109,6 +114,41 @@ describe("CreateRoomComponent", () => {
     expect(store.dispatch).toHaveBeenCalledWith(RoomAction.create({
       createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d", "1w")}, watcher: true}
     }));
+  });
+
+  it("explains what is wrong with a field", () => {
+    create();
+    type("nicknameInput", "  a ");
+    type("deckInput", "1h; 1h; forever");
+    input("nicknameInput").dispatchEvent(new Event("blur"));
+    input("deckInput").dispatchEvent(new Event("blur"));
+    fixture.detectChanges();
+
+    expect(feedback("nicknameInput")).toBe("Nickname must be at least 2 characters long");
+    expect(feedback("deckInput")).toBe("Card values can be at most 6 characters long: forever");
+  });
+
+  it("sends trimmed names and cards", () => {
+    create();
+    type("nicknameInput", " Dmitry ");
+    type("roomNameInput", " Sprint ");
+    type("deckInput", " 1h ;1d;; 1w ");
+
+    submitButton().click();
+
+    expect(store.dispatch).toHaveBeenCalledWith(RoomAction.create({
+      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d", "1w")}, watcher: false}
+    }));
+  });
+
+  it("shows why the server refused to create the room", () => {
+    create();
+    expect(fixture.nativeElement.querySelector(".alert-danger")).toBeNull();
+
+    store.setState(appState({status: RoomStatus.error, error: {destination: "/app/room/create", message: "value - size must be between 1 and 6"}}));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector(".alert-danger").textContent).toBe("value - size must be between 1 and 6");
   });
 
   it("stops remembering values once destroyed", () => {

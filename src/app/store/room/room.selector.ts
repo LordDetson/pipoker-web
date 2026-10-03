@@ -2,7 +2,8 @@ import {createFeatureSelector, createSelector} from "@ngrx/store";
 import {Participant} from "../../models/participant.model";
 import {Card} from "../../models/card.model";
 import {roomStateNode} from "../intex";
-import {RoomState} from "./room-state";
+import {RoomState, RoomStatus} from "./room-state";
+import {errorMessage} from "../../common/room-validators";
 import {VotingResult} from "../../models/voting-result.model";
 
 export const roomFeatureSelector = createFeatureSelector<RoomState>(roomStateNode);
@@ -28,3 +29,6 @@ export const votingResultSelector = createSelector(
 export const showVotingResultSelector = createSelector(
   roomFeatureSelector,
   (state: RoomState): boolean => state.showVotingResult);
+export const errorSelector = createSelector(
+  roomFeatureSelector,
+  (state: RoomState): string | undefined => state.status === RoomStatus.error ? errorMessage(state.error) : undefined);

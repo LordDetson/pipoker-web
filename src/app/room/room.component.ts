@@ -17,7 +17,7 @@ import * as ParticipantSelector from "../store/participant/participant.selector"
 export class RoomComponent implements OnInit, OnDestroy {
 
   roomStatus$: Observable<string> = this.store.pipe(select(RoomSelector.statusSelector));
-  participantStatus$: Observable<string> = this.store.pipe(select(ParticipantSelector.statusSelector));
+  joined$: Observable<boolean> = this.store.pipe(select(ParticipantSelector.joinedSelector));
   showVotingResult$: Observable<boolean> = this.store.pipe(select(RoomSelector.showVotingResultSelector));
   ngDestroyed$ = new Subject<void>();
 

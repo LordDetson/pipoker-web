@@ -55,6 +55,16 @@ describe("RoomComponent", () => {
     expect(renderedChildren()).toEqual(["app-add-participant"]);
   });
 
+  it("keeps asking for a nickname while joining and after the server refused it", () => {
+    store.setState(appState({}, {currentParticipant: undefined, status: CurrentParticipantStatus.loading}));
+    create();
+    expect(renderedChildren()).toEqual(["app-add-participant"]);
+
+    store.setState(appState({}, {currentParticipant: undefined, status: CurrentParticipantStatus.error}));
+    fixture.detectChanges();
+    expect(renderedChildren()).toEqual(["app-add-participant"]);
+  });
+
   it("shows the table and the deck while voting", () => {
     create();
 

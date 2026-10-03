@@ -1,12 +1,13 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {FormControl, FormGroup} from "@angular/forms";
 import {AppConstants} from "../common/app-constants";
 import {RoomService} from "../services/room.service";
-import {Room} from "../models/room.model";
 import {Store} from "@ngrx/store";
 import * as RoomAction from "../store/room/room.action";
 import {Card} from "../models/card.model";
-import {Subject, takeUntil} from "rxjs";
+import {Observable, Subject, takeUntil} from "rxjs";
+import {parseDeck, RoomValidators, validationMessage} from "../common/room-validators";
+import * as RoomSelector from "../store/room/room.selector";
 
 interface CreateRoomFormGroup {
   nickname: FormControl<string>;
@@ -24,10 +25,11 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
 
   createRoomForm: FormGroup<CreateRoomFormGroup>;
   ngDestroyed$ = new Subject<void>();
+  error$: Observable<string | undefined> = this.store.select(RoomSelector.errorSelector);
 
   constructor(
     private roomService: RoomService,
-    private store: Store<{ room: Room }>
+    private store: Store
   ) {
   }
 
@@ -39,26 +41,15 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     this.createRoomForm = new FormGroup<CreateRoomFormGroup>({
       nickname: new FormControl<string>(nickname, {
         nonNullable: true,
-        validators: [
-          Validators.minLength(2),
-          Validators.maxLength(32),
-          Validators.required
-        ]
+        validators: RoomValidators.displayName
       }),
       roomName: new FormControl<string>(roomName, {
         nonNullable: true,
-        validators: [
-          Validators.minLength(2),
-          Validators.maxLength(32),
-          Validators.required
-        ]
+        validators: RoomValidators.displayName
       }),
       deck: new FormControl<string>(deck, {
         nonNullable: true,
-        validators: [
-          Validators.maxLength(158),
-          Validators.required
-        ]
+        validators: RoomValidators.deck
       }),
       watcher: new FormControl<boolean>(watcher, {nonNullable: true})
     });
@@ -77,15 +68,17 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     this.ngDestroyed$.complete();
   }
 
+  errorMessage(field: keyof CreateRoomFormGroup, label: string): string | undefined {
+    return validationMessage(this.createRoomForm.controls[field].errors, label);
+  }
+
   createRoom(): void {
     if (this.createRoomForm.valid) {
-      const cards: Card[] = this.createRoomForm.value.deck!.split("; ").map((value: string) => {
-        return {value};
-      })
+      const cards: Card[] = parseDeck(this.createRoomForm.value.deck!).map(value => ({value}));
       this.store.dispatch(RoomAction.create({
         createRoomInfo: {
-          nickname: this.createRoomForm.value.nickname!,
-          roomName: this.createRoomForm.value.roomName!,
+          nickname: this.createRoomForm.value.nickname!.trim(),
+          roomName: this.createRoomForm.value.roomName!.trim(),
           deck: {cards},
           watcher: this.createRoomForm.value.watcher!
         }
