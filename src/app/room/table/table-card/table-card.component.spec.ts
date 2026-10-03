@@ -31,6 +31,10 @@ describe("TableCardComponent", () => {
     return fixture.nativeElement.querySelector(".card-body-back .card-text")?.textContent.trim();
   }
 
+  function visibility(face: string): string {
+    return getComputedStyle(fixture.nativeElement.querySelector(face)).visibility;
+  }
+
   it("shows the nickname of a participant who has not voted", () => {
     create(participant("Dmitry"));
 
@@ -59,6 +63,20 @@ describe("TableCardComponent", () => {
 
     expect(card().classList).toContain("rotateY180");
     expect(backValue()).toBe("1d");
+  });
+
+  it("shows only the face of the card that is turned to the viewer", () => {
+    create(participant("Dmitry"), {Dmitry: "1d"});
+
+    expect(visibility(".card-body:not(.card-body-back)")).toBe("visible");
+    expect(visibility(".card-body-back")).toBe("hidden");
+  });
+
+  it("hides the front of a turned card, which browsers would otherwise show mirrored", () => {
+    create(participant("Dmitry"), {Dmitry: "1d"}, true);
+
+    expect(visibility(".card-body:not(.card-body-back)")).toBe("hidden");
+    expect(visibility(".card-body-back")).toBe("visible");
   });
 
   it("does not turn over the card of a participant who did not vote", () => {
