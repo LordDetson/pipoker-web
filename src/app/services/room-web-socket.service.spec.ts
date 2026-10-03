@@ -329,6 +329,55 @@ describe("RoomWebSocketService", () => {
     });
   });
 
+  describe("presence", () => {
+    function hidePage(persisted = false) {
+      window.dispatchEvent(new PageTransitionEvent("pagehide", {persisted}));
+    }
+
+    it("beats every 3 seconds both ways, so the server notices a lost connection soon", () => {
+      service.watch("/topic/test").subscribe();
+
+      expect(clients[0].heartbeat).toEqual({outgoing: 3000, incoming: 3000});
+    });
+
+    it("tells the server when the page is closed", () => {
+      service.watch("/topic/test").subscribe();
+      const client = connectedClient();
+
+      hidePage();
+
+      expect(client.sent).toEqual([{destination: "/app/presence/page-closed", headers: {}, body: ""}]);
+    });
+
+    it("says nothing when the page is kept in the back-forward cache", () => {
+      service.watch("/topic/test").subscribe();
+      const client = connectedClient();
+
+      hidePage(true);
+
+      expect(client.sent).toEqual([]);
+    });
+
+    it("does not connect to tell that the page is closed", () => {
+      hidePage();
+      expect(clients.length).toBe(0);
+
+      service.watch("/topic/test").subscribe();
+      hidePage();
+      expect(clients[0].sent).withContext("still connecting").toEqual([]);
+    });
+
+    it("stops watching the page when destroyed", () => {
+      service.ngOnDestroy();
+      service.watch("/topic/test").subscribe();
+      const client = connectedClient();
+
+      hidePage();
+
+      expect(client.sent).toEqual([]);
+    });
+  });
+
   it("does nothing when disconnecting without a connection", () => {
     expect(() => service.disconnect()).not.toThrow();
   });

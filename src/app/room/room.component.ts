@@ -37,8 +37,9 @@ export class RoomComponent implements OnInit, OnDestroy {
           this.store.dispatch(RoomAction.get({roomId}));
         }
       });
-    // After a page refresh this tab takes its seat back instead of joining again.
-    // Closing the tab is not reported: the server lets the seat go once the connection is gone for a few seconds.
+    // A tab that remembers its seat takes it back instead of joining again. Closing or refreshing the page is
+    // reported by RoomWebSocketService, and the server lets the seat go at once, so after a refresh this fails
+    // and the join form offers the remembered nickname.
     this.joined$.pipe(take(1)).subscribe(joined => {
       const seat = SeatStorage.find(roomId);
       if (!joined && seat) {

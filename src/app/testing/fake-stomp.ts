@@ -14,6 +14,7 @@ export class FakeStompClient {
   subscriptions: { [id: string]: (message: { body: string }) => void } = {};
   destinations: { [id: string]: string } = {};
   sent: SentFrame[] = [];
+  heartbeat = {outgoing: 10000, incoming: 10000};
   unsubscribed: string[] = [];
   connectCalls = 0;
   disconnected = false;
