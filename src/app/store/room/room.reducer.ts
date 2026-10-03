@@ -30,9 +30,10 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
     ...state,
     status: RoomStatus.loading
   })),
-  on(RoomAction.initSuccess, (state, {room}) => ({
+  on(RoomAction.initSuccess, RoomAction.refreshSuccess, (state, {room}) => ({
     ...state,
     room,
+    showVotingResult: room.votesShown ?? false,
     status: RoomStatus.success
   })),
   on(RoomAction.initFailure, (state, {error}) => ({

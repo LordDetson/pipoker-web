@@ -3,7 +3,7 @@ import {provideMockActions} from "@ngrx/effects/testing";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {Action} from "@ngrx/store";
 import {Router} from "@angular/router";
-import {Observable, of, ReplaySubject, throwError} from "rxjs";
+import {Observable, of, ReplaySubject, Subject, throwError} from "rxjs";
 import {RoomEffect} from "./room.effect";
 import * as RoomAction from "./room.action";
 import * as ParticipantAction from "../participant/participant.action";
@@ -16,6 +16,7 @@ describe("RoomEffect", () => {
   let effects: RoomEffect;
   let roomService: jasmine.SpyObj<RoomService>;
   let webSocket: jasmine.SpyObj<RoomWebSocketService>;
+  let reconnected$: Subject<void>;
   let router: jasmine.SpyObj<Router>;
   let store: MockStore;
 
@@ -26,7 +27,8 @@ describe("RoomEffect", () => {
     actions$ = new ReplaySubject<Action>();
     roomService = jasmine.createSpyObj<RoomService>("RoomService",
       ["create", "get", "addParticipant", "removeParticipant", "vote", "clearVotingResult", "showVotingResult"]);
-    webSocket = jasmine.createSpyObj<RoomWebSocketService>("RoomWebSocketService", ["connect"]);
+    reconnected$ = new Subject<void>();
+    webSocket = jasmine.createSpyObj<RoomWebSocketService>("RoomWebSocketService", ["connect"], {reconnected$});
     router = jasmine.createSpyObj<Router>("Router", ["navigate"]);
     TestBed.configureTestingModule({
       providers: [
@@ -47,6 +49,38 @@ describe("RoomEffect", () => {
     effect$.subscribe(action => actions.push(action));
     return actions;
   }
+
+  describe("refreshAfterReconnect$", () => {
+    it("loads the room again when the connection is back", () => {
+      const fresh = room({participants: [participant("Dmitry"), participant("Carol")]});
+      roomService.get.and.returnValue(of(fresh));
+      const actions = collect(effects.refreshAfterReconnect$);
+
+      reconnected$.next();
+
+      expect(roomService.get).toHaveBeenCalledWith(ROOM_ID);
+      expect(actions).toEqual([RoomAction.refreshSuccess({room: fresh})]);
+    });
+
+    it("reports a room that is gone", () => {
+      roomService.get.and.returnValue(throwError(() => error));
+      const actions = collect(effects.refreshAfterReconnect$);
+
+      reconnected$.next();
+
+      expect(actions).toEqual([RoomAction.initFailure({error})]);
+    });
+
+    it("does nothing before a room is opened", () => {
+      store.setState(appState({room: room({id: ""})}));
+      const actions = collect(effects.refreshAfterReconnect$);
+
+      reconnected$.next();
+
+      expect(roomService.get).not.toHaveBeenCalled();
+      expect(actions).toEqual([]);
+    });
+  });
 
   describe("createRoom$", () => {
     it("initializes the room and the participant that created it", () => {

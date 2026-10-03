@@ -9,6 +9,7 @@ export enum RoomActionType {
   create = "[Room] create",
   get = "[Room] get",
   initSuccess = "[Room] init success",
+  refreshSuccess = "[Room] refresh success",
   initFailure = "[Room] init failure",
   addParticipant = "[Room] add participant",
   addParticipantSuccess = "[Room] add participant success",
@@ -32,6 +33,9 @@ export const create = createAction(RoomActionType.create,
 export const get = createAction(RoomActionType.get,
   props<{ roomId: string }>());
 export const initSuccess = createAction(RoomActionType.initSuccess,
+  props<{ room: Room }>());
+// The room as the server has it now, loaded again after the connection came back
+export const refreshSuccess = createAction(RoomActionType.refreshSuccess,
   props<{ room: Room }>());
 export const initFailure = createAction(RoomActionType.initFailure,
   props<{ error: any }>());

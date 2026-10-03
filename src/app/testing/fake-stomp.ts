@@ -84,6 +84,7 @@ interface ServerRoom {
   cards: string[];
   participants: Participant[];
   votes: VoteDto[];
+  votesShown?: boolean;
 }
 
 // An in-memory imitation of the pipoker-app STOMP API, so tests can run the whole client against it.
@@ -192,9 +193,11 @@ export class FakePipokerServer {
       }
       case "votes/clear":
         room.votes = [];
+        room.votesShown = false;
         this.broadcast(room, RoomEventType.clearVotes, {});
         break;
       case "votes/show":
+        room.votesShown = true;
         this.broadcast(room, RoomEventType.showVotes, {});
         break;
       default:
@@ -218,7 +221,9 @@ function toDto(room: ServerRoom): RoomDto {
     name: room.name,
     deck: {cards: [...room.cards]},
     participants: room.participants.map(participant => ({...participant})),
-    votes: room.votes.map(vote => ({...vote}))
+    votes: room.votes.map(vote => ({...vote})),
+    // Like pipoker-app, which leaves it out while the cards are hidden
+    ...(room.votesShown ? {votesShown: true} : {})
   };
 }
 

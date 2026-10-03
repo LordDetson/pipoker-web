@@ -3,7 +3,7 @@ import {Actions, createEffect, ofType} from "@ngrx/effects";
 import {RoomService} from "../../services/room.service";
 import * as RoomAction from "./room.action";
 import * as ParticipantAction from "../participant/participant.action";
-import {catchError, map, mergeMap, of, switchMap, tap, withLatestFrom} from "rxjs";
+import {catchError, filter, map, mergeMap, of, switchMap, tap, withLatestFrom} from "rxjs";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import * as RoomSelector from "./room.selector";
@@ -68,6 +68,19 @@ export class RoomEffect {
       mergeMap(action =>
         this.roomService.get(action.roomId).pipe(
           map(room => RoomAction.initSuccess({room})),
+          catchError(error => of(RoomAction.initFailure({error})))
+        )
+      )
+    )
+  );
+
+  refreshAfterReconnect$ = createEffect(() =>
+    this.roomWebSocketService.reconnected$.pipe(
+      withLatestFrom(this.store.select(RoomSelector.idSelector)),
+      filter(([, roomId]) => !!roomId),
+      switchMap(([, roomId]) =>
+        this.roomService.get(roomId).pipe(
+          map(room => RoomAction.refreshSuccess({room})),
           catchError(error => of(RoomAction.initFailure({error})))
         )
       )

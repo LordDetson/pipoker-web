@@ -92,6 +92,16 @@ describe("RoomService", () => {
     });
 
     expect(room!.votingResult.map.get("Dmitry")).toEqual({value: "1h"});
+    expect(room!.votesShown).toBeFalse();
+  });
+
+  it("loads whether the cards of the room are revealed", () => {
+    let room: Room | undefined;
+    service.get(roomId).subscribe(result => room = result);
+
+    webSocket.emit("/app/room/" + roomId, {id: roomId, name: "Sprint", deck: {cards: ["1h"]}, votesShown: true});
+
+    expect(room!.votesShown).toBeTrue();
   });
 
   it("checks nickname against the current room participants", () => {

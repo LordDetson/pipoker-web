@@ -1,7 +1,7 @@
 import {Inject, Injectable, InjectionToken, NgZone} from '@angular/core';
 import * as SockJS from "sockjs-client";
 import * as Stomp from "stompjs";
-import {BehaviorSubject, EMPTY, filter, Observable, Subscription, switchMap, take} from "rxjs";
+import {BehaviorSubject, EMPTY, filter, Observable, Subject, Subscription, switchMap, take} from "rxjs";
 import {RoomEvent, RoomEventType} from "../models/room-event";
 import {Store} from "@ngrx/store";
 import * as RoomAction from "../store/room/room.action";
@@ -20,7 +20,10 @@ export const STOMP_CLIENT_FACTORY = new InjectionToken<() => any>("STOMP client 
 export class RoomWebSocketService {
 
   stompClient: any = null;
+  // Emits when a lost connection is back: events sent in between never arrived, so the room has to be loaded again
+  readonly reconnected$ = new Subject<void>();
   private connected$ = new BehaviorSubject<boolean>(false);
+  private connectedBefore = false;
   private roomSubscription: Subscription | undefined;
 
   constructor(
@@ -122,6 +125,7 @@ export class RoomWebSocketService {
       this.stompClient = null;
       this.connected$.next(false);
     }
+    this.connectedBefore = false;
   }
 
   private openConnection() {
@@ -131,7 +135,14 @@ export class RoomWebSocketService {
     const stompClient = this.createStompClient();
     this.stompClient = stompClient;
     stompClient.connect({}, () => {
-      this.zone.run(() => this.connected$.next(true));
+      const reconnected = this.connectedBefore;
+      this.connectedBefore = true;
+      this.zone.run(() => {
+        this.connected$.next(true);
+        if (reconnected) {
+          this.reconnected$.next();
+        }
+      });
     }, (error: any) => {
       if (this.stompClient !== stompClient) {
         return;

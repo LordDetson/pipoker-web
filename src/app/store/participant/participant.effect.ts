@@ -20,7 +20,10 @@ export class ParticipantEffect {
         this.store.select(ParticipantSelector.currentParticipantSelector)
       ),
       mergeMap(([action, roomId, participant]) => {
-        this.store.dispatch(RoomAction.removeParticipant({roomId, participant}));
+        // Someone who opened the link and left without joining has nobody to remove
+        if (participant) {
+          this.store.dispatch(RoomAction.removeParticipant({roomId, participant}));
+        }
         return of(ParticipantAction.destroySuccess());
       })
     )

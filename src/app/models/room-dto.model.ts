@@ -15,6 +15,8 @@ export interface RoomDto {
   deck: DeckDto;
   participants?: Participant[];
   votes?: VoteDto[];
+  // The cards of the current round are revealed
+  votesShown?: boolean;
 }
 
 export interface RoomCreationDto {

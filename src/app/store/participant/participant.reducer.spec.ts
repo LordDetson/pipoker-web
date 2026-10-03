@@ -1,7 +1,8 @@
 import {currentParticipantReducer} from "./participant.reducer";
 import * as ParticipantAction from "./participant.action";
 import {CurrentParticipantStatus} from "./current-participant-state";
-import {currentParticipantState, participant} from "../../testing/test-data";
+import * as RoomAction from "../room/room.action";
+import {currentParticipantState, participant, room, votes} from "../../testing/test-data";
 
 describe("currentParticipantReducer", () => {
 
@@ -61,5 +62,14 @@ describe("currentParticipantReducer", () => {
       expect(state.error).withContext(action.type).toBe(error);
       expect(state.status).withContext(action.type).toBe(CurrentParticipantStatus.error);
     });
+  });
+
+  it("takes the selected card from the room loaded after a reconnect", () => {
+    const joined = currentParticipantState({currentParticipant: participant("Dmitry"), selectedCard: {value: "1h"}});
+
+    expect(currentParticipantReducer(joined, RoomAction.refreshSuccess({room: room({votingResult: {map: votes({Dmitry: "2h"})}})})).selectedCard)
+      .toEqual({value: "2h"});
+    expect(currentParticipantReducer(joined, RoomAction.refreshSuccess({room: room()})).selectedCard)
+      .withContext("a new round started while the connection was gone").toBeUndefined();
   });
 });

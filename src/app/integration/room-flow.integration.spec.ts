@@ -200,6 +200,22 @@ describe("PiPoker room (integration)", () => {
     expect(button("Start New Voting")).toBeDefined();
   });
 
+  it("sees the revealed cards when joining after the reveal", async () => {
+    const roomId = server.addRoom("Planning", ["S", "M", "L"], [participant("Dmitry")], [{nickname: "Dmitry", card: "M"}]);
+    server.showVotes(roomId);
+    await settle();
+
+    await open("/room/" + roomId);
+    await type("#nicknameInput", "Alex");
+    await click(button("Join Room"));
+
+    expect(tableCards()).toEqual([
+      {nickname: "Dmitry", voted: true, value: "M"},
+      {nickname: "Alex", voted: false, value: undefined}
+    ]);
+    expect(button("Start New Voting")).toBeDefined();
+  });
+
   it("removes a participant who left", async () => {
     const roomId = await createRoom("Dmitry", "Sprint", "1h; 1d");
     server.join(roomId, participant("Alex"));

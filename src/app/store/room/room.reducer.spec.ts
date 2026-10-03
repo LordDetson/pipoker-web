@@ -33,6 +33,20 @@ describe("roomReducer", () => {
     expect(state.status).toBe(RoomStatus.success);
   });
 
+  it("shows the cards of a loaded room that are already revealed", () => {
+    expect(roomReducer(roomState(), RoomAction.initSuccess({room: room({votesShown: true})})).showVotingResult).toBeTrue();
+    expect(roomReducer(roomState({showVotingResult: true}), RoomAction.initSuccess({room: room()})).showVotingResult).toBeFalse();
+  });
+
+  it("replaces the room with the one loaded after a reconnect", () => {
+    const fresh = room({participants: [participant("Dmitry"), participant("Alex")], votesShown: true});
+
+    const state = roomReducer(roomState(), RoomAction.refreshSuccess({room: fresh}));
+
+    expect(state.room).toBe(fresh);
+    expect(state.showVotingResult).toBeTrue();
+  });
+
   it("stores errors of every failed action", () => {
     const error = new Error("boom");
     const failures = [
