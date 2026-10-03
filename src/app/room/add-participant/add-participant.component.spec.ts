@@ -2,7 +2,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
 import {ActivatedRoute} from "@angular/router";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
-import {of} from "rxjs";
+import {of, Subject} from "rxjs";
 import {AddParticipantComponent} from "./add-participant.component";
 import {RoomService} from "../../services/room.service";
 import {AppConstants} from "../../common/app-constants";
@@ -111,6 +111,37 @@ describe("AddParticipantComponent", () => {
     expect(store.dispatch).toHaveBeenCalledWith(RoomAction.addParticipant({roomId: ROOM_ID, participant: participant("Alex", true)}));
     expect(localStorage.getItem(AppConstants.lastNickname)).toBe("Alex");
     expect(localStorage.getItem(AppConstants.lastWatcher)).toBe("true");
+  });
+
+  it("joins once the nickname check finishes when Join is clicked during the check", () => {
+    const check = new Subject<boolean>();
+    roomService.checkIfNicknameExist.and.returnValue(check);
+    create();
+    type("Alex");
+    expect(fixture.componentInstance.joinToRoomForm.pending).toBeTrue();
+
+    joinButton().click();
+    expect(store.dispatch).not.toHaveBeenCalled();
+
+    check.next(false);
+    check.complete();
+
+    expect(store.dispatch).toHaveBeenCalledOnceWith(RoomAction.addParticipant({roomId: ROOM_ID, participant: participant("Alex")}));
+  });
+
+  it("does not join when the nickname turns out to be taken after Join was clicked", () => {
+    const check = new Subject<boolean>();
+    roomService.checkIfNicknameExist.and.returnValue(check);
+    create();
+    type("Dmitry");
+
+    joinButton().click();
+    check.next(true);
+    check.complete();
+    fixture.detectChanges();
+
+    expect(store.dispatch).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector(".invalid-feedback").textContent).toBe("Dmitry is already in the room");
   });
 
   it("does not join with an invalid nickname", () => {
