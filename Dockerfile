@@ -1,5 +1,6 @@
 #STAGE 1
-FROM node:lts-alpine AS build
+# The static build doesn't depend on the target platform, so it runs natively on the build machine
+FROM --platform=$BUILDPLATFORM node:20-alpine AS build
 WORKDIR /usr/src/app
 COPY package.json package-lock.json ./
 RUN npm ci
