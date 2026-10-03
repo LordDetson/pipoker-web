@@ -90,14 +90,15 @@
           "options": {
             "polyfills": [
               "zone.js",
-              "zone.js/testing"
+              "zone.js/testing",
+              "src/test-polyfills.ts"
             ],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.scss"
             ],
             "scripts": []
           }

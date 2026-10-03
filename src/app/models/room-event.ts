@@ -1,8 +1,23 @@
 import {Participant} from "./participant.model";
-import {Card} from "./card.model";
+import {VoteDto} from "./room-dto.model";
+
+export enum RoomEventType {
+  participantAdded = "PARTICIPANT_ADDED",
+  participantRemoved = "PARTICIPANT_REMOVED",
+  voteAdded = "VOTE_ADDED",
+  voteRemoved = "VOTE_REMOVED",
+  clearVotes = "CLEAR_VOTES",
+  showVotes = "SHOW_VOTES"
+}
 
 export interface RoomEvent {
-  type: string,
-  participant: Participant,
-  card: Card
+  roomId: string,
+  eventType: RoomEventType,
+  participant?: Participant,
+  vote?: VoteDto
+}
+
+export interface ErrorEvent {
+  destination: string,
+  message: string
 }

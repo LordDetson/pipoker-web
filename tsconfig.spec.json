@@ -8,6 +8,9 @@
       "@angular/localize"
     ]
   },
+  "files": [
+    "src/test-polyfills.ts"
+  ],
   "include": [
     "src/**/*.spec.ts",
     "src/**/*.d.ts"
