@@ -1,5 +1,5 @@
 import {Participant} from "../models/participant.model";
-import {RoomDto, VoteDto} from "../models/room-dto.model";
+import {RoomDto, TimerDto, VoteDto} from "../models/room-dto.model";
 import {ErrorCode, ErrorEvent, RoomEvent, RoomEventType} from "../models/room-event";
 
 export interface SentFrame {
@@ -93,6 +93,7 @@ interface ServerRoom {
   participants: Participant[];
   votes: VoteDto[];
   votesShown?: boolean;
+  timer?: { seconds: number, endsAt: number };
 }
 
 // An in-memory imitation of the pipoker-app STOMP API, so tests can run the whole client against it.
@@ -133,6 +134,14 @@ export class FakePipokerServer {
 
   clearVotes(roomId: string) {
     this.received(undefined, "/app/room/" + roomId + "/votes/clear", roomId);
+  }
+
+  startTimer(roomId: string, seconds: number) {
+    this.received(undefined, "/app/room/" + roomId + "/timer/start", JSON.stringify({seconds}));
+  }
+
+  stopTimer(roomId: string) {
+    this.received(undefined, "/app/room/" + roomId + "/timer/stop", roomId);
   }
 
   // Like pipoker-app when nobody did anything in the room for long
@@ -235,11 +244,22 @@ export class FakePipokerServer {
       case "votes/clear":
         room.votes = [];
         room.votesShown = false;
+        room.timer = undefined;
         this.broadcast(room, RoomEventType.clearVotes, {});
         break;
       case "votes/show":
         room.votesShown = true;
         this.broadcast(room, RoomEventType.showVotes, {});
+        break;
+      case "timer/start": {
+        const {seconds} = JSON.parse(body);
+        room.timer = {seconds, endsAt: Date.now() + seconds * 1000};
+        this.broadcast(room, RoomEventType.timerStarted, {timer: toTimerDto(room.timer)});
+        break;
+      }
+      case "timer/stop":
+        room.timer = undefined;
+        this.broadcast(room, RoomEventType.timerStopped, {});
         break;
       default:
         this.error(client, destination, "Unknown destination");
@@ -268,8 +288,13 @@ function toDto(room: ServerRoom): RoomDto {
     participants: room.participants.map(participant => ({...participant})),
     votes: room.votes.map(vote => ({...vote})),
     // Like pipoker-app, which leaves it out while the cards are hidden
-    ...(room.votesShown ? {votesShown: true} : {})
+    ...(room.votesShown ? {votesShown: true} : {}),
+    ...(room.timer ? {timer: toTimerDto(room.timer)} : {})
   };
+}
+
+function toTimerDto(timer: { seconds: number, endsAt: number }): TimerDto {
+  return {seconds: timer.seconds, remainingMillis: Math.max(0, timer.endsAt - Date.now())};
 }
 
 // The checks pipoker-app makes since LordDetson/pipoker-app#11.

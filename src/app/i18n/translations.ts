@@ -60,6 +60,12 @@ const en = {
   "room.missingText": "The room no longer exists: everyone has left it.",
   "room.createNew": "Create a new room",
 
+  "timer.start": "Timer",
+  "timer.startTitle": "Start the discussion timer",
+  "timer.minutes": "{minutes} min",
+  "timer.stop": "Stop the timer",
+  "timer.timeUp": "Time's up",
+
   "about.title": "What is PiPoker?",
   "about.description": "PiPoker is a free online Planning Poker for agile teams. Estimate tasks together: "
     + "everyone picks a card in secret, then all cards are revealed at once, so nobody is swayed by the others.",
@@ -120,6 +126,12 @@ const ru: Record<TranslationKey, string> = {
   "room.missingTitle": "Приглашение больше не действует",
   "room.missingText": "Этой комнаты больше нет: все участники её покинули.",
   "room.createNew": "Создать новую комнату",
+
+  "timer.start": "Таймер",
+  "timer.startTitle": "Запустить таймер обсуждения",
+  "timer.minutes": "{minutes} мин",
+  "timer.stop": "Остановить таймер",
+  "timer.timeUp": "Время вышло",
 
   "about.title": "Что такое PiPoker?",
   "about.description": "PiPoker — бесплатный онлайн Planning Poker для команд. Оценивайте задачи вместе: "

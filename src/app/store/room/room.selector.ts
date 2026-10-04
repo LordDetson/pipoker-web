@@ -5,6 +5,7 @@ import {roomStateNode} from "../intex";
 import {RoomState, RoomStatus} from "./room-state";
 import {errorMessage} from "../../common/room-validators";
 import {VotingResult} from "../../models/voting-result.model";
+import {RoomTimer} from "../../models/room.model";
 
 export const roomFeatureSelector = createFeatureSelector<RoomState>(roomStateNode);
 
@@ -29,6 +30,9 @@ export const votingResultSelector = createSelector(
 export const showVotingResultSelector = createSelector(
   roomFeatureSelector,
   (state: RoomState): boolean => state.showVotingResult);
+export const timerSelector = createSelector(
+  roomFeatureSelector,
+  (state: RoomState): RoomTimer | undefined => state.room.timer);
 // Why the room can't be shown: closed while this page was in it, or missing when the page opened it
 export const goneSelector = createSelector(
   roomFeatureSelector,

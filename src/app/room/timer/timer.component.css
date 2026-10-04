@@ -1,0 +1,52 @@
+/* Light on the felt of the table, above the status button */
+.timer-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.timer-toggle:hover, .timer-toggle.show {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.875rem;
+  border-radius: 9999px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.3);
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timer .btn-close {
+  font-size: 0.625rem;
+}
+
+.timer.warning .time {
+  color: var(--bs-warning);
+}
+
+.timer.time-up {
+  background-color: var(--bs-danger);
+  animation: time-up 1s ease-in-out 3;
+}
+
+@keyframes time-up {
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timer.time-up {
+    animation: none;
+  }
+}

@@ -154,4 +154,13 @@ describe("roomReducer", () => {
 
     expect(roomReducer(before, RoomAction.doNothing())).toBe(before);
   });
+
+  it("keeps the timer until it is stopped or the next round starts", () => {
+    const timer = {seconds: 120, endsAt: 1000};
+
+    const started = roomReducer(roomState(), RoomAction.timerStarted({timer}));
+    expect(started.room.timer).toBe(timer);
+    expect(roomReducer(started, RoomAction.timerStopped()).room.timer).toBeUndefined();
+    expect(roomReducer(started, RoomAction.startNewVotingSuccess()).room.timer).toBeUndefined();
+  });
 });

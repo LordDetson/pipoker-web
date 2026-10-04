@@ -1,0 +1,23 @@
+<div *ngIf="countdown$ | async as countdown; else idle" class="timer" role="timer"
+     [class.warning]="countdown.left > 0 && countdown.left <= warningSeconds" [class.time-up]="countdown.left === 0">
+  <span class="time">{{countdown.left === 0 ? ("timer.timeUp" | translate) : format(countdown.left)}}</span>
+  <button type="button" class="btn-close btn-close-white" (click)="stop()"
+          [title]="'timer.stop' | translate" [attr.aria-label]="'timer.stop' | translate"></button>
+</div>
+
+<ng-template #idle>
+  <div ngbDropdown placement="bottom top">
+    <button type="button" ngbDropdownToggle class="btn btn-sm timer-toggle" [title]="'timer.startTitle' | translate">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <circle cx="8" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M8 9V5.5M6 1.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      {{"timer.start" | translate}}
+    </button>
+    <div ngbDropdownMenu>
+      <button *ngFor="let length of minutes" type="button" ngbDropdownItem (click)="start(length)">
+        {{"timer.minutes" | translate: {minutes: length} }}
+      </button>
+    </div>
+  </div>
+</ng-template>

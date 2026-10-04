@@ -27,6 +27,7 @@ import {NgChartsModule} from "ng2-charts";
 import {Chart} from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {AboutComponent} from './about/about.component';
+import {TimerComponent} from './room/timer/timer.component';
 import {TranslatePipe} from './i18n/translate.pipe';
 
 Chart.register(ChartDataLabels);
@@ -45,7 +46,8 @@ Chart.register(ChartDataLabels);
     DeckCardComponent,
     TableCardComponent,
     VotingResultChartComponent,
-    AboutComponent
+    AboutComponent,
+    TimerComponent
   ],
   imports: [
     BrowserModule,

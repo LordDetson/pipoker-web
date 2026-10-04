@@ -10,6 +10,14 @@ app-table {
   min-height: 16rem;
 }
 
+/* The timer above the status button in the middle of the table */
+.table-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* The deck and the chart share one cell, which gets as narrow as the page: the deck measures its own width
    to lay itself out in rows, so the cell must not keep the width of its current rows. The chart gets at least
    the height it had under the table before. */

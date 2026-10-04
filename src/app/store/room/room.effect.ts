@@ -178,6 +178,24 @@ export class RoomEffect {
     {dispatch: false}
   )
 
+  startTimer$ = createEffect(() =>
+      this.actions$.pipe(
+        ofType(RoomAction.startTimer),
+        withLatestFrom(this.store.select(RoomSelector.idSelector)),
+        tap(([{seconds}, roomId]) => this.roomService.startTimer(roomId, seconds))
+      ),
+    {dispatch: false}
+  );
+
+  stopTimer$ = createEffect(() =>
+      this.actions$.pipe(
+        ofType(RoomAction.stopTimer),
+        withLatestFrom(this.store.select(RoomSelector.idSelector)),
+        tap(([, roomId]) => this.roomService.stopTimer(roomId))
+      ),
+    {dispatch: false}
+  );
+
   startNewVoting$ = createEffect(() =>
     this.actions$.pipe(
       ofType(RoomAction.startNewVoting),

@@ -1,12 +1,12 @@
 import {Injectable} from '@angular/core';
 import {filter, map, merge, Observable, take} from "rxjs";
-import {Room} from "../models/room.model";
+import {Room, toTimer} from "../models/room.model";
 import {Card} from "../models/card.model";
 import {Participant, sameNickname} from "../models/participant.model";
 import {Vote} from "../models/vote";
 import {RoomWebSocketService} from "./room-web-socket.service";
 import {CreateRoomInfo} from "../models/create-room.model";
-import {RoomCreationDto, RoomDto} from "../models/room-dto.model";
+import {RoomCreationDto, RoomDto, TimerDto} from "../models/room-dto.model";
 import {ErrorEvent, RoomEvent, RoomEventType} from "../models/room-event";
 import {RoomDestinations} from "../common/room-destinations";
 
@@ -102,6 +102,16 @@ export class RoomService {
     this.roomWebSocketService.send(RoomDestinations.showVotes(roomId), roomId);
   }
 
+  // Everyone in the room hears that the timer started or stopped, this page too
+  startTimer(roomId: string, seconds: number) {
+    const timer: TimerDto = {seconds};
+    this.roomWebSocketService.send(RoomDestinations.startTimer(roomId), timer);
+  }
+
+  stopTimer(roomId: string) {
+    this.roomWebSocketService.send(RoomDestinations.stopTimer(roomId), roomId);
+  }
+
   private exchange<T>(destination: string, body: any, reply$: Observable<T>): Observable<T> {
     return new Observable<T>(subscriber => {
       const subscription = merge(reply$, this.errors(destination)).pipe(take(1)).subscribe(subscriber);
@@ -135,6 +145,7 @@ function toRoom(room: RoomDto): Room {
     deck: {cards: room.deck.cards.map(value => ({value}))},
     participants: room.participants ?? [],
     votingResult: {map},
-    votesShown: room.votesShown ?? false
+    votesShown: room.votesShown ?? false,
+    timer: room.timer && toTimer(room.timer)
   };
 }

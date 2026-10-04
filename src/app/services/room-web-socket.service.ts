@@ -8,6 +8,7 @@ import * as RoomAction from "../store/room/room.action";
 import {environment} from "../../env/env";
 import {RoomDestinations} from "../common/room-destinations";
 import {tickHeartbeatInWorker} from "./worker-heartbeat";
+import {toTimer} from "../models/room.model";
 
 // Creates the STOMP client the service talks through; tests replace it with a fake client.
 export const STOMP_CLIENT_FACTORY = new InjectionToken<() => any>("STOMP client factory", {
@@ -166,6 +167,12 @@ export class RoomWebSocketService implements OnDestroy {
         break;
       case RoomEventType.clearVotes:
         this.store.dispatch(RoomAction.startNewVotingSuccess());
+        break;
+      case RoomEventType.timerStarted:
+        this.store.dispatch(RoomAction.timerStarted({timer: toTimer(event.timer!)}));
+        break;
+      case RoomEventType.timerStopped:
+        this.store.dispatch(RoomAction.timerStopped());
         break;
       case RoomEventType.roomClosed:
         this.store.dispatch(RoomAction.closed({roomId: event.roomId}));
