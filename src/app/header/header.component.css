@@ -15,6 +15,20 @@
   transform: translate(0px, -2px);
 }
 
+/* Boosty's brand orange, as the button leads to the PiPoker page on Boosty */
+.support-link {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #f15f2c;
+  --bs-btn-border-color: #f15f2c;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #d94f1f;
+  --bs-btn-hover-border-color: #d94f1f;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #c2461b;
+  --bs-btn-active-border-color: #c2461b;
+  --bs-btn-focus-shadow-rgb: 241, 95, 44;
+}
+
 .heart-icon {
   font-size: 1.2rem;
   line-height: 1;
