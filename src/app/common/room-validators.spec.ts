@@ -1,4 +1,6 @@
 import {FormControl} from "@angular/forms";
+import {I18nService} from "../i18n/i18n.service";
+import {AppConstants} from "./app-constants";
 import {errorMessage, parseDeck, RoomValidators, validationMessage} from "./room-validators";
 
 describe("RoomValidators", () => {
@@ -42,17 +44,39 @@ describe("RoomValidators", () => {
     expect(parseDeck(" 1h ;2h;; 1d ;")).toEqual(["1h", "2h", "1d"]);
   });
 
+  function i18n(language: string): I18nService {
+    localStorage.removeItem(AppConstants.language);
+    return new I18nService(document, [language]);
+  }
+
   it("describes every validation error", () => {
-    expect(validationMessage(null, "Nickname")).toBeUndefined();
-    expect(validationMessage({}, "Nickname")).toBeUndefined();
-    expect(validationMessage({required: true}, "Nickname")).toBe("Nickname is required");
-    expect(validationMessage(nameErrors("a"), "Nickname")).toBe("Nickname must be at least 2 characters long");
-    expect(validationMessage(nameErrors("x".repeat(33)), "Room name")).toBe("Room name must be at most 32 characters long");
-    expect(validationMessage({tooManyCards: {max: 20, actual: 21}}, "Deck")).toBe("The deck can contain at most 20 cards");
-    expect(validationMessage({cardTooLong: {cards: ["forever", "always"]}}, "Deck"))
+    const english = i18n("en");
+    expect(validationMessage(null, "validation.nickname", english)).toBeUndefined();
+    expect(validationMessage({}, "validation.nickname", english)).toBeUndefined();
+    expect(validationMessage({required: true}, "validation.nickname", english)).toBe("Nickname is required");
+    expect(validationMessage(nameErrors("a"), "validation.nickname", english))
+      .toBe("Nickname must be at least 2 characters long");
+    expect(validationMessage(nameErrors("x".repeat(33)), "validation.roomName", english))
+      .toBe("Room name must be at most 32 characters long");
+    expect(validationMessage({tooManyCards: {max: 20, actual: 21}}, "validation.deck", english))
+      .toBe("The deck can contain at most 20 cards");
+    expect(validationMessage({cardTooLong: {cards: ["forever", "always"]}}, "validation.deck", english))
       .toBe("Card values can be at most 6 characters long: forever, always");
-    expect(validationMessage({duplicateCards: {cards: ["xl"]}}, "Deck")).toBe("Card values must be unique: xl");
-    expect(validationMessage({taken: {nickname: "Alex"}}, "Nickname")).toBe("Alex is already in the room");
+    expect(validationMessage({duplicateCards: {cards: ["xl"]}}, "validation.deck", english))
+      .toBe("Card values must be unique: xl");
+    expect(validationMessage({taken: {nickname: "Alex"}}, "validation.nickname", english))
+      .toBe("Alex is already in the room");
+  });
+
+  it("describes validation errors in Russian", () => {
+    const russian = i18n("ru");
+    expect(validationMessage({required: true}, "validation.roomName", russian))
+      .toBe("Заполните поле «Название комнаты»");
+    expect(validationMessage(nameErrors("a"), "validation.nickname", russian))
+      .toBe("Поле «Имя» должно содержать не меньше 2 символов");
+    expect(validationMessage({tooManyCards: {max: 20, actual: 21}}, "validation.deck", russian))
+      .toBe("В колоде может быть не больше 20 карт");
+    expect(validationMessage({taken: {nickname: "Alex"}}, "validation.nickname", russian)).toBe("Alex уже в комнате");
   });
 
   it("describes server errors", () => {

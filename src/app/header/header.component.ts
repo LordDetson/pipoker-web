@@ -4,6 +4,7 @@ import {Observable} from "rxjs";
 import {idSelector, nameSelector} from "../store/room/room.selector";
 import {Clipboard} from '@angular/cdk/clipboard';
 import {environment} from "../../env/env";
+import {I18nService} from "../i18n/i18n.service";
 
 @Component({
   selector: 'app-header',
@@ -19,7 +20,8 @@ export class HeaderComponent {
 
   constructor(
     private store: Store,
-    private clipboard: Clipboard
+    private clipboard: Clipboard,
+    public i18n: I18nService
   ) {
   }
 

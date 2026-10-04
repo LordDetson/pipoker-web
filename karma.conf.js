@@ -35,10 +35,11 @@ module.exports = function (config) {
     reporters: ['progress', 'kjhtml'],
     browsers: ['Chrome'],
     customLaunchers: {
-      // Chrome sandbox is not available in CI containers and on GitHub hosted runners
+      // Chrome sandbox is not available in CI containers and on GitHub hosted runners.
+      // The tests expect the English interface, which PiPoker picks from the browser's language.
       ChromeHeadlessCI: {
         base: 'ChromeHeadless',
-        flags: ['--no-sandbox']
+        flags: ['--no-sandbox', '--lang=en-US']
       }
     },
     restartOnFileChange: true

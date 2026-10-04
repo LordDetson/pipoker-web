@@ -5,6 +5,8 @@ import {Clipboard} from "@angular/cdk/clipboard";
 import {HeaderComponent} from "./header.component";
 import {appState, room, roomState} from "../testing/test-data";
 import {environment} from "../../env/env";
+import {AppConstants} from "../common/app-constants";
+import {TranslatePipe} from "../i18n/translate.pipe";
 
 describe("HeaderComponent", () => {
   let fixture: ComponentFixture<HeaderComponent>;
@@ -12,9 +14,11 @@ describe("HeaderComponent", () => {
   let clipboard: jasmine.SpyObj<Clipboard>;
 
   beforeEach(() => {
+    localStorage.removeItem(AppConstants.language);
     clipboard = jasmine.createSpyObj<Clipboard>("Clipboard", ["copy"]);
     TestBed.configureTestingModule({
       declarations: [HeaderComponent],
+      imports: [TranslatePipe],
       providers: [
         provideMockStore({initialState: appState({room: room({id: "room-1", name: "Planning"})})}),
         {provide: Clipboard, useValue: clipboard}
@@ -27,7 +31,7 @@ describe("HeaderComponent", () => {
   });
 
   function copyButton(): HTMLButtonElement | null {
-    return fixture.nativeElement.querySelector("button");
+    return fixture.nativeElement.querySelector("button:not(.language-switch)");
   }
 
   it("shows the room name and the invitation button inside a room", () => {
@@ -41,6 +45,30 @@ describe("HeaderComponent", () => {
 
     expect(fixture.nativeElement.querySelector("strong.text-center")).toBeNull();
     expect(copyButton()).toBeNull();
+  });
+
+  afterEach(() => localStorage.removeItem(AppConstants.language));
+
+  it("says what PiPoker is under its name", () => {
+    expect(fixture.nativeElement.querySelector(".tagline").textContent).toBe("Free Planning Poker for teams");
+  });
+
+  it("switches the interface between English and Russian", () => {
+    const languageSwitch: HTMLButtonElement = fixture.nativeElement.querySelector("button.language-switch");
+    expect(languageSwitch.textContent!.trim()).toBe("Русский");
+
+    languageSwitch.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector(".tagline").textContent).toBe("Бесплатный Planning Poker для команд");
+    expect(copyButton()?.textContent).toContain("Скопировать приглашение");
+    expect(supportLink()?.textContent?.trim()).toMatch(/^♥\s+Поддержать$/);
+    expect(languageSwitch.textContent!.trim()).toBe("English");
+
+    languageSwitch.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector(".tagline").textContent).toBe("Free Planning Poker for teams");
   });
 
   function supportLink(): HTMLAnchorElement | null {

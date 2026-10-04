@@ -28,6 +28,8 @@ import {SeatStorage} from "../common/seat-storage";
 import {AppConstants} from "../common/app-constants";
 import {FakePipokerServer} from "../testing/fake-stomp";
 import {participant} from "../testing/test-data";
+import {TranslatePipe} from "../i18n/translate.pipe";
+import {AboutComponent} from "../about/about.component";
 
 // Runs the whole client (components, store, effects and services) against an in-memory imitation
 // of the pipoker-app STOMP API. Only the STOMP connection itself is replaced.
@@ -53,7 +55,8 @@ describe("PiPoker room (integration)", () => {
         DeckComponent,
         DeckCardComponent,
         TableCardComponent,
-        VotingResultChartComponent
+        VotingResultChartComponent,
+        AboutComponent
       ],
       imports: [
         RouterTestingModule.withRoutes(routes),
@@ -67,7 +70,8 @@ describe("PiPoker room (integration)", () => {
           }
         }),
         EffectsModule.forRoot([RoomEffect, ParticipantEffect]),
-        NgChartsModule
+        NgChartsModule,
+        TranslatePipe
       ],
       providers: [
         {provide: STOMP_CLIENT_FACTORY, useValue: server.createClient},
@@ -161,6 +165,23 @@ describe("PiPoker room (integration)", () => {
     expect(tableCards()).toEqual([{nickname: "Dmitry", voted: false, value: undefined}]);
     expect(deckCards().map(card => card.textContent!.trim())).toEqual(["1h", "4h", "1d"]);
     expect(button("Voting...").disabled).toBeTrue();
+  });
+
+  it("speaks Russian once the language is switched", async () => {
+    await open("/");
+    await click(page.querySelector<HTMLElement>("button.language-switch")!);
+
+    expect(page.querySelector("app-about h2")!.textContent).toBe("Что такое PiPoker?");
+    await type("#nicknameInput", "D");
+    expect(page.querySelector("#nicknameInput + .invalid-feedback")!.textContent)
+      .toBe("Поле «Имя» должно содержать не меньше 2 символов");
+
+    await type("#nicknameInput", "Dmitry");
+    await type("#roomNameInput", "Sprint");
+    await click(button("Создать комнату"));
+
+    expect(button("Скопировать приглашение")).toBeDefined();
+    expect(button("Голосование...").disabled).toBeTrue();
   });
 
   it("plays a whole voting round with another participant", async () => {

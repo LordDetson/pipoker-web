@@ -1,13 +1,13 @@
-<div class="container-fluid d-flex justify-content-center align-content-center flex-wrap" style="height: 75vh">
+<div class="container-fluid d-flex flex-column align-items-center py-5">
   <form [formGroup]="joinToRoomForm" (submit)="addParticipant()"
         class="col-10 col-md-8 col-lg-6">
     <div class="form-group mb-3">
-      <label for="nicknameInput" class="form-label">Nickname</label>
+      <label for="nicknameInput" class="form-label">{{"form.nickname" | translate}}</label>
       <input type="text"
              class="form-control common-transition"
              id="nicknameInput"
              formControlName="nickname"
-             placeholder="Choose your display name"
+             [placeholder]="'form.nicknamePlaceholder' | translate"
              maxlength="32"
              [ngClass]="{'is-invalid': this.joinToRoomForm.controls['nickname'].touched &&
                  this.joinToRoomForm.controls['nickname'].errors,
@@ -21,12 +21,13 @@
              id="watcherInput"
              formControlName="watcher">
       <label class="form-check-label" for="watcherInput">
-        Join as watcher
+        {{"form.watcher" | translate}}
       </label>
     </div>
     <div *ngIf="error$ | async as error" class="alert alert-danger" role="alert">{{error}}</div>
     <div class="d-grid gap-2">
-      <button class="btn btn-primary" type="submit" [disabled]="joinToRoomForm.invalid">Join Room</button>
+      <button class="btn btn-primary" type="submit" [disabled]="joinToRoomForm.invalid">{{"form.joinRoom" | translate}}</button>
     </div>
   </form>
+  <app-about class="col-10 col-md-8 col-lg-6 mt-5"/>
 </div>

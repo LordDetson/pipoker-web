@@ -9,11 +9,11 @@ import {Participant} from "../../models/participant.model";
 import {AppConstants} from "../../common/app-constants";
 import {RoomValidators, validationMessage} from "../../common/room-validators";
 import * as RoomSelector from "../../store/room/room.selector";
+import {I18nService} from "../../i18n/i18n.service";
 
 @Component({
   selector: 'app-add-participant',
-  templateUrl: './add-participant.component.html',
-  styleUrls: ['./add-participant.component.css']
+  templateUrl: './add-participant.component.html'
 })
 export class AddParticipantComponent implements OnInit, OnDestroy {
 
@@ -26,7 +26,8 @@ export class AddParticipantComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private roomService: RoomService,
-    private store: Store
+    private store: Store,
+    private i18n: I18nService
   ) {
     this.roomId = this.route.snapshot.params['id'];
   }
@@ -54,7 +55,7 @@ export class AddParticipantComponent implements OnInit, OnDestroy {
   }
 
   nicknameError(): string | undefined {
-    return validationMessage(this.joinToRoomForm.controls["nickname"].errors, "Nickname");
+    return validationMessage(this.joinToRoomForm.controls["nickname"].errors, "validation.nickname", this.i18n);
   }
 
   // The nickname is checked with the server while the person types, so Join or Enter right after typing

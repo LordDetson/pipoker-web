@@ -5,5 +5,6 @@ export class AppConstants {
   public static lastDeck: string = "last-deck";
   public static lastWatcher: string = "last-watcher";
   public static lastTheme: string = "last-theme";
+  public static language: string = "language";
   public static seat: string = "seat-";
 }
