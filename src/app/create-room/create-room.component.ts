@@ -10,6 +10,7 @@ import {parseDeck, RoomValidators, validationMessage} from "../common/room-valid
 import * as RoomSelector from "../store/room/room.selector";
 import {I18nService} from "../i18n/i18n.service";
 import {TranslationKey} from "../i18n/translations";
+import {MyDecks, NamedDeck, PRESET_DECKS, sameCards} from "../common/decks";
 
 interface CreateRoomFormGroup {
   nickname: FormControl<string>;
@@ -30,6 +31,12 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
   createRoomForm: FormGroup<CreateRoomFormGroup>;
   ngDestroyed$ = new Subject<void>();
   error$: Observable<string | undefined> = this.store.select(RoomSelector.errorSelector);
+  readonly presetDecks = PRESET_DECKS;
+  myDecks: NamedDeck[] = MyDecks.load();
+  // The deck picked in the list: "preset:<id>", "mine:<name>", or "" while the cards match none of them
+  selectedDeck: string = "";
+  // The name a new deck will be saved under
+  deckName: string = "";
 
   constructor(
     private roomService: RoomService,
@@ -63,7 +70,11 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     this.createRoomForm.get("roomName")?.valueChanges.pipe(takeUntil(this.ngDestroyed$))
       .subscribe(value => localStorage.setItem(AppConstants.lastRoomName, value));
     this.createRoomForm.get("deck")?.valueChanges.pipe(takeUntil(this.ngDestroyed$))
-      .subscribe(value => localStorage.setItem(AppConstants.lastDeck, value));
+      .subscribe(value => {
+        localStorage.setItem(AppConstants.lastDeck, value);
+        this.selectedDeck = this.findDeck(value);
+      });
+    this.selectedDeck = this.findDeck(deck);
     this.createRoomForm.get("watcher")?.valueChanges.pipe(takeUntil(this.ngDestroyed$))
       .subscribe(value => localStorage.setItem(AppConstants.lastWatcher, value.toString()));
   }
@@ -75,6 +86,48 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
 
   errorMessage(field: keyof CreateRoomFormGroup, label: TranslationKey): string | undefined {
     return validationMessage(this.createRoomForm.controls[field].errors, label, this.i18n);
+  }
+
+  // Picking a deck in the list puts its cards in the deck field, where they can still be changed
+  pickDeck(selected: string, deckInput: HTMLInputElement): void {
+    if (selected.startsWith("preset:")) {
+      const preset = this.presetDecks.find(deck => "preset:" + deck.id === selected);
+      this.createRoomForm.controls.deck.setValue(preset!.cards);
+    } else if (selected.startsWith("mine:")) {
+      const mine = this.myDecks.find(deck => "mine:" + deck.name === selected);
+      this.createRoomForm.controls.deck.setValue(mine!.cards);
+    } else {
+      this.createRoomForm.controls.deck.setValue("");
+      deckInput.focus();
+    }
+  }
+
+  // Cards that are not one of the listed decks yet can be saved under a name
+  get canSaveDeck(): boolean {
+    return this.selectedDeck === "" && this.createRoomForm.controls.deck.valid;
+  }
+
+  saveDeck(): void {
+    const name = this.deckName.trim();
+    if (this.canSaveDeck && name !== "") {
+      this.myDecks = MyDecks.save({name, cards: this.createRoomForm.controls.deck.value});
+      this.selectedDeck = this.findDeck(this.createRoomForm.controls.deck.value);
+      this.deckName = "";
+    }
+  }
+
+  deleteDeck(): void {
+    this.myDecks = MyDecks.remove(this.selectedDeck.slice("mine:".length));
+    this.selectedDeck = this.findDeck(this.createRoomForm.controls.deck.value);
+  }
+
+  private findDeck(cards: string): string {
+    const preset = this.presetDecks.find(deck => sameCards(deck.cards, cards));
+    if (preset) {
+      return "preset:" + preset.id;
+    }
+    const mine = this.myDecks.find(deck => sameCards(deck.cards, cards));
+    return mine ? "mine:" + mine.name : "";
   }
 
   createRoom(): void {

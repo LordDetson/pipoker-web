@@ -30,10 +30,35 @@
       <div class="invalid-feedback">{{errorMessage("roomName", "validation.roomName")}}</div>
     </div>
     <div class="form-group mb-3">
-      <label for="deckInput" class="form-label">{{"form.deck" | translate}}</label>
+      <label for="deckSelect" class="form-label">{{"form.deck" | translate}}</label>
+      <div class="input-group mb-2">
+        <select class="form-select common-transition"
+                id="deckSelect"
+                #deckSelect
+                (change)="pickDeck(deckSelect.value, deckInput)">
+          <optgroup [label]="'deck.presets' | translate">
+            <option *ngFor="let deck of presetDecks"
+                    [value]="'preset:' + deck.id"
+                    [selected]="selectedDeck === 'preset:' + deck.id">{{deck.name | translate}}</option>
+          </optgroup>
+          <optgroup *ngIf="myDecks.length > 0" [label]="'deck.mine' | translate">
+            <option *ngFor="let deck of myDecks"
+                    [value]="'mine:' + deck.name"
+                    [selected]="selectedDeck === 'mine:' + deck.name">{{deck.name}}</option>
+          </optgroup>
+          <option value="" [selected]="selectedDeck === ''">{{"deck.own" | translate}}</option>
+        </select>
+        <button *ngIf="selectedDeck.startsWith('mine:')"
+                id="deleteDeckButton"
+                class="btn btn-outline-danger"
+                type="button"
+                [title]="'deck.deleteTitle' | translate"
+                (click)="deleteDeck()">{{"deck.delete" | translate}}</button>
+      </div>
       <input type="text"
              class="form-control common-transition"
              id="deckInput"
+             #deckInput
              formControlName="deck"
              aria-labelledby="deckHelp"
              [placeholder]="'form.deckPlaceholder' | translate"
@@ -43,6 +68,23 @@
                  'is-valid': this.createRoomForm.controls['deck'].valid &&
                  this.createRoomForm.controls['deck'].touched}">
       <div class="invalid-feedback">{{errorMessage("deck", "validation.deck")}}</div>
+      <div *ngIf="canSaveDeck" class="input-group mt-2">
+        <input type="text"
+               class="form-control common-transition"
+               id="deckNameInput"
+               #deckNameInput
+               [value]="deckName"
+               (input)="deckName = deckNameInput.value"
+               [placeholder]="'deck.namePlaceholder' | translate"
+               [attr.aria-label]="'deck.namePlaceholder' | translate"
+               maxlength="32"
+               (keydown.enter)="$event.preventDefault(); saveDeck()">
+        <button id="saveDeckButton"
+                class="btn btn-outline-secondary"
+                type="button"
+                [disabled]="deckName.trim() === ''"
+                (click)="saveDeck()">{{"deck.save" | translate}}</button>
+      </div>
       <div id="deckHelp" class="form-text common-transition">
         {{"form.deckHelp" | translate}}
       </div>
