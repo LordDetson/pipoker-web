@@ -27,7 +27,8 @@
               "src/assets",
               "src/robots.txt",
               "src/sitemap.xml",
-              "src/yandex_c90ecc8c52f19341.html"
+              "src/yandex_c90ecc8c52f19341.html",
+              "src/google9a20c15ce7c2be97.html"
             ],
             "styles": [
               "src/bootstrap.scss",

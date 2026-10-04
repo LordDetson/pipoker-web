@@ -62,8 +62,9 @@ jobs:
           check /assets/og-image.png image/png
           check /assets/apple-touch-icon.png image/png
           curl -sf http://localhost:8080/robots.txt | grep -qx 'Disallow: /room/'
-          # Yandex Webmaster confirms the site is ours by this file
+          # Yandex Webmaster and Google Search Console confirm the site is ours by these files
           curl -sf http://localhost:8080/yandex_c90ecc8c52f19341.html | grep -q 'Verification: c90ecc8c52f19341'
+          curl -sf http://localhost:8080/google9a20c15ce7c2be97.html | grep -q 'google-site-verification: google9a20c15ce7c2be97.html'
           # Every file index.html links by its full address must exist; a missing one would be answered with the app page
           for path in $(curl -sf http://localhost:8080/ | grep -o 'https://pipoker.duckdns.org/[^"]\+' | sed 's#^https://pipoker.duckdns.org##' | sort -u); do
             served=$(content_type "$path")
