@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {Chart} from "chart.js";
-import {VotingResultChartComponent} from "./voting-result-chart.component";
+import {loadDoughnutChart, VotingResultChartComponent} from "./voting-result-chart.component";
 import {ThemeService} from "../../services/theme.service";
 import {appState, room, votes} from "../../testing/test-data";
 
@@ -21,9 +21,11 @@ describe("VotingResultChartComponent", () => {
     });
     store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(VotingResultChartComponent);
+    // Chart.js is loaded on demand. Once it is loaded, the component draws the chart in a microtask after the first
+    // change detection, so the test lets every microtask run before it looks at the chart.
+    await loadDoughnutChart();
     fixture.detectChanges();
-    // Chart.js is loaded on demand
-    await fixture.whenStable();
+    await new Promise(resolve => setTimeout(resolve));
   });
 
   afterEach(() => {
