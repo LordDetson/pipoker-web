@@ -1,6 +1,7 @@
 import * as RoomSelector from "./room.selector";
 import {appState, cards, participant, room, votes} from "../../testing/test-data";
 import {RoomStatus} from "./room-state";
+import {ErrorCode} from "../../models/room-event";
 
 describe("room selectors", () => {
   const state = appState({
@@ -25,9 +26,9 @@ describe("room selectors", () => {
     expect(RoomSelector.showVotingResultSelector(state)).toBeTrue();
   });
 
-  it("describe the error only while the room is in the error state", () => {
-    expect(RoomSelector.errorSelector(appState({status: RoomStatus.error, error: {destination: "/app/room/create", message: "invalid deck"}})))
-      .toBe("invalid deck");
+  it("tell the error only while the room is in the error state", () => {
+    const error = {destination: "/app/room/create", message: "invalid deck", code: ErrorCode.invalidData};
+    expect(RoomSelector.errorSelector(appState({status: RoomStatus.error, error}))).toBe(error);
     expect(RoomSelector.errorSelector(appState({status: RoomStatus.loading, error: {message: "invalid deck"}}))).toBeUndefined();
   });
 

@@ -190,7 +190,7 @@ export class FakePipokerServer {
       const creation = JSON.parse(body);
       const problem = roomProblem(creation.name, creation.deck.cards, creation.participants);
       if (problem) {
-        this.error(client, destination, problem);
+        this.error(client, destination, problem, ErrorCode.invalidData);
         return;
       }
       const id = this.addRoom(creation.name, creation.deck.cards, creation.participants);
@@ -208,11 +208,12 @@ export class FakePipokerServer {
         const participant: Participant = JSON.parse(body);
         const problem = nameProblem("nickname", participant.nickname);
         if (problem) {
-          this.error(client, destination, problem);
+          this.error(client, destination, problem, ErrorCode.invalidData);
           return;
         }
         if (room.participants.some(existing => sameNickname(existing.nickname, participant.nickname))) {
-          this.error(client, destination, participant.nickname + " is already in the room");
+          this.error(client, destination, "Participant \"" + participant.nickname + "\" is already exist in the room \"" + roomId + "\"",
+            ErrorCode.nicknameTaken);
           return;
         }
         room.participants.push(participant);
@@ -222,7 +223,8 @@ export class FakePipokerServer {
       case "participants/return": {
         const participant = room.participants.find(existing => sameNickname(existing.nickname, body));
         if (!participant) {
-          this.error(client, destination, "Participant \"" + body + "\" is not in the room \"" + roomId + "\"");
+          this.error(client, destination, "Participant \"" + body + "\" is not in the room \"" + roomId + "\"",
+            ErrorCode.participantNotFound);
           return;
         }
         const event: RoomEvent = {roomId, eventType: RoomEventType.participantReturned, participant};
@@ -271,7 +273,7 @@ export class FakePipokerServer {
         this.broadcast(room, RoomEventType.timerStopped, {});
         break;
       default:
-        this.error(client, destination, "Unknown destination");
+        this.error(client, destination, "Unknown destination", ErrorCode.unexpected);
     }
   }
 
@@ -280,8 +282,9 @@ export class FakePipokerServer {
     later(() => this.clients.forEach(client => client.deliver("/topic/room." + room.id, event)));
   }
 
-  private error(client: FakeStompClient | undefined, destination: string, message: string) {
-    later(() => client?.deliver("/user/topic/room.errors", {destination, message}));
+  private error(client: FakeStompClient | undefined, destination: string, message: string, code: ErrorCode) {
+    const error: ErrorEvent = {destination, message, code};
+    later(() => client?.deliver("/user/topic/room.errors", error));
   }
 }
 

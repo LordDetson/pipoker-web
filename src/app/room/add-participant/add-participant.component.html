@@ -1,6 +1,5 @@
-<div class="container-fluid d-flex flex-column align-items-center py-5">
-  <form [formGroup]="joinToRoomForm" (submit)="addParticipant()"
-        class="col-10 col-md-8 col-lg-6">
+<div class="start-page">
+  <form [formGroup]="joinToRoomForm" (submit)="addParticipant()">
     <div class="form-group mb-3">
       <label for="nicknameInput" class="form-label">{{"form.nickname" | translate}}</label>
       <input type="text"
@@ -24,10 +23,10 @@
         {{"form.watcher" | translate}}
       </label>
     </div>
-    <div *ngIf="error$ | async as error" class="alert alert-danger" role="alert">{{error}}</div>
+    <div *ngIf="error$ | async as error" class="alert alert-danger" role="alert">{{error | serverError}}</div>
     <div class="d-grid gap-2">
       <button class="btn btn-primary" type="submit" [disabled]="joinToRoomForm.invalid">{{"form.joinRoom" | translate}}</button>
     </div>
   </form>
-  <app-about class="col-10 col-md-8 col-lg-6 mt-5"/>
+  <app-about/>
 </div>

@@ -36,12 +36,23 @@ const en = {
   "form.roomNamePlaceholder": "Choose room display name",
   "form.deck": "Deck",
   "form.deckPlaceholder": "Deck Format: [card_value_1]; [card_value_2]; ... ; [card_value_20]",
-  "form.deckHelp": "Deck is a set of cards that participants can choose during a vote. "
-    + "The deck contains no more than 20 cards. Card values must be unique and no more than 6 characters. "
-    + "Deck Format: [card_value_1]; [card_value_2]; ... ; [card_value_20]",
+  "form.deckHelp": "Pick a ready deck or type your own cards separated by \";\" and save them under a name: "
+    + "your decks are kept in this browser. A deck holds up to 20 cards, each unique and at most 6 characters long.",
   "form.watcher": "Join as watcher",
   "form.createRoom": "Create Room",
   "form.joinRoom": "Join Room",
+
+  "deck.presets": "Ready decks",
+  "deck.mine": "My decks",
+  "deck.own": "Own cards",
+  "deck.fibonacci": "Fibonacci",
+  "deck.storyPoints": "Story points",
+  "deck.time": "Hours and days",
+  "deck.tshirt": "T-shirt sizes",
+  "deck.namePlaceholder": "Deck name to save it",
+  "deck.save": "Save deck",
+  "deck.delete": "Delete",
+  "deck.deleteTitle": "Delete the deck from my decks",
 
   "validation.nickname": "Nickname",
   "validation.roomName": "Room name",
@@ -53,6 +64,14 @@ const en = {
   "validation.cardTooLong": "Card values can be at most {length} characters long: {cards}",
   "validation.duplicateCards": "Card values must be unique: {cards}",
   "validation.nicknameTaken": "{nickname} is already in the room",
+
+  "serverError.roomNotFound": "This room no longer exists",
+  "serverError.nicknameTaken": "Someone with this name is already in the room",
+  "serverError.participantNotFound": "You are no longer in this room. Join it again",
+  "serverError.watcherCannotVote": "Watchers don't vote",
+  "serverError.cardNotInDeck": "This card isn't in the room's deck",
+  "serverError.invalidData": "The server didn't accept the data. Check it and try again",
+  "serverError.unexpected": "Something went wrong on the server. Try again",
 
   "room.returning": "Returning to the table",
   "room.watchers": "Watchers",
@@ -87,7 +106,7 @@ const en = {
   "about.features": "Why PiPoker",
   "about.free": "Free and without registration.",
   "about.anyDevice": "Works in the browser on a computer and on a phone.",
-  "about.ownDeck": "Your own deck: hours, days, story points or T-shirt sizes.",
+  "about.ownDeck": "Ready decks (Fibonacci, story points, hours, T-shirt sizes) and your own saved decks.",
   "about.watchers": "Watchers follow the vote without voting."
 };
 
@@ -113,12 +132,23 @@ const ru: Record<TranslationKey, string> = {
   "form.roomNamePlaceholder": "Как будет называться комната",
   "form.deck": "Колода",
   "form.deckPlaceholder": "Формат колоды: [карта_1]; [карта_2]; ... ; [карта_20]",
-  "form.deckHelp": "Колода — это карты, из которых участники выбирают оценку при голосовании. "
-    + "В колоде не больше 20 карт. Значения карт не повторяются и содержат не больше 6 символов. "
-    + "Формат колоды: [карта_1]; [карта_2]; ... ; [карта_20]",
+  "form.deckHelp": "Выберите готовую колоду или впишите свои карты через «;» и сохраните их под своим названием: "
+    + "ваши колоды хранятся в этом браузере. В колоде до 20 карт, значения не повторяются и содержат не больше 6 символов.",
   "form.watcher": "Войти как наблюдатель",
   "form.createRoom": "Создать комнату",
   "form.joinRoom": "Войти в комнату",
+
+  "deck.presets": "Готовые колоды",
+  "deck.mine": "Мои колоды",
+  "deck.own": "Свои карты",
+  "deck.fibonacci": "Фибоначчи",
+  "deck.storyPoints": "Story points",
+  "deck.time": "Часы и дни",
+  "deck.tshirt": "Размеры футболок",
+  "deck.namePlaceholder": "Название, чтобы сохранить колоду",
+  "deck.save": "Сохранить колоду",
+  "deck.delete": "Удалить",
+  "deck.deleteTitle": "Удалить колоду из моих колод",
 
   "validation.nickname": "Имя",
   "validation.roomName": "Название комнаты",
@@ -130,6 +160,14 @@ const ru: Record<TranslationKey, string> = {
   "validation.cardTooLong": "Значения карт должны содержать не больше {length} символов: {cards}",
   "validation.duplicateCards": "Значения карт не должны повторяться: {cards}",
   "validation.nicknameTaken": "{nickname} уже в комнате",
+
+  "serverError.roomNotFound": "Этой комнаты больше нет",
+  "serverError.nicknameTaken": "В комнате уже есть участник с таким именем",
+  "serverError.participantNotFound": "Вас больше нет в этой комнате. Войдите в неё снова",
+  "serverError.watcherCannotVote": "Наблюдатели не голосуют",
+  "serverError.cardNotInDeck": "Такой карты нет в колоде комнаты",
+  "serverError.invalidData": "Сервер не принял данные. Проверьте их и попробуйте снова",
+  "serverError.unexpected": "На сервере что-то пошло не так. Попробуйте ещё раз",
 
   "room.returning": "Возвращаем вас за стол",
   "room.watchers": "Наблюдатели",
@@ -164,7 +202,7 @@ const ru: Record<TranslationKey, string> = {
   "about.features": "Почему PiPoker",
   "about.free": "Бесплатно и без регистрации.",
   "about.anyDevice": "Работает в браузере на компьютере и на телефоне.",
-  "about.ownDeck": "Своя колода: часы, дни, story points или размеры футболок.",
+  "about.ownDeck": "Готовые колоды (Фибоначчи, story points, часы, размеры футболок) и свои сохранённые колоды.",
   "about.watchers": "Наблюдатели следят за голосованием, не голосуя."
 };
 

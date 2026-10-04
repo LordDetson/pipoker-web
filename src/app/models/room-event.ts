@@ -29,13 +29,20 @@ export interface RoomEvent {
   timer?: TimerDto
 }
 
+// Why the server refused a request, see ErrorCode in pipoker-app. The page shows its own text for each of them.
 export enum ErrorCode {
-  roomNotFound = "ROOM_NOT_FOUND"
+  roomNotFound = "ROOM_NOT_FOUND",
+  nicknameTaken = "NICKNAME_TAKEN",
+  participantNotFound = "PARTICIPANT_NOT_FOUND",
+  watcherCannotVote = "WATCHER_CANNOT_VOTE",
+  cardNotInDeck = "CARD_NOT_IN_DECK",
+  invalidData = "INVALID_DATA",
+  unexpected = "UNEXPECTED"
 }
 
 export interface ErrorEvent {
   destination: string,
+  // In English, for developers
   message: string,
-  // Only the errors the page handles in its own way have a code
-  code?: ErrorCode
+  code: ErrorCode
 }

@@ -1,7 +1,8 @@
 import {FormControl} from "@angular/forms";
 import {I18nService} from "../i18n/i18n.service";
 import {AppConstants} from "./app-constants";
-import {errorMessage, parseDeck, RoomValidators, validationMessage} from "./room-validators";
+import {parseDeck, RoomValidators, serverErrorMessage, validationMessage} from "./room-validators";
+import {ErrorCode} from "../models/room-event";
 
 describe("RoomValidators", () => {
 
@@ -79,8 +80,27 @@ describe("RoomValidators", () => {
     expect(validationMessage({taken: {nickname: "Alex"}}, "validation.nickname", russian)).toBe("Alex уже в комнате");
   });
 
-  it("describes server errors", () => {
-    expect(errorMessage({destination: "/app/room/create", message: "invalid deck"})).toBe("invalid deck");
-    expect(errorMessage("Whoops! Lost connection")).toBe("Whoops! Lost connection");
+  it("describes server errors by their code in the language of the page", () => {
+    const error = {destination: "/app/room/id/participants/add", message: "Participant \"alex\" is already exist", code: ErrorCode.nicknameTaken};
+    expect(serverErrorMessage(error, i18n("en"))).toBe("Someone with this name is already in the room");
+    expect(serverErrorMessage(error, i18n("ru"))).toBe("В комнате уже есть участник с таким именем");
+  });
+
+  it("has a text for every server error code", () => {
+    const english = i18n("en");
+    const unexpected = serverErrorMessage({code: ErrorCode.unexpected}, english);
+    Object.values(ErrorCode)
+      .filter(code => code !== ErrorCode.unexpected)
+      .forEach(code => expect(serverErrorMessage({code}, english)).withContext(code).not.toBe(unexpected));
+  });
+
+  it("describes other failures as a failure of the server", () => {
+    const russian = i18n("ru");
+    const unexpected = "На сервере что-то пошло не так. Попробуйте ещё раз";
+    expect(serverErrorMessage({destination: "/app/room/create", message: "Deck can't be null", code: "NEW_CODE"}, russian))
+      .withContext("a code of a newer server").toBe(unexpected);
+    expect(serverErrorMessage({message: "Whoops! Lost connection"}, russian)).toBe(unexpected);
+    expect(serverErrorMessage("Whoops! Lost connection", russian)).toBe(unexpected);
+    expect(serverErrorMessage(undefined, russian)).toBe(unexpected);
   });
 });

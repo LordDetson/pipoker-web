@@ -24,6 +24,7 @@ import {VotingResultChartComponent} from './room/voting-result-chart/voting-resu
 import {AboutComponent} from './about/about.component';
 import {TimerComponent} from './room/timer/timer.component';
 import {TranslatePipe} from './i18n/translate.pipe';
+import {ServerErrorPipe} from './i18n/server-error.pipe';
 import {storeDevtools} from "../env/store-devtools";
 import {HistoryComponent} from './room/history/history.component';
 
@@ -60,7 +61,8 @@ import {HistoryComponent} from './room/history/history.component';
     }),
     storeDevtools,
     EffectsModule.forRoot([RoomEffect, ParticipantEffect]),
-    TranslatePipe
+    TranslatePipe,
+    ServerErrorPipe
   ],
   providers: [],
   bootstrap: [AppComponent]

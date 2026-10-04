@@ -1,0 +1,14 @@
+/* A line sets the description apart from the form: above it in one column, at its left in two */
+section {
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+  padding-top: 1.5rem;
+}
+
+@media (min-width: 992px) {
+  section {
+    border-top: none;
+    border-left: var(--bs-border-width) solid var(--bs-border-color);
+    padding-top: 0;
+    padding-left: 2rem;
+  }
+}
