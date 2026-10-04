@@ -1,4 +1,4 @@
-import {Component, ElementRef, HostListener, OnInit} from '@angular/core';
+import {Component, ElementRef, HostListener, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {combineLatest, distinctUntilChanged, map, Observable, ReplaySubject} from "rxjs";
 import {Card} from "../../models/card.model";
 import {select, Store} from "@ngrx/store";
@@ -10,7 +10,8 @@ import {splitIntoRows} from "./deck-rows";
   selector: 'app-deck',
   templateUrl: './deck.component.html',
   styleUrls: ['./deck.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class DeckComponent implements OnInit {
 

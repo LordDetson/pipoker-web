@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, ViewChild} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, ViewChild, ChangeDetectionStrategy} from '@angular/core';
 import {select, Store} from "@ngrx/store";
 import {combineLatest, Subscription} from "rxjs";
 import {idSelector, nameSelector} from "../store/room/room.selector";
@@ -25,7 +25,8 @@ export type CompactStep = typeof COMPACT_STEPS[number];
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class HeaderComponent implements AfterViewInit, OnDestroy {
 

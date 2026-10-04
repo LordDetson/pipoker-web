@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, ChangeDetectionStrategy} from '@angular/core';
 import type {Chart, ChartData, ChartOptions} from "chart.js";
 import {Observable, Subscription} from "rxjs";
 import {VotingResult} from "../../models/voting-result.model";
@@ -20,7 +20,8 @@ export function loadDoughnutChart(): Promise<typeof import("./doughnut-chart")> 
   selector: 'app-voting-result-chart',
   templateUrl: './voting-result-chart.component.html',
   styleUrls: ['./voting-result-chart.component.css'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class VotingResultChartComponent implements AfterViewInit, OnDestroy {
 

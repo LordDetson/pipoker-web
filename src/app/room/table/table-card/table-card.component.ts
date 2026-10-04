@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import {Participant} from "../../../models/participant.model";
 import {combineLatest, map, Observable} from "rxjs";
 import {Card} from "../../../models/card.model";
@@ -10,7 +10,8 @@ import * as RoomSelector from "../../../store/room/room.selector";
   selector: 'app-table-card',
   templateUrl: './table-card.component.html',
   styleUrls: ['./table-card.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class TableCardComponent {
 

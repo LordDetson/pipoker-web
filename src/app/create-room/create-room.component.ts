@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {FormControl, FormGroup} from "@angular/forms";
 import {AppConstants} from "../common/app-constants";
 import {RoomService} from "../services/room.service";
@@ -22,7 +22,8 @@ interface CreateRoomFormGroup {
   selector: 'app-create-room',
   templateUrl: './create-room.component.html',
   styleUrls: ['./create-room.component.css'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class CreateRoomComponent implements OnInit, OnDestroy {
 
