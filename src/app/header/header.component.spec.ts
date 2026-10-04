@@ -51,7 +51,7 @@ describe("HeaderComponent", () => {
     expect(supportLink()?.href).toBe(environment.supportUrl);
     expect(supportLink()?.target).toBe("_blank");
     expect(supportLink()?.rel).toBe("noopener");
-    expect(supportLink()?.textContent).toContain("Support PiPoker");
+    expect(supportLink()?.textContent?.trim()).toMatch(/^♥\s+Support$/);
   });
 
   it("shows no support link while no support page is set", () => {
