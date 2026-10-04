@@ -1,5 +1,4 @@
 import {Component} from '@angular/core';
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: 'app-root',
@@ -7,13 +6,4 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-
-  constructor(
-    private ngbModal: NgbModal
-  ) {
-  }
-
-  open(modal: any): void {
-    this.ngbModal.open(modal);
-  }
 }

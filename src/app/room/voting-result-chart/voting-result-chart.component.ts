@@ -1,16 +1,29 @@
-import {Component, OnInit} from '@angular/core';
-import {ChartData, ChartType, ChartEvent, ChartOptions, ChartConfiguration} from "chart.js";
-import {Observable} from "rxjs";
+import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import type {Chart, ChartData, ChartOptions} from "chart.js";
+import {Observable, Subscription} from "rxjs";
 import {VotingResult} from "../../models/voting-result.model";
 import * as RoomSelector from "../../store/room/room.selector";
 import {Store} from "@ngrx/store";
+import {ThemeService} from "../../services/theme.service";
+
+let doughnutChart: Promise<typeof import("./doughnut-chart")> | undefined;
+
+// Loads Chart.js once; after a failure, for example a lost connection, the next call tries again
+export function loadDoughnutChart(): Promise<typeof import("./doughnut-chart")> {
+  return doughnutChart ??= import("./doughnut-chart").catch(error => {
+    doughnutChart = undefined;
+    throw error;
+  });
+}
 
 @Component({
   selector: 'app-voting-result-chart',
   templateUrl: './voting-result-chart.component.html',
   styleUrls: ['./voting-result-chart.component.css']
 })
-export class VotingResultChartComponent implements OnInit {
+export class VotingResultChartComponent implements AfterViewInit, OnDestroy {
+
+  @ViewChild("canvas") canvas: ElementRef<HTMLCanvasElement>;
 
   public doughnutChartData: ChartData<'doughnut'> = {
     labels: [],
@@ -54,16 +67,21 @@ export class VotingResultChartComponent implements OnInit {
 
   votingResult$: Observable<VotingResult> = this.store.select(RoomSelector.votingResultSelector);
 
-  initialized: boolean;
+  private chart?: Chart<'doughnut'>;
+
+  private readonly subscriptions = new Subscription();
+
+  private destroyed = false;
 
   constructor(
-    private store: Store
+    private store: Store,
+    private theme: ThemeService
   ) {
   }
 
-  ngOnInit(): void {
-    this.initialized = true;
-    this.votingResult$.subscribe(votingResult => {
+  async ngAfterViewInit(): Promise<void> {
+    // Both emit at once, so the chart is drawn with the votes and the label colour from the start
+    this.subscriptions.add(this.votingResult$.subscribe(votingResult => {
       this.doughnutChartData.labels = [];
       this.doughnutChartData.datasets = [];
       let countOfVotes : number[] = [];
@@ -77,6 +95,26 @@ export class VotingResultChartComponent implements OnInit {
         }
       })
       this.doughnutChartData.datasets.push({data: countOfVotes});
-    })
+      this.chart?.update();
+    }));
+    this.subscriptions.add(this.theme.isLight$.subscribe(isLight => {
+      this.doughnutChartOptions.plugins!.datalabels!.color = isLight ? "#343a40" : "#ffffff";
+      this.chart?.update();
+    }));
+    const {Chart} = await loadDoughnutChart();
+    if (this.destroyed) {
+      return;
+    }
+    this.chart = new Chart(this.canvas.nativeElement, {
+      type: "doughnut",
+      data: this.doughnutChartData,
+      options: this.doughnutChartOptions
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.subscriptions.unsubscribe();
+    this.chart?.destroy();
   }
 }
