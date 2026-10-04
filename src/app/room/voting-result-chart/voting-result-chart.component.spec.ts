@@ -1,41 +1,54 @@
-// Brings in the chart options of the datalabels plugin, which the application registers in AppModule.
-import "chartjs-plugin-datalabels";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {NO_ERRORS_SCHEMA} from "@angular/core";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
+import {Chart} from "chart.js";
 import {VotingResultChartComponent} from "./voting-result-chart.component";
+import {ThemeService} from "../../services/theme.service";
 import {appState, room, votes} from "../../testing/test-data";
 
 describe("VotingResultChartComponent", () => {
   let fixture: ComponentFixture<VotingResultChartComponent>;
   let store: MockStore;
+  let initialTheme: string | null;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    initialTheme = document.body.getAttribute("data-bs-theme");
+    localStorage.clear();
     TestBed.configureTestingModule({
       declarations: [VotingResultChartComponent],
       providers: [provideMockStore({
         initialState: appState({room: room({votingResult: {map: votes({Dmitry: "1d", Alex: "1h", Kate: "1d"})}})})
-      })],
-      schemas: [NO_ERRORS_SCHEMA]
+      })]
     });
     store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(VotingResultChartComponent);
     fixture.detectChanges();
+    // Chart.js is loaded on demand
+    await fixture.whenStable();
   });
 
-  it("counts the votes for every card", () => {
-    const data = fixture.componentInstance.doughnutChartData;
-
-    expect(data.labels).toEqual(["1d", "1h"]);
-    expect(data.datasets.map(dataset => dataset.data)).toEqual([[2, 1]]);
+  afterEach(() => {
+    localStorage.clear();
+    document.body.setAttribute("data-bs-theme", initialTheme ?? "dark");
   });
 
-  it("recounts when the votes change", () => {
+  function chart(): Chart<"doughnut"> {
+    return Chart.getChart(fixture.nativeElement.querySelector("canvas")) as Chart<"doughnut">;
+  }
+
+  function datalabelsColor(): unknown {
+    return (chart().options.plugins as any).datalabels.color;
+  }
+
+  it("draws the votes for every card", () => {
+    expect(chart().data.labels).toEqual(["1d", "1h"]);
+    expect(chart().data.datasets.map(dataset => dataset.data)).toEqual([[2, 1]]);
+  });
+
+  it("redraws when the votes change", () => {
     store.setState(appState({room: room({votingResult: {map: votes({Dmitry: "3d"})}})}));
 
-    const data = fixture.componentInstance.doughnutChartData;
-    expect(data.labels).toEqual(["3d"]);
-    expect(data.datasets.map(dataset => dataset.data)).toEqual([[1]]);
+    expect(chart().data.labels).toEqual(["3d"]);
+    expect(chart().data.datasets.map(dataset => dataset.data)).toEqual([[1]]);
   });
 
   it("labels every part of the chart with the card and its count", () => {
@@ -45,9 +58,19 @@ describe("VotingResultChartComponent", () => {
     expect(formatter(2, {chart: {data: {}}, dataIndex: 0})).toBe(2);
   });
 
-  it("hides the animation workaround once initialized", () => {
-    const workaround: HTMLElement = fixture.nativeElement.querySelector("div[style]");
+  it("colours the labels for the theme", () => {
+    expect(datalabelsColor()).toBe("#ffffff");
 
-    expect(workaround.style.display).toBe("none");
+    TestBed.inject(ThemeService).toggle();
+
+    expect(datalabelsColor()).toBe("#343a40");
+  });
+
+  it("frees the canvas when it is removed", () => {
+    const canvas = fixture.nativeElement.querySelector("canvas");
+
+    fixture.destroy();
+
+    expect(Chart.getChart(canvas)).toBeUndefined();
   });
 });

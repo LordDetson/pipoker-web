@@ -1,7 +1,7 @@
 <!--From: https://codepen.io/haxzie/pen/xxKNEGM-->
 <label id="switch" class="switch">
   <input type="checkbox" id="slider"
-         [checked]="isLightTheme"
-         (change)="onThemeSwitchChange()">
+         [checked]="theme.isLight"
+         (change)="theme.toggle()">
   <span class="slider round"></span>
 </label>

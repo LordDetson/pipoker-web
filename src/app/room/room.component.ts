@@ -9,6 +9,7 @@ import {RoomStatus} from "../store/room/room-state";
 import * as ParticipantAction from "../store/participant/participant.action";
 import * as ParticipantSelector from "../store/participant/participant.selector";
 import {SeatStorage} from "../common/seat-storage";
+import {loadDoughnutChart} from "./voting-result-chart/voting-result-chart.component";
 
 @Component({
   selector: 'app-room',
@@ -48,6 +49,9 @@ export class RoomComponent implements OnInit, OnDestroy {
         this.store.dispatch(ParticipantAction.returnToSeat({roomId, participant: seat}));
       }
     });
+    // The chart of the votes is loaded while people vote, so it is ready when the cards are revealed.
+    // If loading fails now, the chart tries again when it is shown.
+    loadDoughnutChart().catch(() => undefined);
   }
 
   ngOnDestroy(): void {

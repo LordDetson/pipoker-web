@@ -3,7 +3,7 @@ import {BrowserModule} from '@angular/platform-browser';
 
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import {NgbDropdownModule} from '@ng-bootstrap/ng-bootstrap';
 import {CreateRoomComponent} from './create-room/create-room.component';
 import {HeaderComponent} from './header/header.component';
 import {ThemeSwitcherComponent} from './header/theme-switcher/theme-switcher.component';
@@ -12,7 +12,6 @@ import {RoomComponent} from './room/room.component';
 import {HttpClientModule} from "@angular/common/http";
 import {AddParticipantComponent} from './room/add-participant/add-participant.component';
 import {StoreModule} from "@ngrx/store";
-import {StoreDevtoolsModule} from "@ngrx/store-devtools";
 import {metaReducers, reducers} from "./store/intex";
 import {EffectsModule} from '@ngrx/effects';
 import {RoomEffect} from "./store/room/room.effect";
@@ -23,13 +22,9 @@ import {DeckComponent} from './room/deck/deck.component';
 import {DeckCardComponent} from './room/deck/deck-card/deck-card.component';
 import {TableCardComponent} from './room/table/table-card/table-card.component';
 import {VotingResultChartComponent} from './room/voting-result-chart/voting-result-chart.component';
-import {NgChartsModule} from "ng2-charts";
-import {Chart} from "chart.js";
-import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {AboutComponent} from './about/about.component';
 import {TranslatePipe} from './i18n/translate.pipe';
-
-Chart.register(ChartDataLabels);
+import {storeDevtools} from "../env/store-devtools";
 
 @NgModule({
   declarations: [
@@ -50,7 +45,7 @@ Chart.register(ChartDataLabels);
   imports: [
     BrowserModule,
     AppRoutingModule,
-    NgbModule,
+    NgbDropdownModule,
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
@@ -61,9 +56,8 @@ Chart.register(ChartDataLabels);
         strictActionImmutability: true
       }
     }),
-    StoreDevtoolsModule.instrument({maxAge: 25}),
+    storeDevtools,
     EffectsModule.forRoot([RoomEffect, ParticipantEffect]),
-    NgChartsModule,
     TranslatePipe
   ],
   providers: [],
