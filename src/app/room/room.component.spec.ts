@@ -94,6 +94,23 @@ describe("RoomComponent", () => {
       .toBeLessThanOrEqual(buttons.getBoundingClientRect().top);
   });
 
+  it("opens the menu of the timer over the status button", () => {
+    create();
+    const controls: HTMLElement = fixture.nativeElement.querySelector(".table-controls");
+    const timer: HTMLElement = controls.querySelector("app-timer")!;
+    const buttons: HTMLElement = controls.querySelector("app-buttons")!;
+    buttons.style.display = "block";
+    buttons.style.height = "40px";
+    // The status button is dimmed while voting, which puts it in a layer of its own
+    buttons.style.opacity = "0.65";
+    const menu = document.createElement("div");
+    menu.style.cssText = "position: absolute; top: 100%; width: 100px; height: 200px";
+    timer.appendChild(menu);
+    const middle = buttons.getBoundingClientRect();
+
+    expect(document.elementFromPoint(middle.left + middle.width / 2, middle.top + middle.height / 2)).toBe(menu);
+  });
+
   it("shows the chart in place of the deck once the votes are revealed", () => {
     store.setState(appState({showVotingResult: true}));
     create();

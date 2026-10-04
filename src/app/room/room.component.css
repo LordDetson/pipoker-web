@@ -17,8 +17,10 @@ app-table {
   position: relative;
 }
 
+/* Above the button too, so the menu of lengths covers it rather than going under it */
 .table-controls app-timer {
   position: absolute;
+  z-index: 1;
   bottom: calc(100% + 0.5rem);
   left: 50%;
   transform: translateX(-50%);
