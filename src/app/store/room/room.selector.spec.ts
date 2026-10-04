@@ -30,4 +30,43 @@ describe("room selectors", () => {
       .toBe("invalid deck");
     expect(RoomSelector.errorSelector(appState({status: RoomStatus.loading, error: {message: "invalid deck"}}))).toBeUndefined();
   });
+
+  describe("flip delays", () => {
+    function flipDelays(deck: string[], votesByNickname: { [nickname: string]: string }): Map<string, number> {
+      return RoomSelector.flipDelaysSelector(appState({room: room({deck: {cards: cards(...deck)}, votingResult: {map: votes(votesByNickname)}})}));
+    }
+
+    it("turn the lowest voted value over at once and the next voted value one step later", () => {
+      expect(flipDelays(["NA", "1h", "2h", "3h"], {Dmitry: "2h", Alex: "NA"}))
+        .toEqual(new Map([["Dmitry", 0.3], ["Alex", 0]]));
+    });
+
+    it("turn the lowest voted value over at once even when it is not the first card of the deck", () => {
+      expect(flipDelays(["NA", "1h", "2h", "3h"], {Dmitry: "2h", Alex: "1h"}))
+        .toEqual(new Map([["Dmitry", 0.3], ["Alex", 0]]));
+    });
+
+    it("follow the deck order, not the order of the votes", () => {
+      expect(flipDelays(["1h", "2h", "1d"], {Dmitry: "1d", Alex: "1h", Maria: "2h"}))
+        .toEqual(new Map([["Dmitry", 0.6], ["Alex", 0], ["Maria", 0.3]]));
+    });
+
+    it("turn equal votes over together", () => {
+      expect(flipDelays(["1h", "2h", "1d"], {Dmitry: "1d", Alex: "1h", Maria: "1d"}))
+        .toEqual(new Map([["Dmitry", 0.3], ["Alex", 0], ["Maria", 0.3]]));
+    });
+
+    it("shrink the step so that the last card starts turning within 1.5 seconds", () => {
+      const deck = ["0", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89"];
+      const delays = flipDelays(deck, Object.fromEntries(deck.map(value => [`voter ${value}`, value])));
+
+      expect(delays.get("voter 0")).toBe(0);
+      expect(delays.get("voter 1")).toBeCloseTo(0.15);
+      expect(delays.get("voter 89")).toBeCloseTo(1.5);
+    });
+
+    it("are empty when nobody voted", () => {
+      expect(flipDelays(["1h", "2h"], {})).toEqual(new Map());
+    });
+  });
 });
