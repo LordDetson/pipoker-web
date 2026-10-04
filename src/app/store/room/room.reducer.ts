@@ -3,6 +3,7 @@ import * as RoomAction from "./room.action";
 import {Participant, sameNickname} from "../../models/participant.model";
 import {Card} from "../../models/card.model";
 import {RoomState, RoomStatus} from "./room-state";
+import {ErrorCode} from "../../models/room-event";
 
 const initialRoomState: RoomState = {
   room: {
@@ -36,11 +37,7 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
     showVotingResult: room.votesShown ?? false,
     status: RoomStatus.success
   })),
-  on(RoomAction.initFailure, (state, {error}) => ({
-    ...state,
-    error,
-    status: RoomStatus.error
-  })),
+  on(RoomAction.initFailure, failed),
   // Someone who refreshed the page comes back with this event and in the room loaded right after it, in either order
   on(RoomAction.addParticipantSuccess, (state, {participant}) => ({
     ...state,
@@ -51,11 +48,7 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
         : [...state.room.participants, participant]
     }
   })),
-  on(RoomAction.addParticipantFailure, (state, {error}) => ({
-    ...state,
-    error,
-    status: RoomStatus.error
-  })),
+  on(RoomAction.addParticipantFailure, failed),
   on(RoomAction.removeParticipantSuccess, (state, {participant}) => {
     let map: Map<string, Card> = new Map<string, Card>(state.room.votingResult.map);
     map.delete(participant.nickname);
@@ -71,11 +64,7 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
       }
     }
   }),
-  on(RoomAction.removeParticipantFailure, (state, {error}) => ({
-    ...state,
-    error,
-    status: RoomStatus.error
-  })),
+  on(RoomAction.removeParticipantFailure, failed),
   on(RoomAction.selectCard, state => ({
     ...state,
     status: RoomStatus.loading
@@ -95,11 +84,7 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
       status: RoomStatus.success
     };
   }),
-  on(RoomAction.cardSelectionFailure, (state, {error}) => ({
-    ...state,
-    error,
-    status: RoomStatus.error
-  })),
+  on(RoomAction.cardSelectionFailure, failed),
   on(RoomAction.showVotingResultSuccess, state => ({
     ...state,
     showVotingResult: true
@@ -116,12 +101,22 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
     showVotingResult: false,
     status: RoomStatus.success
   })),
-  on(RoomAction.startNewVotingFailure, (state, {error}) => ({
-    ...state,
-    error,
-    status: RoomStatus.error
+  on(RoomAction.startNewVotingFailure, failed),
+  // Nothing of the room is left: no name or invitation in the header
+  on(RoomAction.closed, () => ({
+    ...initialRoomState,
+    status: RoomStatus.closed
   })),
 )
+
+// A request about a room that doesn't exist anymore shows that instead of the error
+function failed(state: RoomState, {error}: { error: any }): RoomState {
+  return {
+    ...state,
+    error,
+    status: error?.code === ErrorCode.roomNotFound ? RoomStatus.missing : RoomStatus.error
+  };
+}
 
 export function roomReducer(state: RoomState | undefined, action: Action) {
   return _roomReducer(state, action);

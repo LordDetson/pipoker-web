@@ -25,6 +25,7 @@ export enum RoomActionType {
   startNewVoting = "[Room] start new voting",
   startNewVotingSuccess = "[Room] start new voting success",
   startNewVotingFailure = "[Room] start new voting failure",
+  closed = "[Room] closed",
   doNothing = "[Room] do nothing",
 }
 
@@ -63,4 +64,6 @@ export const startNewVoting = createAction(RoomActionType.startNewVoting);
 export const startNewVotingSuccess = createAction(RoomActionType.startNewVotingSuccess);
 export const startNewVotingFailure = createAction(RoomActionType.startNewVotingFailure,
   props<{ error: any }>());
+export const closed = createAction(RoomActionType.closed,
+  props<{ roomId: string }>());
 export const doNothing = createAction(RoomActionType.doNothing);

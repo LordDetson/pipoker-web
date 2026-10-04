@@ -21,6 +21,8 @@ export class RoomComponent implements OnInit, OnDestroy {
   joined$: Observable<boolean> = this.store.pipe(select(ParticipantSelector.joinedSelector));
   returning$: Observable<boolean> = this.store.pipe(select(ParticipantSelector.returningSelector));
   showVotingResult$: Observable<boolean> = this.store.pipe(select(RoomSelector.showVotingResultSelector));
+  gone$: Observable<RoomStatus.closed | RoomStatus.missing | undefined> = this.store.pipe(select(RoomSelector.goneSelector));
+  readonly RoomStatus = RoomStatus;
   ngDestroyed$ = new Subject<void>();
 
   constructor(
