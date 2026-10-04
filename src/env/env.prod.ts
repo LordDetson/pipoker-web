@@ -5,6 +5,6 @@ export const environment = {
   profile: "prod",
   wsUrl: window.location.origin + "/ws",
   invitationUrl: window.location.origin + "/room/",
-  // The page where people can support the project; the header shows no support button while it is empty
-  supportUrl: ""
+  // The page where people can support the project; the header shows no support link while it is empty
+  supportUrl: "https://boosty.to/detson"
 };

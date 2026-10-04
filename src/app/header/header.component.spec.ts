@@ -47,18 +47,18 @@ describe("HeaderComponent", () => {
     return fixture.nativeElement.querySelector("a.support-link");
   }
 
-  it("shows no support link while no support page is set", () => {
-    expect(supportLink()).toBeNull();
-  });
-
   it("opens the support page in a new tab", () => {
-    fixture.componentInstance.supportUrl = "https://boosty.to/pipoker";
-    fixture.detectChanges();
-
-    expect(supportLink()?.href).toBe("https://boosty.to/pipoker");
+    expect(supportLink()?.href).toBe(environment.supportUrl);
     expect(supportLink()?.target).toBe("_blank");
     expect(supportLink()?.rel).toBe("noopener");
     expect(supportLink()?.textContent).toContain("Support PiPoker");
+  });
+
+  it("shows no support link while no support page is set", () => {
+    fixture.componentInstance.supportUrl = "";
+    fixture.detectChanges();
+
+    expect(supportLink()).toBeNull();
   });
 
   it("copies the invitation link and confirms it for a moment", fakeAsync(() => {
