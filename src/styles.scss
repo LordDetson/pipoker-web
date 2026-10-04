@@ -4,10 +4,18 @@
   --common-transition-duration: 0s;
 }
 
+/*
+ * The page fills the screen the browser shows. On the iPhone 100vh is the height with Safari's bars hidden,
+ * so while they are shown the deck at the bottom went under them; 100dvh follows the bars. Browsers older
+ * than 100dvh (Safari 15.4) keep 100vh.
+ */
 html, body {
   height: 100vh;
   min-height: 100vh;
   max-height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
   font-family: "Rubik Medium", serif;
 }
 
