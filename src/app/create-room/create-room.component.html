@@ -1,6 +1,5 @@
-<div class="container-fluid d-flex flex-column align-items-center py-5">
-  <form [formGroup]="createRoomForm" (submit)="createRoom()"
-        class="col-10 col-md-8 col-lg-6">
+<div class="start-page">
+  <form [formGroup]="createRoomForm" (submit)="createRoom()">
     <div class="form-group mb-3">
       <label for="nicknameInput" class="form-label">{{"form.nickname" | translate}}</label>
       <input type="text"
@@ -103,5 +102,5 @@
       <button class="btn btn-primary" type="submit" [disabled]="createRoomForm.invalid">{{"form.createRoom" | translate}}</button>
     </div>
   </form>
-  <app-about class="col-10 col-md-8 col-lg-6 mt-5"/>
+  <app-about/>
 </div>
