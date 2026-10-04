@@ -161,7 +161,7 @@ describe("PiPoker room (integration)", () => {
       participants: [participant("Dmitry")]
     }));
     expect(page.querySelector("app-header")!.textContent).toContain("Sprint 42");
-    expect(button("Copy Invitation Link")).toBeDefined();
+    expect(button("Invite")).toBeDefined();
     expect(tableCards()).toEqual([{nickname: "Dmitry", voted: false, value: undefined}]);
     expect(deckCards().map(card => card.textContent!.trim())).toEqual(["1h", "4h", "1d"]);
     expect(button("Voting...").disabled).toBeTrue();
@@ -181,7 +181,7 @@ describe("PiPoker room (integration)", () => {
     await type("#roomNameInput", "Sprint");
     await click(button("Создать комнату"));
 
-    expect(button("Скопировать приглашение")).toBeDefined();
+    expect(button("Пригласить")).toBeDefined();
     expect(button("Голосование...").disabled).toBeTrue();
   });
 

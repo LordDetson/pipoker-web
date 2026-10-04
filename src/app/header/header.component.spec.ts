@@ -37,7 +37,7 @@ describe("HeaderComponent", () => {
 
   it("shows the room name and the invitation button inside a room", () => {
     expect(fixture.nativeElement.textContent).toContain("Planning");
-    expect(copyButton()?.textContent).toContain("Copy Invitation Link");
+    expect(copyButton()?.textContent).toContain("Invite");
   });
 
   it("shows neither outside a room", () => {
@@ -86,7 +86,7 @@ describe("HeaderComponent", () => {
     chooseLanguage("ru");
 
     expect(fixture.nativeElement.querySelector(".tagline").textContent).toBe("Бесплатный Planning Poker для команд");
-    expect(copyButton()?.textContent).toContain("Скопировать приглашение");
+    expect(copyButton()?.textContent).toContain("Пригласить");
     expect(supportLink()?.textContent?.trim()).toMatch(/^♥\s+Поддержать$/);
     expect(languageToggle().textContent!.trim()).toBe("RU");
     expect(languageToggle().querySelector("img")!.getAttribute("src")).toBe("/assets/svg/flags/ru.svg");
