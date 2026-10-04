@@ -28,6 +28,7 @@ describe("I18nService", () => {
   afterEach(() => {
     localStorage.removeItem(AppConstants.language);
     document.documentElement.lang = "en";
+    document.querySelector('meta[name="description"]')?.remove();
   });
 
   function create(browserLanguages: string[]): I18nService {
@@ -52,6 +53,21 @@ describe("I18nService", () => {
     expect(document.documentElement.lang).toBe("en");
     expect(localStorage.getItem(AppConstants.language)).toBe("en");
     expect(new I18nService(document, ["ru-RU"]).language).toBe("en");
+  });
+
+  it("puts the page title and the description in the language picked", () => {
+    const description = document.createElement("meta");
+    description.name = "description";
+    document.head.appendChild(description);
+    const i18n = create(["ru-RU"]);
+
+    expect(document.title).toBe(translations.ru["meta.title"]);
+    expect(description.content).toBe(translations.ru["meta.description"]);
+
+    i18n.choose("en");
+
+    expect(document.title).toBe(translations.en["meta.title"]);
+    expect(description.content).toBe(translations.en["meta.description"]);
   });
 
   it("fills in placeholders", () => {

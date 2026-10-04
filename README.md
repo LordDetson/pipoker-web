@@ -1,5 +1,7 @@
 # PiPoker Web App
 
+**Try it: [pipoker.duckdns.org](https://pipoker.duckdns.org)** — free online Planning Poker, no sign-up.
+
 PiPoker is a powerful web application built with Angular that utilizes the [PiPoker API](https://github.com/LordDetson/pipoker-api). It provides a user-friendly interface for teams to engage in collaborative estimation using the Planning Poker technique. With PiPoker, you can streamline your agile planning process and enhance team collaboration.
 
 ## About PiPoker
