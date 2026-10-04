@@ -282,6 +282,37 @@ describe("PiPoker room (integration)", () => {
     expect(button("Reveal Cards")).toBeDefined();
   });
 
+  it("says that an invitation to a room that no longer exists is not valid", async () => {
+    await open("/room/gone");
+
+    expect(page.querySelector("h2")!.textContent).toBe("This invitation is no longer valid");
+    expect(button("Join Room")).toBeUndefined();
+    expect(page.querySelector<HTMLAnchorElement>("a.btn-primary")!.getAttribute("href")).toBe("/");
+  });
+
+  it("says that the room no longer exists when the page is reloaded after the room is gone", async () => {
+    SeatStorage.save("gone", participant("Alex"));
+
+    await open("/room/gone");
+
+    expect(page.querySelector("h2")!.textContent).toBe("This invitation is no longer valid");
+    expect(SeatStorage.find("gone")).toBeUndefined();
+  });
+
+  it("leaves a room the server closed for inactivity", async () => {
+    const roomId = await createRoom("Dmitry", "Sprint", "1h; 1d");
+
+    server.closeIdleRoom(roomId);
+    await settle();
+
+    expect(page.querySelector("h2")!.textContent).toBe("The room is closed");
+    expect(tableCards()).toEqual([]);
+    expect(page.querySelector("app-header")!.textContent).not.toContain("Sprint");
+    expect(button("Invite")).toBeUndefined();
+    expect(SeatStorage.find(roomId)).toBeUndefined();
+    expect(server.clients.every(client => client.disconnected)).withContext("the connection is closed").toBeTrue();
+  });
+
   it("finishes checking the nickname when the connection is lost during the check", async () => {
     const roomId = server.addRoom("Planning", ["S", "M", "L"], [participant("Dmitry")]);
     await open("/room/" + roomId);

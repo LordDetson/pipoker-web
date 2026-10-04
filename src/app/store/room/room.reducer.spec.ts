@@ -1,6 +1,7 @@
 import {roomReducer} from "./room.reducer";
 import * as RoomAction from "./room.action";
 import {RoomStatus} from "./room-state";
+import {ErrorCode} from "../../models/room-event";
 import {cards, participant, room, roomState, votes} from "../../testing/test-data";
 
 describe("roomReducer", () => {
@@ -62,6 +63,22 @@ describe("roomReducer", () => {
       expect(state.error).withContext(action.type).toBe(error);
       expect(state.status).withContext(action.type).toBe(RoomStatus.error);
     });
+  });
+
+  it("tells a missing room from other errors", () => {
+    const error = {destination: "/app/room/id/participants/add", message: "Room \"id\" is not found", code: ErrorCode.roomNotFound};
+
+    expect(roomReducer(roomState(), RoomAction.initFailure({error})).status).toBe(RoomStatus.missing);
+    expect(roomReducer(roomState(), RoomAction.addParticipantFailure({error})).status).toBe(RoomStatus.missing);
+  });
+
+  it("forgets the room once it is closed", () => {
+    const state = roomReducer(roomState({showVotingResult: true}), RoomAction.closed({roomId: "id"}));
+
+    expect(state.status).toBe(RoomStatus.closed);
+    expect(state.room.id).toBe("");
+    expect(state.room.name).toBe("");
+    expect(state.showVotingResult).toBeFalse();
   });
 
   it("adds a participant to the room", () => {

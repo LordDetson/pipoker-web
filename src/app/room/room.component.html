@@ -1,20 +1,36 @@
-<div *ngIf="returning$ | async; else seat" class="d-flex justify-content-center mt-5">
-  <div class="spinner-border text-primary" role="status">
-    <span class="visually-hidden">{{"room.returning" | translate}}</span>
+<div *ngIf="gone$ | async as gone; else present" class="container-fluid d-flex flex-column align-items-center py-5">
+  <div class="col-10 col-md-8 col-lg-6 text-center">
+    <ng-container *ngIf="gone === RoomStatus.closed; else missing">
+      <h2 class="mb-3">{{"room.closedTitle" | translate}}</h2>
+      <p class="text-body-secondary">{{"room.closedText" | translate}}</p>
+    </ng-container>
+    <ng-template #missing>
+      <h2 class="mb-3">{{"room.missingTitle" | translate}}</h2>
+      <p class="text-body-secondary">{{"room.missingText" | translate}}</p>
+    </ng-template>
+    <!-- A new page load starts the next room with a clean state -->
+    <a class="btn btn-primary mt-3" href="/">{{"room.createNew" | translate}}</a>
   </div>
 </div>
-<ng-template #seat>
-  <ng-container *ngIf="!(joined$ | async); else room">
-    <app-add-participant/>
-  </ng-container>
-</ng-template>
-<ng-template #room>
-  <app-buttons/>
-  <app-table/>
-  <ng-container *ngIf="!(showVotingResult$ | async); else chart">
-    <app-deck/>
-  </ng-container>
-  <ng-template #chart>
-    <app-voting-result-chart/>
+<ng-template #present>
+  <div *ngIf="returning$ | async; else seat" class="d-flex justify-content-center mt-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">{{"room.returning" | translate}}</span>
+    </div>
+  </div>
+  <ng-template #seat>
+    <ng-container *ngIf="!(joined$ | async); else room">
+      <app-add-participant/>
+    </ng-container>
+  </ng-template>
+  <ng-template #room>
+    <app-buttons/>
+    <app-table/>
+    <ng-container *ngIf="!(showVotingResult$ | async); else chart">
+      <app-deck/>
+    </ng-container>
+    <ng-template #chart>
+      <app-voting-result-chart/>
+    </ng-template>
   </ng-template>
 </ng-template>

@@ -29,6 +29,11 @@ export const votingResultSelector = createSelector(
 export const showVotingResultSelector = createSelector(
   roomFeatureSelector,
   (state: RoomState): boolean => state.showVotingResult);
+// Why the room can't be shown: closed while this page was in it, or missing when the page opened it
+export const goneSelector = createSelector(
+  roomFeatureSelector,
+  (state: RoomState): RoomStatus.closed | RoomStatus.missing | undefined =>
+    state.status === RoomStatus.closed || state.status === RoomStatus.missing ? state.status : undefined);
 export const errorSelector = createSelector(
   roomFeatureSelector,
   (state: RoomState): string | undefined => state.status === RoomStatus.error ? errorMessage(state.error) : undefined);

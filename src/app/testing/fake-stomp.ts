@@ -1,6 +1,6 @@
 import {Participant} from "../models/participant.model";
 import {RoomDto, VoteDto} from "../models/room-dto.model";
-import {RoomEvent, RoomEventType} from "../models/room-event";
+import {ErrorCode, ErrorEvent, RoomEvent, RoomEventType} from "../models/room-event";
 
 export interface SentFrame {
   destination: string;
@@ -135,6 +135,13 @@ export class FakePipokerServer {
     this.received(undefined, "/app/room/" + roomId + "/votes/clear", roomId);
   }
 
+  // Like pipoker-app when nobody did anything in the room for long
+  closeIdleRoom(roomId: string) {
+    const room = this.rooms.get(roomId)!;
+    this.rooms.delete(roomId);
+    this.broadcast(room, RoomEventType.roomClosed, {});
+  }
+
   // Every open connection breaks at once, like when the network is gone
   loseConnections() {
     [...this.clients].forEach(client => client.lose());
@@ -157,7 +164,7 @@ export class FakePipokerServer {
     if (room) {
       later(() => client.deliverTo(subscriptionId, toDto(room)));
     } else {
-      later(() => client.deliver("/user/topic/room.errors", {destination, message: "Room " + roomId + " not found"}));
+      later(() => client.deliver("/user/topic/room.errors", roomNotFound(destination, roomId)));
     }
   }
 
@@ -176,7 +183,7 @@ export class FakePipokerServer {
     const [, roomId, action] = /^\/app\/room\/([^/]+)\/(.+)$/.exec(destination) ?? [];
     const room = this.rooms.get(roomId);
     if (!room) {
-      this.error(client, destination, "Room " + roomId + " not found");
+      later(() => client?.deliver("/user/topic/room.errors", roomNotFound(destination, roomId)));
       return;
     }
     switch (action) {
@@ -240,6 +247,10 @@ export class FakePipokerServer {
   private error(client: FakeStompClient | undefined, destination: string, message: string) {
     later(() => client?.deliver("/user/topic/room.errors", {destination, message}));
   }
+}
+
+function roomNotFound(destination: string, roomId: string): ErrorEvent {
+  return {destination, message: "Room \"" + roomId + "\" is not found", code: ErrorCode.roomNotFound};
 }
 
 function toDto(room: ServerRoom): RoomDto {

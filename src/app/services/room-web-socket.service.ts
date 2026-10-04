@@ -167,6 +167,9 @@ export class RoomWebSocketService implements OnDestroy {
       case RoomEventType.clearVotes:
         this.store.dispatch(RoomAction.startNewVotingSuccess());
         break;
+      case RoomEventType.roomClosed:
+        this.store.dispatch(RoomAction.closed({roomId: event.roomId}));
+        break;
       default:
         console.log("default");
     }
