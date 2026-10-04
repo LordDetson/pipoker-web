@@ -30,6 +30,8 @@ import {participant} from "../testing/test-data";
 import {TranslatePipe} from "../i18n/translate.pipe";
 import {ServerErrorPipe} from "../i18n/server-error.pipe";
 import {AboutComponent} from "../about/about.component";
+import {TimerComponent} from "../room/timer/timer.component";
+import {TimerSignal} from "../room/timer/timer-signal";
 import {HistoryComponent} from "../room/history/history.component";
 
 // Runs the whole client (components, store, effects and services) against an in-memory imitation
@@ -58,7 +60,8 @@ describe("PiPoker room (integration)", () => {
         TableCardComponent,
         VotingResultChartComponent,
         HistoryComponent,
-        AboutComponent
+        AboutComponent,
+        TimerComponent
       ],
       imports: [
         RouterTestingModule.withRoutes(routes),
@@ -77,7 +80,8 @@ describe("PiPoker room (integration)", () => {
       ],
       providers: [
         {provide: STOMP_CLIENT_FACTORY, useValue: server.createClient},
-        {provide: RECONNECT_DELAYS, useValue: [0]}
+        {provide: RECONNECT_DELAYS, useValue: [0]},
+        {provide: TimerSignal, useValue: jasmine.createSpyObj("TimerSignal", ["ring"])}
       ]
     }).compileComponents();
     fixture = TestBed.createComponent(AppComponent);
@@ -119,6 +123,10 @@ describe("PiPoker room (integration)", () => {
 
   function button(text: string): HTMLButtonElement {
     return Array.from(page.querySelectorAll("button")).find(button => button.textContent!.trim() === text)!;
+  }
+
+  function timer(): string | undefined {
+    return page.querySelector(".timer .time")?.textContent!.trim();
   }
 
   function path(): string {
@@ -305,6 +313,29 @@ describe("PiPoker room (integration)", () => {
       {nickname: "Dmitry", voted: true, value: "M"}
     ]);
     expect(button("Start New Voting")).toBeDefined();
+  });
+
+  it("counts down the discussion timer together with the others in the room", async () => {
+    const roomId = await createRoom("Dmitry", "Sprint", "1h; 1d");
+
+    await click(button("Timer"));
+    await click(button("2 min"));
+
+    expect(timer()).toBe("2:00");
+    expect(server.rooms.get(roomId)!.timer!.seconds).toBe(120);
+
+    server.stopTimer(roomId);
+    await settle();
+    expect(timer()).toBeUndefined();
+    expect(button("Timer")).toBeDefined();
+
+    server.startTimer(roomId, 60);
+    await settle();
+    expect(timer()).toBe("1:00");
+
+    server.clearVotes(roomId);
+    await settle();
+    expect(timer()).withContext("a new round stops the timer").toBeUndefined();
   });
 
   it("removes a participant who left", async () => {

@@ -120,6 +120,18 @@ describe("RoomService", () => {
     expect(room!.history).toEqual(history);
   });
 
+  it("counts the loaded timer down from the time left by the clock of this computer", () => {
+    spyOn(Date, "now").and.returnValue(10000);
+    let room: Room | undefined;
+    service.get(roomId).subscribe(result => room = result);
+
+    webSocket.emit("/app/room/" + roomId, {
+      id: roomId, name: "Sprint", deck: {cards: ["1h"]}, timer: {seconds: 120, remainingMillis: 90000}
+    });
+
+    expect(room!.timer).toEqual({seconds: 120, endsAt: 100000});
+  });
+
   it("checks nickname against the current room participants", () => {
     const results: boolean[] = [];
     service.checkIfNicknameExist(roomId, " dmitry ").subscribe(result => results.push(result));

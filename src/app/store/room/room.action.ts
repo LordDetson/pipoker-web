@@ -1,5 +1,5 @@
 import {createAction, props} from "@ngrx/store";
-import {Room} from "../../models/room.model";
+import {Room, RoomTimer} from "../../models/room.model";
 import {Participant} from "../../models/participant.model";
 import {CreateRoomInfo} from "../../models/create-room.model";
 import {Card} from "../../models/card.model";
@@ -26,6 +26,10 @@ export enum RoomActionType {
   startNewVoting = "[Room] start new voting",
   startNewVotingSuccess = "[Room] start new voting success",
   startNewVotingFailure = "[Room] start new voting failure",
+  startTimer = "[Room] start timer",
+  timerStarted = "[Room] timer started",
+  stopTimer = "[Room] stop timer",
+  timerStopped = "[Room] timer stopped",
   closed = "[Room] closed",
   removed = "[Room] removed",
   doNothing = "[Room] do nothing",
@@ -68,6 +72,12 @@ export const startNewVoting = createAction(RoomActionType.startNewVoting);
 export const startNewVotingSuccess = createAction(RoomActionType.startNewVotingSuccess);
 export const startNewVotingFailure = createAction(RoomActionType.startNewVotingFailure,
   props<{ error: any }>());
+export const startTimer = createAction(RoomActionType.startTimer,
+  props<{ seconds: number }>());
+export const timerStarted = createAction(RoomActionType.timerStarted,
+  props<{ timer: RoomTimer }>());
+export const stopTimer = createAction(RoomActionType.stopTimer);
+export const timerStopped = createAction(RoomActionType.timerStopped);
 export const closed = createAction(RoomActionType.closed,
   props<{ roomId: string }>());
 // Everyone left the room while this page was open on it without a seat, for example on the join form

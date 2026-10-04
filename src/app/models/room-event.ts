@@ -1,5 +1,5 @@
 import {Participant} from "./participant.model";
-import {RoundDto, VoteDto} from "./room-dto.model";
+import {RoundDto, TimerDto, VoteDto} from "./room-dto.model";
 
 export enum RoomEventType {
   participantAdded = "PARTICIPANT_ADDED",
@@ -9,6 +9,10 @@ export enum RoomEventType {
   voteRemoved = "VOTE_REMOVED",
   clearVotes = "CLEAR_VOTES",
   showVotes = "SHOW_VOTES",
+  // Someone started the discussion timer, in place of the one that may be running
+  timerStarted = "TIMER_STARTED",
+  // Someone stopped the discussion timer, or took away the one that ran out
+  timerStopped = "TIMER_STOPPED",
   // Nobody did anything in the room for long, so the server closed it and everyone left
   roomClosed = "ROOM_CLOSED",
   // Everyone left the room, so the server deleted it
@@ -21,7 +25,8 @@ export interface RoomEvent {
   participant?: Participant,
   vote?: VoteDto,
   // With showVotes: the round that entered the room's history, none when the cards were already revealed
-  round?: RoundDto
+  round?: RoundDto,
+  timer?: TimerDto
 }
 
 // Why the server refused a request, see ErrorCode in pipoker-app. The page shows its own text for each of them.

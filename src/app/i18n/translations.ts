@@ -84,6 +84,11 @@ const en = {
   "room.missingText": "The room no longer exists: everyone has left it.",
   "room.createNew": "Create a new room",
 
+  "timer.start": "Timer",
+  "timer.startTitle": "Start the discussion timer",
+  "timer.minutes": "{minutes} min",
+  "timer.stop": "Stop the timer",
+  "timer.timeUp": "Time's up",
   "history.title": "History",
   "history.close": "Close the history",
   "history.empty": "Revealed rounds will appear here.",
@@ -175,6 +180,11 @@ const ru: Record<TranslationKey, string> = {
   "room.missingText": "Этой комнаты больше нет: все участники её покинули.",
   "room.createNew": "Создать новую комнату",
 
+  "timer.start": "Таймер",
+  "timer.startTitle": "Запустить таймер обсуждения",
+  "timer.minutes": "{minutes} мин",
+  "timer.stop": "Остановить таймер",
+  "timer.timeUp": "Время вышло",
   "history.title": "История",
   "history.close": "Закрыть историю",
   "history.empty": "Здесь появятся раунды после того, как карты откроют.",

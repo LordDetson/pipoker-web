@@ -22,6 +22,7 @@ import {DeckCardComponent} from './room/deck/deck-card/deck-card.component';
 import {TableCardComponent} from './room/table/table-card/table-card.component';
 import {VotingResultChartComponent} from './room/voting-result-chart/voting-result-chart.component';
 import {AboutComponent} from './about/about.component';
+import {TimerComponent} from './room/timer/timer.component';
 import {TranslatePipe} from './i18n/translate.pipe';
 import {ServerErrorPipe} from './i18n/server-error.pipe';
 import {storeDevtools} from "../env/store-devtools";
@@ -42,7 +43,8 @@ import {HistoryComponent} from './room/history/history.component';
     TableCardComponent,
     VotingResultChartComponent,
     HistoryComponent,
-    AboutComponent
+    AboutComponent,
+    TimerComponent
   ],
   imports: [
     BrowserModule,

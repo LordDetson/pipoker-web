@@ -26,7 +26,10 @@
   <ng-template #room>
     <app-history/>
     <app-table>
-      <app-buttons/>
+      <div class="table-controls">
+        <app-timer/>
+        <app-buttons/>
+      </div>
     </app-table>
     <!-- The chart takes the place of the deck, which keeps its size so the table does not jump when the cards are revealed -->
     <div class="hand">

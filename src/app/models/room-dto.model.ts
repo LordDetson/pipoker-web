@@ -9,6 +9,12 @@ export interface VoteDto {
   card: string;
 }
 
+// The discussion timer: the page asks to start it for seconds, the server tells the time left as it sends it
+export interface TimerDto {
+  seconds: number;
+  remainingMillis?: number;
+}
+
 // A revealed round as the server keeps it in the room's history
 export interface RoundDto {
   // ISO 8601 time, like 2026-10-04T17:00:00.123Z
@@ -25,6 +31,8 @@ export interface RoomDto {
   votes?: VoteDto[];
   // The cards of the current round are revealed
   votesShown?: boolean;
+  // Left out when nobody has started the timer in this round
+  timer?: TimerDto;
   // The revealed rounds, oldest first
   history?: RoundDto[];
 }

@@ -41,4 +41,12 @@ export class RoomDestinations {
   public static showVotes(roomId: string): string {
     return RoomDestinations.room(roomId) + "/votes/show";
   }
+
+  public static startTimer(roomId: string): string {
+    return RoomDestinations.room(roomId) + "/timer/start";
+  }
+
+  public static stopTimer(roomId: string): string {
+    return RoomDestinations.room(roomId) + "/timer/stop";
+  }
 }
