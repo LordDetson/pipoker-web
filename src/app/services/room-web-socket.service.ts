@@ -216,10 +216,11 @@ export class RoomWebSocketService implements OnDestroy {
     });
   }
 
-  // Tells the server that the page is being closed or refreshed, so the person leaves the table at once. Otherwise
-  // the server can't tell it from a lost connection and keeps the seat. It is sent on the open connection only:
-  // a new one would not be ready before the page is gone. A page kept in the back-forward cache can come back,
-  // so it says nothing; if its connection is closed meanwhile, the server keeps the seat as for a lost connection.
+  // Tells the server that the page is being closed or refreshed, so the person leaves the table at once, and a refreshed
+  // page brings them back with the vote. Otherwise the server can't tell it from a lost connection and keeps the person
+  // at the table for a while. It is sent on the open connection only: a new one would not be ready before the page is
+  // gone. A page kept in the back-forward cache can come back, so it says nothing; if its connection is closed
+  // meanwhile, the server keeps the seat as for a lost connection.
   private sayPageClosed(event: PageTransitionEvent) {
     if (!event.persisted && !this.pageClosedSaid && this.stompClient !== null && this.connected$.value) {
       this.stompClient.send(RoomDestinations.pageClosed, {}, "");

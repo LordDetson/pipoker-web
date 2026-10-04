@@ -70,6 +70,12 @@ describe("roomReducer", () => {
     expect(state.room.participants).toEqual([participant("Dmitry"), participant("Alex", true)]);
   });
 
+  it("does not add a participant who is already in the room", () => {
+    const state = roomReducer(roomState(), RoomAction.addParticipantSuccess({participant: participant(" dmitry ")}));
+
+    expect(state.room.participants).toEqual([participant("Dmitry")]);
+  });
+
   it("removes a participant together with their vote", () => {
     const before = roomState({
       room: room({
