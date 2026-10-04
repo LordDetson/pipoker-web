@@ -19,7 +19,8 @@ interface TableView {
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
-  styleUrls: ['./table.component.css']
+  styleUrls: ['./table.component.css'],
+  standalone: false
 })
 export class TableComponent implements AfterViewInit, OnDestroy {
 

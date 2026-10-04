@@ -9,7 +9,8 @@ import {I18nService} from "../../i18n/i18n.service";
 @Component({
   selector: 'app-history',
   templateUrl: './history.component.html',
-  styleUrls: ['./history.component.css']
+  styleUrls: ['./history.component.css'],
+  standalone: false
 })
 export class HistoryComponent {
 

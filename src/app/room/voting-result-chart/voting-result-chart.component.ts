@@ -19,7 +19,8 @@ export function loadDoughnutChart(): Promise<typeof import("./doughnut-chart")> 
 @Component({
   selector: 'app-voting-result-chart',
   templateUrl: './voting-result-chart.component.html',
-  styleUrls: ['./voting-result-chart.component.css']
+  styleUrls: ['./voting-result-chart.component.css'],
+  standalone: false
 })
 export class VotingResultChartComponent implements AfterViewInit, OnDestroy {
 

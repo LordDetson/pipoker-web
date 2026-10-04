@@ -9,7 +9,8 @@ import {splitIntoRows} from "./deck-rows";
 @Component({
   selector: 'app-deck',
   templateUrl: './deck.component.html',
-  styleUrls: ['./deck.component.scss']
+  styleUrls: ['./deck.component.scss'],
+  standalone: false
 })
 export class DeckComponent implements OnInit {
 

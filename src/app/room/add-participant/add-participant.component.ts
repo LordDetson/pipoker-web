@@ -13,7 +13,8 @@ import {I18nService} from "../../i18n/i18n.service";
 
 @Component({
   selector: 'app-add-participant',
-  templateUrl: './add-participant.component.html'
+  templateUrl: './add-participant.component.html',
+  standalone: false
 })
 export class AddParticipantComponent implements OnInit, OnDestroy {
 

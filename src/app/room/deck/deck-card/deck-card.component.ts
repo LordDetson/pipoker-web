@@ -11,8 +11,9 @@ import * as ParticipantAction from "../../../store/participant/participant.selec
   templateUrl: './deck-card.component.html',
   styleUrls: ['./deck-card.component.scss'],
   host: {
-    class: "card common-transition"
-  }
+      class: "card common-transition"
+  },
+  standalone: false
 })
 export class DeckCardComponent implements OnInit, OnDestroy {
 

@@ -14,7 +14,8 @@ import {loadDoughnutChart} from "./voting-result-chart/voting-result-chart.compo
 @Component({
   selector: 'app-room',
   templateUrl: './room.component.html',
-  styleUrls: ['./room.component.css']
+  styleUrls: ['./room.component.css'],
+  standalone: false
 })
 export class RoomComponent implements OnInit, OnDestroy {
 

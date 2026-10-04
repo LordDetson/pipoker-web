@@ -21,7 +21,8 @@ interface CreateRoomFormGroup {
 @Component({
   selector: 'app-create-room',
   templateUrl: './create-room.component.html',
-  styleUrls: ['./create-room.component.css']
+  styleUrls: ['./create-room.component.css'],
+  standalone: false
 })
 export class CreateRoomComponent implements OnInit, OnDestroy {
 

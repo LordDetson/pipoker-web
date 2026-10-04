@@ -5,7 +5,6 @@ import {TranslationKey} from "./translations";
 // Impure, so the page follows the language as soon as it is switched in the header
 @Pipe({
   name: "translate",
-  standalone: true,
   pure: false
 })
 export class TranslatePipe implements PipeTransform {

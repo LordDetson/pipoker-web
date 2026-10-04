@@ -5,7 +5,8 @@ import {ThemeService} from "../../services/theme.service";
 @Component({
   selector: 'app-theme-switcher',
   templateUrl: './theme-switcher.component.html',
-  styleUrls: ['./theme-switcher.component.scss']
+  styleUrls: ['./theme-switcher.component.scss'],
+  standalone: false
 })
 export class ThemeSwitcherComponent implements OnInit {
 

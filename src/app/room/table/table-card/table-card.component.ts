@@ -9,7 +9,8 @@ import * as RoomSelector from "../../../store/room/room.selector";
 @Component({
   selector: 'app-table-card',
   templateUrl: './table-card.component.html',
-  styleUrls: ['./table-card.component.scss']
+  styleUrls: ['./table-card.component.scss'],
+  standalone: false
 })
 export class TableCardComponent {
 
