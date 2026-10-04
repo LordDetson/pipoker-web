@@ -1,14 +1,10 @@
-<div class="buttons-vew container-fluid">
-  <div class="buttons-vew row mx-auto col-9 col-md-5 col-lg-3">
-    <button id="mainBtn" type="button"
-            class="btn btn-lg common-transition gap-3 px-4"
-            [ngClass]="{
-              'btn-secondary': !(voted$ | async),
-              'btn-primary' : voted$ | async
-            }"
-            [disabled]="!(voted$ | async)"
-            (click)="mainBtnClick()">
-      {{(!(voted$ | async) ? 'room.voting' : !(showVotingResult$ | async) ? 'room.revealCards' : 'room.startNewVoting') | translate}}
-    </button>
-  </div>
-</div>
+<button id="mainBtn" type="button"
+        class="btn btn-lg common-transition"
+        [ngClass]="{
+          'btn-secondary': !(voted$ | async),
+          'btn-primary' : voted$ | async
+        }"
+        [disabled]="!(voted$ | async)"
+        (click)="mainBtnClick()">
+  {{(!(voted$ | async) ? 'room.voting' : !(showVotingResult$ | async) ? 'room.revealCards' : 'room.startNewVoting') | translate}}
+</button>

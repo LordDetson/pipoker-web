@@ -1,7 +1,5 @@
-<div class="deck-view container-fluid">
-  <div class="deck-view mb-3 d-flex justify-content-center align-content-center align-content-stretch flex-wrap"
-       *ngIf="!(watcher$ | async)">
-    <app-deck-card *ngFor="let card of cards$ | async"
-                   [card]="card"/>
+<ng-container *ngIf="!(watcher$ | async)">
+  <div *ngFor="let row of rows$ | async" class="deck-row">
+    <app-deck-card *ngFor="let card of row" [card]="card"/>
   </div>
-</div>
+</ng-container>

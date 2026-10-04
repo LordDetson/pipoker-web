@@ -1,9 +1,9 @@
-import {Component, HostBinding, Input, OnInit} from '@angular/core';
+import {Component, HostBinding, Input, OnDestroy, OnInit} from '@angular/core';
 import {Store} from "@ngrx/store";
 import * as RoomAction from "../../../store/room/room.action";
 import {Participant} from "../../../models/participant.model";
 import {Card} from "../../../models/card.model";
-import {map, Observable, take, tap} from "rxjs";
+import {map, Observable, Subject, take, takeUntil, tap} from "rxjs";
 import * as ParticipantAction from "../../../store/participant/participant.selector";
 
 @Component({
@@ -11,10 +11,10 @@ import * as ParticipantAction from "../../../store/participant/participant.selec
   templateUrl: './deck-card.component.html',
   styleUrls: ['./deck-card.component.scss'],
   host: {
-    class: "card common-transition m-2"
+    class: "card common-transition"
   }
 })
-export class DeckCardComponent implements OnInit {
+export class DeckCardComponent implements OnInit, OnDestroy {
 
   @Input()
   card: Card;
@@ -23,6 +23,7 @@ export class DeckCardComponent implements OnInit {
   selectedCard$: Observable<Card | undefined> = this.store.select(ParticipantAction.selectedCardSelector);
   selected$: Observable<boolean> = this.selectedCard$.pipe(map(selectedCard => selectedCard?.value === this.card.value));
   selected: boolean;
+  ngDestroyed$ = new Subject<void>();
 
   constructor(
     private store: Store
@@ -30,7 +31,13 @@ export class DeckCardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.selected$.subscribe(value => this.selected = value);
+    // The deck rebuilds its rows when the window is resized, so a card may be destroyed while the room lives on
+    this.selected$.pipe(takeUntil(this.ngDestroyed$)).subscribe(value => this.selected = value);
+  }
+
+  ngOnDestroy(): void {
+    this.ngDestroyed$.next();
+    this.ngDestroyed$.complete();
   }
 
   select() {
@@ -54,5 +61,10 @@ export class DeckCardComponent implements OnInit {
   @HostBinding('class.bg-body-secondary')
   get isNotSelected(): boolean {
     return !this.selected;
+  }
+
+  @HostBinding('style.--value-length')
+  get valueLength(): number {
+    return this.card.value.length;
   }
 }

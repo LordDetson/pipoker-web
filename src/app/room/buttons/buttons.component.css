@@ -1,3 +1,13 @@
-#buttons-vew {
-  height: 7vh;
+/* In the middle of the table. On a narrow table it gets smaller, and a long label wraps instead of covering the seats */
+#mainBtn {
+  max-width: 40cqw;
+  padding-inline: 1.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
+}
+
+@container (max-width: 30rem) {
+  #mainBtn {
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+  }
 }

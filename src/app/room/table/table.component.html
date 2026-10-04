@@ -1,8 +1,21 @@
-<div class="table-view container-fluid">
-  <div class="table-view d-flex justify-content-center">
-    <div class="my-3 d-flex justify-content-center align-content-center flex-wrap" style="width: 560px;">
-      <app-table-card *ngFor="let participant of participants$ | async"
-                      [participant]="participant"/>
+<ng-container *ngIf="watchers$ | async as watchers">
+  <p *ngIf="watchers.length" class="watchers text-body-secondary">
+    <span class="eye-icon" role="img" [attr.aria-label]="'room.watchers' | translate" [title]="'room.watchers' | translate"></span>
+    <span *ngFor="let watcher of watchers" class="watcher text-truncate">{{watcher.nickname}}</span>
+  </p>
+</ng-container>
+<div class="table-area">
+  <div #felt class="felt">
+    <ng-container *ngIf="table$ | async as table">
+      <app-table-card *ngFor="let seat of table.seats; trackBy: nicknameOf"
+                      [participant]="seat.participant"
+                      [style.left.%]="seat.x"
+                      [style.top.%]="seat.y"
+                      [style.--card-size]="table.cardSize"
+                      [style.--seat-width]="table.seatWidth"/>
+    </ng-container>
+    <div class="table-center">
+      <ng-content/>
     </div>
   </div>
 </div>

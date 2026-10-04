@@ -1,47 +1,72 @@
+// A seat at the table: the participant's card with the nickname under it. TableComponent places the seat and sets
+// its size: --card-size and --seat-width are parts of the table's smaller side.
 :host {
+  --card-height: calc(var(--card-size) * 100cqmin);
+  position: absolute;
+  width: calc(var(--seat-width) * 100cqmin);
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--card-height) * 0.06);
   perspective: 1000px;
 }
 
-.card {
-  width: 6rem;
-  height: 9rem;
+.playing-card {
   position: relative;
+  height: var(--card-height);
+  aspect-ratio: 2 / 3;
   transform-style: preserve-3d;
   transition-delay: var(--flip-delay);
 }
 
-// Only the face turned to the viewer is shown. backface-visibility is not enough for this: Firefox and WebKit draw
-// the front face of a turned card mirrored. The faces switch when the card is edge-on: it turns with "ease",
-// which reaches half of the turn at 29% of the time after the card starts turning.
-.card-body {
+.turned {
+  transform: rotateY(180deg);
+}
+
+.card-back,
+.card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--card-height) * 0.08);
+  // Only the side turned to the viewer is shown. backface-visibility is not enough for this: Firefox and WebKit draw
+  // the card back mirrored once the card is turned. The sides switch when the card is edge-on: it turns with "ease",
+  // which reaches half of the turn at 29% of the time after the card starts turning.
   transition: visibility 0s calc(var(--flip-delay) + var(--common-transition-duration) * 0.29);
 }
 
-.card.rotateY180 > .card-body:not(.card-body-back),
-.card:not(.rotateY180) > .card-body-back {
+.turned > .card-back,
+.playing-card:not(.turned) > .card-face {
   visibility: hidden;
 }
 
-.card-body-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  transform: rotateY(180deg);
+// An empty place until the participant votes
+.card-back {
+  border: 1px dashed rgba(255, 255, 255, 0.45);
 }
 
-.rotateY180 {
-  transform: rotateY(180deg);
-}
-
-.voted {
+.voted > .card-back {
+  border: calc(var(--card-height) * 0.03) solid rgba(255, 255, 255, 0.9);
   background-color: var(--bs-blue);
-  color: white;
 }
 
-.eye-icon {
-  height: 30px;
-  width: 30px;
-  display: inline-block;
-  background: url("/assets/svg/eye.svg") no-repeat;
-  background-size: 30px 30px;
+.card-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotateY(180deg);
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+// Long values get a smaller font to fit on the card, which is two thirds of its height wide
+.card-value {
+  font-size: min(var(--card-height) * 0.45, var(--card-height) * 0.93 / var(--value-length));
+}
+
+.nickname {
+  max-width: 100%;
+  font-size: max(0.7rem, var(--card-height) * 0.17);
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.9);
 }

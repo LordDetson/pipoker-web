@@ -48,4 +48,15 @@ describe("DeckCardComponent", () => {
 
     expect(host().classList).not.toContain("selected");
   });
+
+  it("gives longer values a smaller font", () => {
+    expect(host().style.getPropertyValue("--value-length")).toBe("2");
+  });
+
+  it("stops following the vote once it is gone from the page", () => {
+    fixture.destroy();
+    store.setState(appState({}, {currentParticipant: participant("Alex"), selectedCard: {value: "1d"}}));
+
+    expect(fixture.componentInstance.selected).toBeFalse();
+  });
 });

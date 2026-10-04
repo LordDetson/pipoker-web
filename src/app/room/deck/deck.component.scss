@@ -1,3 +1,37 @@
-.deck-view {
-  height: 23vh;
+// The deck takes as many rows as the width of the screen needs, see splitIntoRows.
+// The sizes are in pixels because DeckComponent reads them to count how many cards fit in a row.
+:host {
+  --deck-card-width: 68px;
+  --deck-gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--deck-gap);
+  // Leaves room for the chosen card, which is lifted
+  padding: 0.75rem 0.75rem 1rem;
+}
+
+@media (max-width: 575.98px) {
+  :host {
+    --deck-card-width: 52px;
+    --deck-gap: 8px;
+  }
+}
+
+@media (min-width: 1600px) and (min-height: 900px) {
+  :host {
+    --deck-card-width: 80px;
+    --deck-gap: 12px;
+  }
+}
+
+.deck-row {
+  display: flex;
+  justify-content: center;
+  gap: var(--deck-gap);
+}
+
+// Hidden at once when the chart takes the deck's place: visibility is inherited, and the cards' common-transition
+// would keep them showing through the chart until the transition ends
+:host(.invisible) app-deck-card {
+  transition: none;
 }

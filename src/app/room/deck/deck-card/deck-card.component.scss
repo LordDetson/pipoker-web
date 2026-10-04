@@ -1,7 +1,9 @@
 :host {
-  width: 6rem;
-  max-height: 9rem;
+  width: var(--deck-card-width);
+  height: calc(var(--deck-card-width) * 1.4);
   cursor: pointer;
+  // Long values get a smaller font to fit on the card
+  font-size: min(1.25rem, var(--deck-card-width) * 1.4 / var(--value-length));
 }
 
 :host(.selected) {

@@ -1,6 +1,13 @@
+/* The page under the header gets all the height the header leaves, which differs on narrow screens */
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
   min-height: 100vh;
   max-height: 100vh;
+}
+
+/* The header keeps the height of its content; only the page under it adapts */
+app-header {
+  flex-shrink: 0;
 }
