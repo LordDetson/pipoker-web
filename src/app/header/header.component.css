@@ -102,12 +102,12 @@
 }
 
 .not-copied > .add-user-icon {
-  background: url("src/assets/svg/add-user.svg") no-repeat;
+  background: url("/assets/svg/add-user.svg") no-repeat;
   background-size: 26px 26px;
 }
 
 .copied > .add-user-icon {
-  background: url("src/assets/svg/copy.svg") no-repeat;
+  background: url("/assets/svg/copy.svg") no-repeat;
   background-size: 26px 26px;
 }
 

@@ -1,4 +1,4 @@
-import {Component, HostListener} from '@angular/core';
+import {Component, HostListener, ChangeDetectionStrategy} from '@angular/core';
 import {Observable} from "rxjs";
 import {select, Store} from "@ngrx/store";
 import * as RoomSelector from "../../store/room/room.selector";
@@ -9,7 +9,9 @@ import {I18nService} from "../../i18n/i18n.service";
 @Component({
   selector: 'app-history',
   templateUrl: './history.component.html',
-  styleUrls: ['./history.component.css']
+  styleUrls: ['./history.component.css'],
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class HistoryComponent {
 

@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {Room} from "../models/room.model";
 import {Observable, Subject, take, takeUntil} from "rxjs";
 import {select, Store} from "@ngrx/store";
@@ -14,7 +14,9 @@ import {loadDoughnutChart} from "./voting-result-chart/voting-result-chart.compo
 @Component({
   selector: 'app-room',
   templateUrl: './room.component.html',
-  styleUrls: ['./room.component.css']
+  styleUrls: ['./room.component.css'],
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class RoomComponent implements OnInit, OnDestroy {
 

@@ -1,5 +1,5 @@
 import {inject, Inject, Injectable, InjectionToken, NgZone, OnDestroy} from '@angular/core';
-import * as SockJS from "sockjs-client";
+import SockJS from "sockjs-client";
 import * as Stomp from "stompjs";
 import {BehaviorSubject, EMPTY, filter, Observable, share, Subject, Subscription, switchMap, take} from "rxjs";
 import {RoomEvent, RoomEventType} from "../models/room-event";

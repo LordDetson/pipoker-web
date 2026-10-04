@@ -9,7 +9,6 @@ import {HeaderComponent} from './header/header.component';
 import {ThemeSwitcherComponent} from './header/theme-switcher/theme-switcher.component';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {RoomComponent} from './room/room.component';
-import {HttpClientModule} from "@angular/common/http";
 import {AddParticipantComponent} from './room/add-participant/add-participant.component';
 import {StoreModule} from "@ngrx/store";
 import {metaReducers, reducers} from "./store/intex";
@@ -50,7 +49,6 @@ import {HistoryComponent} from './room/history/history.component';
     NgbDropdownModule,
     FormsModule,
     ReactiveFormsModule,
-    HttpClientModule,
     StoreModule.forRoot(reducers, {
       metaReducers,
       runtimeChecks: {

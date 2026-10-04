@@ -1,5 +1,4 @@
-import {Inject, Injectable, InjectionToken} from "@angular/core";
-import {DOCUMENT} from "@angular/common";
+import {Inject, Injectable, InjectionToken, DOCUMENT} from "@angular/core";
 import {Language, LANGUAGES, LanguageOption, TranslationKey, translations} from "./translations";
 import {AppConstants} from "../common/app-constants";
 

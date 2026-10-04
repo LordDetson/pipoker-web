@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, NgZone, OnDestroy, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, NgZone, OnDestroy, ViewChild, ChangeDetectionStrategy} from '@angular/core';
 import {combineLatest, map, Observable, ReplaySubject} from "rxjs";
 import {Participant, sameNickname} from "../../models/participant.model";
 import {select, Store} from "@ngrx/store";
@@ -19,7 +19,9 @@ interface TableView {
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
-  styleUrls: ['./table.component.css']
+  styleUrls: ['./table.component.css'],
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class TableComponent implements AfterViewInit, OnDestroy {
 
