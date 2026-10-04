@@ -54,6 +54,14 @@ const en = {
   "validation.duplicateCards": "Card values must be unique: {cards}",
   "validation.nicknameTaken": "{nickname} is already in the room",
 
+  "serverError.roomNotFound": "This room no longer exists",
+  "serverError.nicknameTaken": "Someone with this name is already in the room",
+  "serverError.participantNotFound": "You are no longer in this room. Join it again",
+  "serverError.watcherCannotVote": "Watchers don't vote",
+  "serverError.cardNotInDeck": "This card isn't in the room's deck",
+  "serverError.invalidData": "The server didn't accept the data. Check it and try again",
+  "serverError.unexpected": "Something went wrong on the server. Try again",
+
   "room.returning": "Returning to the table",
   "room.watchers": "Watchers",
   "room.voting": "Voting...",
@@ -125,6 +133,14 @@ const ru: Record<TranslationKey, string> = {
   "validation.cardTooLong": "Значения карт должны содержать не больше {length} символов: {cards}",
   "validation.duplicateCards": "Значения карт не должны повторяться: {cards}",
   "validation.nicknameTaken": "{nickname} уже в комнате",
+
+  "serverError.roomNotFound": "Этой комнаты больше нет",
+  "serverError.nicknameTaken": "В комнате уже есть участник с таким именем",
+  "serverError.participantNotFound": "Вас больше нет в этой комнате. Войдите в неё снова",
+  "serverError.watcherCannotVote": "Наблюдатели не голосуют",
+  "serverError.cardNotInDeck": "Такой карты нет в колоде комнаты",
+  "serverError.invalidData": "Сервер не принял данные. Проверьте их и попробуйте снова",
+  "serverError.unexpected": "На сервере что-то пошло не так. Попробуйте ещё раз",
 
   "room.returning": "Возвращаем вас за стол",
   "room.watchers": "Наблюдатели",

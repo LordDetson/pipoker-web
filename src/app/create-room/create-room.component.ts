@@ -29,7 +29,7 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
 
   createRoomForm: FormGroup<CreateRoomFormGroup>;
   ngDestroyed$ = new Subject<void>();
-  error$: Observable<string | undefined> = this.store.select(RoomSelector.errorSelector);
+  error$: Observable<unknown> = this.store.select(RoomSelector.errorSelector);
 
   constructor(
     private roomService: RoomService,

@@ -10,7 +10,9 @@ import * as RoomAction from "../../store/room/room.action";
 import {appState, participant, ROOM_ID} from "../../testing/test-data";
 import {RoomStatus} from "../../store/room/room-state";
 import {TranslatePipe} from "../../i18n/translate.pipe";
+import {ServerErrorPipe} from "../../i18n/server-error.pipe";
 import {AboutComponent} from "../../about/about.component";
+import {ErrorCode} from "../../models/room-event";
 
 describe("AddParticipantComponent", () => {
   let fixture: ComponentFixture<AddParticipantComponent>;
@@ -24,7 +26,7 @@ describe("AddParticipantComponent", () => {
     roomService.checkIfNicknameExist.and.callFake((id, nickname) => of(takenNicknames.includes(nickname.toLowerCase())));
     TestBed.configureTestingModule({
       declarations: [AddParticipantComponent, AboutComponent],
-      imports: [ReactiveFormsModule, TranslatePipe],
+      imports: [ReactiveFormsModule, TranslatePipe, ServerErrorPipe],
       providers: [
         provideMockStore({initialState: appState()}),
         {provide: RoomService, useValue: roomService},
@@ -96,10 +98,12 @@ describe("AddParticipantComponent", () => {
 
   it("shows why the server refused to let the participant join", () => {
     create();
-    store.setState(appState({status: RoomStatus.error, error: {message: "Alex is already in the room"}}));
+    store.setState(appState({status: RoomStatus.error,
+      error: {message: "Participant \"Alex\" is already exist", code: ErrorCode.nicknameTaken}}));
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector(".alert-danger").textContent).toBe("Alex is already in the room");
+    expect(fixture.nativeElement.querySelector(".alert-danger").textContent)
+      .toBe("Someone with this name is already in the room");
   });
 
   it("joins the room with the chosen nickname and role", () => {

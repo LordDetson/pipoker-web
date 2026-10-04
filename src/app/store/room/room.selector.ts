@@ -3,7 +3,6 @@ import {Participant} from "../../models/participant.model";
 import {Card} from "../../models/card.model";
 import {roomStateNode} from "../intex";
 import {RoomState, RoomStatus} from "./room-state";
-import {errorMessage} from "../../common/room-validators";
 import {VotingResult} from "../../models/voting-result.model";
 import {VoteDto} from "../../models/room-dto.model";
 
@@ -35,9 +34,10 @@ export const goneSelector = createSelector(
   roomFeatureSelector,
   (state: RoomState): RoomStatus.closed | RoomStatus.missing | undefined =>
     state.status === RoomStatus.closed || state.status === RoomStatus.missing ? state.status : undefined);
+// Why the server refused the last request, shown with ServerErrorPipe
 export const errorSelector = createSelector(
   roomFeatureSelector,
-  (state: RoomState): string | undefined => state.status === RoomStatus.error ? errorMessage(state.error) : undefined);
+  (state: RoomState): unknown => state.status === RoomStatus.error ? state.error : undefined);
 
 // Revealed cards turn over one after another in the order of the deck: the lowest voted value at once, every next
 // voted value one step later, equal votes together. Deck values nobody voted for add no wait, and with many different

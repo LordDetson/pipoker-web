@@ -22,7 +22,7 @@ export class AddParticipantComponent implements OnInit, OnDestroy {
   joinToRoomForm: FormGroup;
   roomId: string;
   ngDestroyed$ = new Subject<void>();
-  error$: Observable<string | undefined> = this.store.select(RoomSelector.errorSelector);
+  error$: Observable<unknown> = this.store.select(RoomSelector.errorSelector);
 
   constructor(
     private router: Router,

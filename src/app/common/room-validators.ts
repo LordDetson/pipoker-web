@@ -1,6 +1,7 @@
 import {AbstractControl, ValidationErrors} from "@angular/forms";
 import {I18nService} from "../i18n/i18n.service";
 import {TranslationKey} from "../i18n/translations";
+import {ErrorCode, ErrorEvent} from "../models/room-event";
 
 // The same limits pipoker-app checks when a room is created or joined, so the forms reject what the server would.
 export class RoomValidators {
@@ -83,7 +84,19 @@ export function validationMessage(errors: ValidationErrors | null | undefined, f
   return undefined;
 }
 
-// Errors from the server arrive as {destination, message}.
-export function errorMessage(error: any): string {
-  return error?.message ?? String(error);
+const SERVER_ERRORS: Record<ErrorCode, TranslationKey> = {
+  [ErrorCode.roomNotFound]: "serverError.roomNotFound",
+  [ErrorCode.nicknameTaken]: "serverError.nicknameTaken",
+  [ErrorCode.participantNotFound]: "serverError.participantNotFound",
+  [ErrorCode.watcherCannotVote]: "serverError.watcherCannotVote",
+  [ErrorCode.cardNotInDeck]: "serverError.cardNotInDeck",
+  [ErrorCode.invalidData]: "serverError.invalidData",
+  [ErrorCode.unexpected]: "serverError.unexpected"
+};
+
+// Errors from the server arrive as {destination, message, code}: the code picks the text, the English message is
+// for developers. Anything else, such as a code this page doesn't know yet, is told as a failure of the server.
+export function serverErrorMessage(error: unknown, i18n: I18nService): string {
+  const code = (error as Partial<ErrorEvent> | undefined)?.code;
+  return i18n.translate(code && code in SERVER_ERRORS ? SERVER_ERRORS[code] : "serverError.unexpected");
 }
