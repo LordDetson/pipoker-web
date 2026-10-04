@@ -6,7 +6,7 @@
 </div>
 
 <ng-template #idle>
-  <div ngbDropdown placement="bottom top">
+  <div *ngIf="!(revealed$ | async)" ngbDropdown placement="bottom top">
     <button type="button" ngbDropdownToggle class="btn btn-sm timer-toggle" [title]="'timer.startTitle' | translate">
       <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
         <circle cx="8" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/>

@@ -259,10 +259,16 @@ export class FakePipokerServer {
           room.history = [...room.history, round];
         }
         room.votesShown = true;
+        room.timer = undefined;
         this.broadcast(room, RoomEventType.showVotes, round ? {round} : {});
         break;
       }
       case "timer/start": {
+        if (room.votesShown) {
+          this.error(client, destination, "The cards are revealed, so the timer can start in the next round",
+            ErrorCode.cardsRevealed);
+          return;
+        }
         const {seconds} = JSON.parse(body);
         room.timer = {seconds, endsAt: Date.now() + seconds * 1000};
         this.broadcast(room, RoomEventType.timerStarted, {timer: toTimerDto(room.timer)});

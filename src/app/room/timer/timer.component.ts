@@ -24,6 +24,8 @@ export class TimerComponent {
 
   readonly minutes = TIMER_MINUTES;
   readonly warningSeconds = WARNING_SECONDS;
+  // Once the cards are revealed there is nothing left to discuss, so the timer is offered again in the next round
+  revealed$: Observable<boolean> = this.store.select(RoomSelector.showVotingResultSelector);
   // While a timer runs: the seconds left, zero once the time is up
   countdown$: Observable<{ left: number } | undefined> = this.store.select(RoomSelector.timerSelector).pipe(
     switchMap(timer => timer ? this.secondsLeft(timer).pipe(map(left => ({left}))) : of(undefined))
