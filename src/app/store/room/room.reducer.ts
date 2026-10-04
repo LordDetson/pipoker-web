@@ -1,6 +1,6 @@
 import {Action, createReducer, on} from "@ngrx/store";
 import * as RoomAction from "./room.action";
-import {Participant} from "../../models/participant.model";
+import {Participant, sameNickname} from "../../models/participant.model";
 import {Card} from "../../models/card.model";
 import {RoomState, RoomStatus} from "./room-state";
 
@@ -41,11 +41,14 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
     error,
     status: RoomStatus.error
   })),
+  // Someone who refreshed the page comes back with this event and in the room loaded right after it, in either order
   on(RoomAction.addParticipantSuccess, (state, {participant}) => ({
     ...state,
     room: {
       ...state.room,
-      participants: [...state.room.participants, participant]
+      participants: state.room.participants.some(existing => sameNickname(existing.nickname, participant.nickname))
+        ? state.room.participants
+        : [...state.room.participants, participant]
     }
   })),
   on(RoomAction.addParticipantFailure, (state, {error}) => ({

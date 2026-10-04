@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {filter, map, merge, Observable, take} from "rxjs";
 import {Room} from "../models/room.model";
 import {Card} from "../models/card.model";
-import {Participant} from "../models/participant.model";
+import {Participant, sameNickname} from "../models/participant.model";
 import {Vote} from "../models/vote";
 import {RoomWebSocketService} from "./room-web-socket.service";
 import {CreateRoomInfo} from "../models/create-room.model";
@@ -137,8 +137,4 @@ function toRoom(room: RoomDto): Room {
     votingResult: {map},
     votesShown: room.votesShown ?? false
   };
-}
-
-function sameNickname(nickname1: string, nickname2: string): boolean {
-  return nickname1.trim().toLowerCase() === nickname2.trim().toLowerCase();
 }

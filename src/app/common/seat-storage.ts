@@ -1,9 +1,9 @@
 import {Participant} from "../models/participant.model";
 import {AppConstants} from "./app-constants";
 
-// Remembers who the person is in a room in this browser tab. After a lost connection they take their seat back:
-// the server keeps it for 10 seconds before the person leaves the room. After a page refresh the seat is gone,
-// and the join form offers the remembered nickname. sessionStorage belongs to the tab and survives a refresh,
+// Remembers who the person is in a room in this browser tab. After a lost connection or a page refresh they take
+// their seat back: the server keeps it for 10 seconds before the person leaves the room. When the seat is gone,
+// the join form offers the remembered nickname. sessionStorage belongs to the tab and survives a refresh,
 // but not closing the tab.
 export class SeatStorage {
 

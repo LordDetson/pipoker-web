@@ -38,8 +38,8 @@ export class RoomComponent implements OnInit, OnDestroy {
         }
       });
     // A tab that remembers its seat takes it back instead of joining again. Closing or refreshing the page is
-    // reported by RoomWebSocketService, and the server lets the seat go at once, so after a refresh this fails
-    // and the join form offers the remembered nickname.
+    // reported by RoomWebSocketService: the server takes the person away from the table at once, but keeps the seat
+    // and the vote, so a refreshed page brings them back. When the seat is gone, the join form offers the nickname.
     this.joined$.pipe(take(1)).subscribe(joined => {
       const seat = SeatStorage.find(roomId);
       if (!joined && seat) {
