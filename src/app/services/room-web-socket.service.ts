@@ -61,9 +61,9 @@ export class RoomWebSocketService implements OnDestroy {
   ) {
     // No need to wait for the next attempt when the browser is back online
     window.addEventListener("online", this.onOnline);
-    // Firefox can stop a script of a closing page midway, and the page-closed mark stopped with it is never sent.
-    // It stops one script at a time, so two listeners say it: the capturing one runs first, and the other one says it
-    // when the first was stopped. Angular calls all listeners of one event and phase from a single script.
+    // Firefox can stop the script that is running while a page closes, and then the page-closed mark is not sent.
+    // The scripts after it still run, so two listeners say it: the capturing one runs first, and the other one says it
+    // when the first one was stopped. They differ in capture, as Angular calls all listeners of one phase in one script.
     window.addEventListener("pagehide", this.onPageHide, true);
     window.addEventListener("pagehide", this.onPageHide);
   }
