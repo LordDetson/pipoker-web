@@ -16,6 +16,11 @@ export const LANGUAGES: LanguageOption[] = [
 
 // Every text of the interface. Values may contain {name} placeholders, filled in by I18nService.translate.
 const en = {
+  // The page title and the description shown in search results (src/index.html holds the Russian ones too)
+  "meta.title": "PiPoker — free online Planning Poker for agile teams",
+  "meta.description": "Free online Planning Poker for scrum and agile teams: create a room, share the link "
+    + "and estimate tasks together. No sign-up, works on a computer and on a phone.",
+
   "header.tagline": "Free Planning Poker for teams",
   "header.invite": "Invite",
   "header.copyInvitationLink": "Copy the invitation link",
@@ -77,6 +82,10 @@ const en = {
 export type TranslationKey = keyof typeof en;
 
 const ru: Record<TranslationKey, string> = {
+  "meta.title": "PiPoker — бесплатный Planning Poker онлайн для оценки задач",
+  "meta.description": "Бесплатный Planning Poker онлайн для scrum-команд: создайте комнату, отправьте ссылку "
+    + "и оценивайте задачи вместе. Без регистрации, на компьютере и телефоне.",
+
   "header.tagline": "Бесплатный Planning Poker для команд",
   "header.invite": "Пригласить",
   "header.copyInvitationLink": "Скопировать ссылку-приглашение",

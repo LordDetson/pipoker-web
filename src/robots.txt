@@ -1,0 +1,5 @@
+User-agent: *
+# A room lives only while people are in it, so its invitation link must not get into search results
+Disallow: /room/
+
+Sitemap: https://pipoker.duckdns.org/sitemap.xml

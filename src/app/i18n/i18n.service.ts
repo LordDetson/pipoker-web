@@ -58,5 +58,7 @@ export class I18nService {
   private setLanguage(language: Language): void {
     this.language = language;
     this.document.documentElement.lang = language;
+    this.document.title = this.translate("meta.title");
+    this.document.querySelector('meta[name="description"]')?.setAttribute("content", this.translate("meta.description"));
   }
 }
