@@ -43,10 +43,10 @@ describe("I18nService", () => {
     expect(i18n.translate("header.tagline")).toBe("Бесплатный Planning Poker для команд");
   });
 
-  it("remembers the language switched to and prefers it to the browser's one", () => {
+  it("remembers the language picked and prefers it to the browser's one", () => {
     const i18n = create(["ru-RU"]);
 
-    i18n.switchLanguage();
+    i18n.choose("en");
 
     expect(i18n.language).toBe("en");
     expect(document.documentElement.lang).toBe("en");

@@ -1,6 +1,6 @@
 import {Inject, Injectable, InjectionToken} from "@angular/core";
 import {DOCUMENT} from "@angular/common";
-import {Language, TranslationKey, translations} from "./translations";
+import {Language, LANGUAGES, LanguageOption, TranslationKey, translations} from "./translations";
 import {AppConstants} from "../common/app-constants";
 
 // The languages the browser asks for, most preferred first
@@ -40,9 +40,14 @@ export class I18nService {
     this.setLanguage(chosen === "en" || chosen === "ru" ? chosen : detectLanguage(browserLanguages));
   }
 
-  switchLanguage(): void {
-    this.setLanguage(this.language === "en" ? "ru" : "en");
-    localStorage.setItem(AppConstants.language, this.language);
+  get current(): LanguageOption {
+    return LANGUAGES.find(option => option.code === this.language)!;
+  }
+
+  // Called when the language is picked in the header
+  choose(language: Language): void {
+    this.setLanguage(language);
+    localStorage.setItem(AppConstants.language, language);
   }
 
   translate(key: TranslationKey, params: { [name: string]: string | number } = {}): string {
