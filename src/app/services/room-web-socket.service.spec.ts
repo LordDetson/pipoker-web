@@ -1,4 +1,5 @@
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
+import {NgZone} from "@angular/core";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {RoomWebSocketService, STOMP_CLIENT_FACTORY} from "./room-web-socket.service";
 import {FakeStompClient} from "../testing/fake-stomp";
@@ -345,6 +346,28 @@ describe("RoomWebSocketService", () => {
       const client = connectedClient();
 
       hidePage();
+
+      expect(client.sent).toEqual([{destination: "/app/presence/page-closed", headers: {}, body: ""}]);
+    });
+
+    it("says it from the other listener when Firefox stops the first one midway", () => {
+      const listeners: { listener: any, capture?: boolean }[] = [];
+      spyOn(window, "addEventListener").and.callFake((type: string, listener: any, capture?: any) => {
+        if (type === "pagehide") {
+          listeners.push({listener, capture});
+        }
+      });
+      const pageService = new RoomWebSocketService(store, TestBed.inject(NgZone), TestBed.inject(STOMP_CLIENT_FACTORY), [1000]);
+      pageService.watch("/topic/test").subscribe();
+      const client = connectedClient();
+      const event = new PageTransitionEvent("pagehide", {persisted: false});
+      expect(listeners.map(({capture}) => capture)).withContext("one listener captures, so it runs separately").toEqual([true, undefined]);
+
+      // A stopped script ends where it is, like the error does here
+      const send = spyOn(client, "send").and.throwError("stopped");
+      expect(() => listeners[0].listener(event)).toThrowError("stopped");
+      send.and.callThrough();
+      listeners[1].listener(event);
 
       expect(client.sent).toEqual([{destination: "/app/presence/page-closed", headers: {}, body: ""}]);
     });

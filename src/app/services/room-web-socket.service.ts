@@ -51,6 +51,7 @@ export class RoomWebSocketService implements OnDestroy {
   private reconnectTimer: any;
   private readonly onOnline = () => this.reconnectNow();
   private readonly onPageHide = (event: PageTransitionEvent) => this.sayPageClosed(event);
+  private pageClosedSaid = false;
 
   constructor(
     private store: Store,
@@ -60,11 +61,16 @@ export class RoomWebSocketService implements OnDestroy {
   ) {
     // No need to wait for the next attempt when the browser is back online
     window.addEventListener("online", this.onOnline);
+    // Firefox can stop the script that is running while a page closes, and then the page-closed mark is not sent.
+    // The scripts after it still run, so two listeners say it: the capturing one runs first, and the other one says it
+    // when the first one was stopped. They differ in capture, as Angular calls all listeners of one phase in one script.
+    window.addEventListener("pagehide", this.onPageHide, true);
     window.addEventListener("pagehide", this.onPageHide);
   }
 
   ngOnDestroy() {
     window.removeEventListener("online", this.onOnline);
+    window.removeEventListener("pagehide", this.onPageHide, true);
     window.removeEventListener("pagehide", this.onPageHide);
     this.disconnect();
   }
@@ -215,8 +221,9 @@ export class RoomWebSocketService implements OnDestroy {
   // a new one would not be ready before the page is gone. A page kept in the back-forward cache can come back,
   // so it says nothing; if its connection is closed meanwhile, the server keeps the seat as for a lost connection.
   private sayPageClosed(event: PageTransitionEvent) {
-    if (!event.persisted && this.stompClient !== null && this.connected$.value) {
+    if (!event.persisted && !this.pageClosedSaid && this.stompClient !== null && this.connected$.value) {
       this.stompClient.send(RoomDestinations.pageClosed, {}, "");
+      this.pageClosedSaid = true;
     }
   }
 
