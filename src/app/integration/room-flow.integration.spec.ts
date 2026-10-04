@@ -28,6 +28,7 @@ import {AppConstants} from "../common/app-constants";
 import {FakePipokerServer} from "../testing/fake-stomp";
 import {participant} from "../testing/test-data";
 import {TranslatePipe} from "../i18n/translate.pipe";
+import {ServerErrorPipe} from "../i18n/server-error.pipe";
 import {AboutComponent} from "../about/about.component";
 import {HistoryComponent} from "../room/history/history.component";
 
@@ -71,7 +72,8 @@ describe("PiPoker room (integration)", () => {
           }
         }),
         EffectsModule.forRoot([RoomEffect, ParticipantEffect]),
-        TranslatePipe
+        TranslatePipe,
+        ServerErrorPipe
       ],
       providers: [
         {provide: STOMP_CLIENT_FACTORY, useValue: server.createClient},
@@ -515,7 +517,7 @@ describe("PiPoker room (integration)", () => {
     await settle();
     await click(button("Join Room"));
 
-    expect(page.querySelector(".alert-danger")!.textContent).toBe("Alex is already in the room");
+    expect(page.querySelector(".alert-danger")!.textContent).toBe("Someone with this name is already in the room");
     expect(button("Join Room")).withContext("the form stays to try another nickname").toBeDefined();
     expect(page.querySelector("app-table")).toBeNull();
   });

@@ -8,7 +8,9 @@ import * as RoomAction from "../store/room/room.action";
 import {appState, cards} from "../testing/test-data";
 import {RoomStatus} from "../store/room/room-state";
 import {TranslatePipe} from "../i18n/translate.pipe";
+import {ServerErrorPipe} from "../i18n/server-error.pipe";
 import {AboutComponent} from "../about/about.component";
+import {ErrorCode} from "../models/room-event";
 import {MyDecks, PRESET_DECKS} from "../common/decks";
 
 describe("CreateRoomComponent", () => {
@@ -19,7 +21,7 @@ describe("CreateRoomComponent", () => {
     localStorage.clear();
     TestBed.configureTestingModule({
       declarations: [CreateRoomComponent, AboutComponent],
-      imports: [ReactiveFormsModule, TranslatePipe],
+      imports: [ReactiveFormsModule, TranslatePipe, ServerErrorPipe],
       providers: [
         provideMockStore({initialState: appState()}),
         {provide: RoomService, useValue: {}}
@@ -219,10 +221,12 @@ describe("CreateRoomComponent", () => {
     create();
     expect(fixture.nativeElement.querySelector(".alert-danger")).toBeNull();
 
-    store.setState(appState({status: RoomStatus.error, error: {destination: "/app/room/create", message: "value - size must be between 1 and 6"}}));
+    store.setState(appState({status: RoomStatus.error, error: {destination: "/app/room/create",
+        message: "value - size must be between 1 and 6", code: ErrorCode.invalidData}}));
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector(".alert-danger").textContent).toBe("value - size must be between 1 and 6");
+    expect(fixture.nativeElement.querySelector(".alert-danger").textContent)
+      .toBe("The server didn't accept the data. Check it and try again");
   });
 
   it("stops remembering values once destroyed", () => {

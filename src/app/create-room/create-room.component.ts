@@ -30,7 +30,7 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
 
   createRoomForm: FormGroup<CreateRoomFormGroup>;
   ngDestroyed$ = new Subject<void>();
-  error$: Observable<string | undefined> = this.store.select(RoomSelector.errorSelector);
+  error$: Observable<unknown> = this.store.select(RoomSelector.errorSelector);
   readonly presetDecks = PRESET_DECKS;
   myDecks: NamedDeck[] = MyDecks.load();
   // The deck picked in the list: "preset:<id>", "mine:<name>", or "" while the cards match none of them

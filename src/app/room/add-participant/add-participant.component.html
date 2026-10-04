@@ -24,7 +24,7 @@
         {{"form.watcher" | translate}}
       </label>
     </div>
-    <div *ngIf="error$ | async as error" class="alert alert-danger" role="alert">{{error}}</div>
+    <div *ngIf="error$ | async as error" class="alert alert-danger" role="alert">{{error | serverError}}</div>
     <div class="d-grid gap-2">
       <button class="btn btn-primary" type="submit" [disabled]="joinToRoomForm.invalid">{{"form.joinRoom" | translate}}</button>
     </div>
