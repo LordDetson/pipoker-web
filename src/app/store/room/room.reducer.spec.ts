@@ -81,6 +81,13 @@ describe("roomReducer", () => {
     expect(state.showVotingResult).toBeFalse();
   });
 
+  it("tells that the room no longer exists once everyone left it", () => {
+    const state = roomReducer(roomState(), RoomAction.removed({roomId: "id"}));
+
+    expect(state.status).toBe(RoomStatus.missing);
+    expect(state.room.id).toBe("");
+  });
+
   it("adds a participant to the room", () => {
     const state = roomReducer(roomState(), RoomAction.addParticipantSuccess({participant: participant("Alex", true)}));
 

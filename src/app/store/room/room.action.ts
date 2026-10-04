@@ -26,6 +26,7 @@ export enum RoomActionType {
   startNewVotingSuccess = "[Room] start new voting success",
   startNewVotingFailure = "[Room] start new voting failure",
   closed = "[Room] closed",
+  removed = "[Room] removed",
   doNothing = "[Room] do nothing",
 }
 
@@ -65,5 +66,8 @@ export const startNewVotingSuccess = createAction(RoomActionType.startNewVotingS
 export const startNewVotingFailure = createAction(RoomActionType.startNewVotingFailure,
   props<{ error: any }>());
 export const closed = createAction(RoomActionType.closed,
+  props<{ roomId: string }>());
+// Everyone left the room while this page was open on it without a seat, for example on the join form
+export const removed = createAction(RoomActionType.removed,
   props<{ roomId: string }>());
 export const doNothing = createAction(RoomActionType.doNothing);

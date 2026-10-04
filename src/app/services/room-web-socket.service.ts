@@ -170,6 +170,9 @@ export class RoomWebSocketService implements OnDestroy {
       case RoomEventType.roomClosed:
         this.store.dispatch(RoomAction.closed({roomId: event.roomId}));
         break;
+      case RoomEventType.roomRemoved:
+        this.store.dispatch(RoomAction.removed({roomId: event.roomId}));
+        break;
       default:
         console.log("default");
     }
