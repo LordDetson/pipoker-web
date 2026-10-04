@@ -22,6 +22,8 @@ const en = {
   "header.support": "Support",
   "header.supportTitle": "Support PiPoker",
   "header.language": "Language",
+  "header.theme": "Theme",
+  "header.menu": "Menu",
 
   "form.nickname": "Nickname",
   "form.nicknamePlaceholder": "Choose your display name",
@@ -81,6 +83,8 @@ const ru: Record<TranslationKey, string> = {
   "header.support": "Поддержать",
   "header.supportTitle": "Поддержать PiPoker",
   "header.language": "Язык",
+  "header.theme": "Тема",
+  "header.menu": "Меню",
 
   "form.nickname": "Имя",
   "form.nicknamePlaceholder": "Как вас будут видеть другие",

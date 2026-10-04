@@ -1,11 +1,10 @@
 :host {
   display: block;
-  height: 12vh;
-  min-height: 12vh;
-  max-height: 12vh;
+  height: 5.5rem;
 }
 
-/* The room name stays centred between the logo and the buttons; when space runs out it is cut, never the buttons */
+/* The room name stays centred between the logo and the buttons. Everything stays on one line of the fixed height:
+   when it does not fit, HeaderComponent.fit takes the compact steps below one by one. */
 .header-grid {
   display: grid;
   grid-template-columns: minmax(max-content, 1fr) minmax(0, max-content) minmax(max-content, 1fr);
@@ -16,21 +15,42 @@
   grid-column: 3;
 }
 
-/* On narrower screens the logo, the room name and the buttons take a line each */
-@media (max-width: 991.98px) {
-  :host {
-    height: auto;
-    max-height: none;
-  }
+.wordmark {
+  display: flex;
+  flex-direction: column;
+}
 
-  .header-grid {
-    grid-template-columns: 100%;
-    row-gap: 0.5rem;
-  }
+.room-name {
+  font-size: 1.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .buttons {
-    grid-column: 1;
-  }
+.without-tagline .tagline,
+.logo-only .wordmark,
+.language-flag-only .language-select .button-label,
+.support-heart-only .support-link .button-label,
+.invite-icon-only .invitation-link .button-label {
+  display: none;
+}
+
+.small-room-name .room-name {
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+/* A name of several words breaks into at most two lines */
+.small-room-name .room-name.wraps {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.buttons .btn {
+  white-space: nowrap;
 }
 
 .add-user-icon {
@@ -62,6 +82,10 @@
   line-height: 1;
 }
 
+.support-item > .heart-icon {
+  color: #f15f2c;
+}
+
 .support-link:hover > .heart-icon {
   transform: scale(1.15);
 }
@@ -85,4 +109,9 @@
 .copied > .add-user-icon {
   background: url("src/assets/svg/copy.svg") no-repeat;
   background-size: 26px 26px;
+}
+
+/* The three lines already say that the button opens a menu */
+.settings-dropdown .dropdown-toggle::after {
+  display: none;
 }

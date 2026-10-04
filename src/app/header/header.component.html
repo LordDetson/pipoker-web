@@ -1,18 +1,17 @@
-<header class="header-grid align-items-center h-100 px-3 py-2 shadow-sm common-transition">
-  <a class="d-flex align-items-center justify-content-center justify-content-lg-start link-body-emphasis text-decoration-none" href="/">
+<header #header class="header-grid align-items-center h-100 px-3 py-2 shadow-sm common-transition" [ngClass]="compactSteps">
+  <a class="logo d-flex align-items-center gap-3 link-body-emphasis text-decoration-none" href="/">
     <img src="/assets/svg/pipoker-logo.svg"
          width="55"
          height="55"
-         class="me-3"
          alt="PiPoker Logo">
-    <span class="d-flex flex-column">
+    <span class="wordmark">
       <strong class="fs-1 lh-1">PiPoker</strong>
       <small class="tagline text-body-secondary">{{"header.tagline" | translate}}</small>
     </span>
   </a>
-  <strong *ngIf="roomName$ | async as roomName" class="text-center text-truncate fs-3">{{roomName}}</strong>
-  <div class="buttons d-flex flex-wrap justify-content-center justify-content-lg-end align-items-center gap-3">
-    <button *ngIf="roomId$ | async as roomId" type="button" class="btn common-transition d-flex align-items-center invitation-link"
+  <strong *ngIf="roomName" #roomNameElement class="room-name text-center" [class.wraps]="roomNameWraps">{{roomName}}</strong>
+  <div class="buttons d-flex justify-content-end align-items-center gap-3">
+    <button *ngIf="roomId" type="button" class="btn common-transition d-flex align-items-center invitation-link"
             [ngClass]="{
               'btn-primary': !copied,
               'btn-success': copied,
@@ -21,28 +20,62 @@
             }"
             [title]="'header.copyInvitationLink' | translate" (click)="copyInvitationLink(roomId)">
       <span class="add-user-icon common-transition"></span>
-      {{"header.invite" | translate}}
+      <span class="button-label">{{"header.invite" | translate}}</span>
     </button>
-    <a *ngIf="supportUrl" class="btn common-transition d-flex align-items-center support-link"
-       [href]="supportUrl" target="_blank" rel="noopener" [title]="'header.supportTitle' | translate">
-      <span class="heart-icon me-1" aria-hidden="true">&#9829;</span>
-      {{"header.support" | translate}}
-    </a>
-    <div ngbDropdown placement="bottom-end" class="language-select">
-      <button type="button" ngbDropdownToggle class="btn btn-outline-secondary common-transition d-flex align-items-center"
-              [attr.aria-label]="'header.language' | translate" [title]="'header.language' | translate">
-        <img [src]="i18n.current.flag" width="24" height="16" class="flag me-2" alt="">
-        {{i18n.current.short}}
-      </button>
-      <div ngbDropdownMenu>
-        <button *ngFor="let language of languages" type="button" ngbDropdownItem
-                class="d-flex align-items-center" [class.active]="language.code === i18n.language"
-                [attr.lang]="language.code" (click)="i18n.choose(language.code)">
-          <img [src]="language.flag" width="24" height="16" class="flag me-2" alt="">
-          {{language.name}}
+    <ng-container *ngIf="!taken('settings-menu'); else settingsMenu">
+      <a *ngIf="supportUrl" class="btn common-transition d-flex align-items-center gap-1 support-link"
+         [href]="supportUrl" target="_blank" rel="noopener" [title]="'header.supportTitle' | translate">
+        <span class="heart-icon" aria-hidden="true">&#9829;</span>
+        <span class="button-label">{{"header.support" | translate}}</span>
+      </a>
+      <div ngbDropdown placement="bottom-end" class="language-select">
+        <button type="button" ngbDropdownToggle class="btn btn-outline-secondary common-transition d-flex align-items-center gap-2"
+                [attr.aria-label]="'header.language' | translate" [title]="'header.language' | translate">
+          <img [src]="i18n.current.flag" width="24" height="16" class="flag" alt="">
+          <span class="button-label">{{i18n.current.short}}</span>
         </button>
+        <div ngbDropdownMenu>
+          <button *ngFor="let language of languages" type="button" ngbDropdownItem
+                  class="d-flex align-items-center gap-2" [class.active]="language.code === i18n.language"
+                  [attr.lang]="language.code" (click)="chooseLanguage(language.code)">
+            <img [src]="language.flag" width="24" height="16" class="flag" alt="">
+            {{language.name}}
+          </button>
+        </div>
       </div>
-    </div>
-    <app-theme-switcher/>
+      <app-theme-switcher/>
+    </ng-container>
   </div>
 </header>
+
+<!-- The last step: Support, the language and the theme move into one menu -->
+<ng-template #settingsMenu>
+  <div ngbDropdown placement="bottom-end" autoClose="outside" class="settings-dropdown">
+    <button type="button" ngbDropdownToggle class="btn btn-outline-secondary common-transition d-flex align-items-center"
+            [attr.aria-label]="'header.menu' | translate" [title]="'header.menu' | translate">
+      <svg class="menu-icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M2 4h16M2 10h16M2 16h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div ngbDropdownMenu>
+      <a *ngIf="supportUrl" ngbDropdownItem class="d-flex align-items-center gap-2 support-item"
+         [href]="supportUrl" target="_blank" rel="noopener" [title]="'header.supportTitle' | translate">
+        <span class="heart-icon" aria-hidden="true">&#9829;</span>
+        {{"header.support" | translate}}
+      </a>
+      <div *ngIf="supportUrl" class="dropdown-divider"></div>
+      <h6 class="dropdown-header">{{"header.language" | translate}}</h6>
+      <button *ngFor="let language of languages" type="button" ngbDropdownItem
+              class="d-flex align-items-center gap-2" [class.active]="language.code === i18n.language"
+              [attr.lang]="language.code" (click)="chooseLanguage(language.code)">
+        <img [src]="language.flag" width="24" height="16" class="flag" alt="">
+        {{language.name}}
+      </button>
+      <div class="dropdown-divider"></div>
+      <div class="dropdown-item-text d-flex align-items-center justify-content-between gap-3">
+        {{"header.theme" | translate}}
+        <app-theme-switcher/>
+      </div>
+    </div>
+  </div>
+</ng-template>
