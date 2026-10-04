@@ -28,6 +28,7 @@ import {Chart} from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {AboutComponent} from './about/about.component';
 import {TranslatePipe} from './i18n/translate.pipe';
+import {HistoryComponent} from './room/history/history.component';
 
 Chart.register(ChartDataLabels);
 
@@ -45,6 +46,7 @@ Chart.register(ChartDataLabels);
     DeckCardComponent,
     TableCardComponent,
     VotingResultChartComponent,
+    HistoryComponent,
     AboutComponent
   ],
   imports: [

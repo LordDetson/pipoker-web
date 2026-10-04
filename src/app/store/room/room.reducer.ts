@@ -15,7 +15,8 @@ const initialRoomState: RoomState = {
     participants: [],
     votingResult: {
       map: new Map<string, Card>([])
-    }
+    },
+    history: []
   },
   showVotingResult: false,
   error: undefined,
@@ -85,8 +86,12 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
     };
   }),
   on(RoomAction.cardSelectionFailure, failed),
-  on(RoomAction.showVotingResultSuccess, state => ({
+  // The room loaded again after a reconnect may already have the round of a late event
+  on(RoomAction.showVotingResultSuccess, (state, {round}) => ({
     ...state,
+    room: round && !state.room.history.some(recorded => recorded.revealedAt === round.revealedAt)
+      ? {...state.room, history: [...state.room.history, round]}
+      : state.room,
     showVotingResult: true
   })),
   on(RoomAction.startNewVotingSuccess, state => ({

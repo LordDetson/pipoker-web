@@ -131,9 +131,31 @@ describe("roomReducer", () => {
   });
 
   it("reveals the votes", () => {
-    const state = roomReducer(roomState(), RoomAction.showVotingResultSuccess());
+    const before = roomState();
+
+    const state = roomReducer(before, RoomAction.showVotingResultSuccess({}));
 
     expect(state.showVotingResult).toBeTrue();
+    expect(state.room).withContext("the history does not change without a new round").toBe(before.room);
+  });
+
+  it("adds the revealed round to the history", () => {
+    const first = {revealedAt: "2026-10-04T17:00:00.123Z", votes: [{nickname: "Dmitry", card: "1h"}]};
+    const second = {revealedAt: "2026-10-04T17:05:00.456Z", votes: [{nickname: "Dmitry", card: "1d"}]};
+    const before = roomState({room: room({history: [first]})});
+
+    const state = roomReducer(before, RoomAction.showVotingResultSuccess({round: second}));
+
+    expect(state.room.history).toEqual([first, second]);
+    expect(before.room.history).withContext("previous state is not mutated").toEqual([first]);
+  });
+
+  it("does not add a round the room loaded after a reconnect already has", () => {
+    const round = {revealedAt: "2026-10-04T17:00:00.123Z", votes: [{nickname: "Dmitry", card: "1h"}]};
+
+    const state = roomReducer(roomState({room: room({history: [round]})}), RoomAction.showVotingResultSuccess({round: {...round}}));
+
+    expect(state.room.history).toEqual([round]);
   });
 
   it("clears the votes and hides the result for a new voting", () => {

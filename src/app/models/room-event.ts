@@ -1,5 +1,5 @@
 import {Participant} from "./participant.model";
-import {VoteDto} from "./room-dto.model";
+import {RoundDto, VoteDto} from "./room-dto.model";
 
 export enum RoomEventType {
   participantAdded = "PARTICIPANT_ADDED",
@@ -19,7 +19,9 @@ export interface RoomEvent {
   roomId: string,
   eventType: RoomEventType,
   participant?: Participant,
-  vote?: VoteDto
+  vote?: VoteDto,
+  // With showVotes: the round that entered the room's history, none when the cards were already revealed
+  round?: RoundDto
 }
 
 export enum ErrorCode {

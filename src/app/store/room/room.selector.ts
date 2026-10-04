@@ -5,6 +5,7 @@ import {roomStateNode} from "../intex";
 import {RoomState, RoomStatus} from "./room-state";
 import {errorMessage} from "../../common/room-validators";
 import {VotingResult} from "../../models/voting-result.model";
+import {VoteDto} from "../../models/room-dto.model";
 
 export const roomFeatureSelector = createFeatureSelector<RoomState>(roomStateNode);
 
@@ -54,4 +55,44 @@ export const flipDelaysSelector = createSelector(
       .sort((first, second) => deckValues.indexOf(first) - deckValues.indexOf(second));
     const step = Math.min(FLIP_STEP_SECONDS, LAST_FLIP_DELAY_LIMIT_SECONDS / Math.max(votedValues.length - 1, 1));
     return new Map([...votingResult.map].map(([nickname, card]) => [nickname, votedValues.indexOf(card.value) * step]));
+  });
+
+export interface Tally {
+  card: string;
+  count: number;
+}
+
+export interface HistoryRound {
+  // Counted from 1 in the order the rounds were revealed
+  number: number;
+  revealedAt: string;
+  // How many picked each card, in the order of the deck; cards that aren't in the deck anymore go last
+  tally: Tally[];
+  // The card most people picked, none when several cards share the most votes
+  result?: string;
+  votes: VoteDto[];
+}
+
+// The room's history, the latest round first
+export const historySelector = createSelector(
+  roomFeatureSelector,
+  cardsSelector,
+  (state: RoomState, deck: Card[]): HistoryRound[] => {
+    const deckValues = deck.map(card => card.value);
+    const order = (value: string) => deckValues.includes(value) ? deckValues.indexOf(value) : deckValues.length;
+    return state.room.history.map((round, index) => {
+      const counts = new Map<string, number>();
+      round.votes.forEach(vote => counts.set(vote.card, (counts.get(vote.card) ?? 0) + 1));
+      const tally = [...counts].map(([card, count]) => ({card, count}))
+        .sort((first, second) => order(first.card) - order(second.card));
+      const most = Math.max(...tally.map(entry => entry.count));
+      const leaders = tally.filter(entry => entry.count === most);
+      return {
+        number: index + 1,
+        revealedAt: round.revealedAt,
+        tally,
+        result: leaders.length === 1 ? leaders[0].card : undefined,
+        votes: round.votes
+      };
+    }).reverse();
   });
