@@ -97,7 +97,7 @@ describe("TimerComponent", () => {
     runTimer(300, Date.now() + 125000);
     expect(shown()).toBe("2:05");
 
-    fixture.nativeElement.querySelector(".timer .btn-close").click();
+    fixture.nativeElement.querySelector(".timer .time").click();
 
     expect(store.dispatch).toHaveBeenCalledOnceWith(RoomAction.stopTimer());
     discardPeriodicTasks();
