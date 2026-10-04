@@ -5,6 +5,7 @@ import {idSelector, nameSelector} from "../store/room/room.selector";
 import {Clipboard} from '@angular/cdk/clipboard';
 import {environment} from "../../env/env";
 import {I18nService} from "../i18n/i18n.service";
+import {LANGUAGES, LanguageOption} from "../i18n/translations";
 
 @Component({
   selector: 'app-header',
@@ -17,6 +18,7 @@ export class HeaderComponent {
   roomName$: Observable<string> = this.store.pipe(select(nameSelector));
   copied: boolean;
   supportUrl: string = environment.supportUrl;
+  languages: LanguageOption[] = LANGUAGES;
 
   constructor(
     private store: Store,

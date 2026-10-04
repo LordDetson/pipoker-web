@@ -169,7 +169,8 @@ describe("PiPoker room (integration)", () => {
 
   it("speaks Russian once the language is switched", async () => {
     await open("/");
-    await click(page.querySelector<HTMLElement>("button.language-switch")!);
+    await click(page.querySelector<HTMLElement>(".language-select [ngbDropdownToggle]")!);
+    await click(page.querySelector<HTMLElement>(".language-select [ngbDropdownItem][lang=ru]")!);
 
     expect(page.querySelector("app-about h2")!.textContent).toBe("Что такое PiPoker?");
     await type("#nicknameInput", "D");

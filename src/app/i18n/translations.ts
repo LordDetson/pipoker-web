@@ -1,12 +1,26 @@
 export type Language = "en" | "ru";
 
+export interface LanguageOption {
+  code: Language;
+  // Shown on the language menu button next to the flag
+  short: string;
+  // Shown in the language menu, in the language itself
+  name: string;
+  flag: string;
+}
+
+export const LANGUAGES: LanguageOption[] = [
+  {code: "ru", short: "RU", name: "Русский", flag: "/assets/svg/flags/ru.svg"},
+  {code: "en", short: "EN", name: "English", flag: "/assets/svg/flags/gb.svg"}
+];
+
 // Every text of the interface. Values may contain {name} placeholders, filled in by I18nService.translate.
 const en = {
   "header.tagline": "Free Planning Poker for teams",
   "header.copyInvitationLink": "Copy Invitation Link",
   "header.support": "Support",
   "header.supportTitle": "Support PiPoker",
-  "header.switchLanguage": "Русский",
+  "header.language": "Language",
 
   "form.nickname": "Nickname",
   "form.nicknamePlaceholder": "Choose your display name",
@@ -58,7 +72,7 @@ const ru: Record<TranslationKey, string> = {
   "header.copyInvitationLink": "Скопировать приглашение",
   "header.support": "Поддержать",
   "header.supportTitle": "Поддержать PiPoker",
-  "header.switchLanguage": "English",
+  "header.language": "Язык",
 
   "form.nickname": "Имя",
   "form.nicknamePlaceholder": "Как вас будут видеть другие",
