@@ -107,6 +107,10 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
     ...initialRoomState,
     status: RoomStatus.closed
   })),
+  on(RoomAction.removed, () => ({
+    ...initialRoomState,
+    status: RoomStatus.missing
+  })),
 )
 
 // A request about a room that doesn't exist anymore shows that instead of the error

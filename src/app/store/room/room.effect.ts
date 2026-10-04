@@ -108,9 +108,9 @@ export class RoomEffect {
   );
 
   // The room is gone, so there is no seat to take back after a reload and nothing more to hear from the server
-  leaveClosedRoom$ = createEffect(() =>
+  leaveGoneRoom$ = createEffect(() =>
       this.actions$.pipe(
-        ofType(RoomAction.closed),
+        ofType(RoomAction.closed, RoomAction.removed),
         tap(({roomId}) => {
           SeatStorage.remove(roomId);
           this.roomWebSocketService.disconnect();

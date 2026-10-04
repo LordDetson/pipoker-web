@@ -299,6 +299,20 @@ describe("PiPoker room (integration)", () => {
     expect(SeatStorage.find("gone")).toBeUndefined();
   });
 
+  it("says that the invitation is no longer valid when the room is removed while the join form is open", async () => {
+    // The last person closed the page, and the room waits a moment for them to come back
+    const roomId = server.addRoom("Sprint 42", ["S", "M"]);
+    await open("/room/" + roomId);
+    expect(button("Join Room")).toBeDefined();
+
+    server.removeEmptyRoom(roomId);
+    await settle();
+
+    expect(page.querySelector("h2")!.textContent).toBe("This invitation is no longer valid");
+    expect(button("Join Room")).toBeUndefined();
+    expect(page.querySelector("app-header")!.textContent).not.toContain("Sprint 42");
+  });
+
   it("leaves a room the server closed for inactivity", async () => {
     const roomId = await createRoom("Dmitry", "Sprint", "1h; 1d");
 

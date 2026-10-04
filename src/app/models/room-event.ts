@@ -10,7 +10,9 @@ export enum RoomEventType {
   clearVotes = "CLEAR_VOTES",
   showVotes = "SHOW_VOTES",
   // Nobody did anything in the room for long, so the server closed it and everyone left
-  roomClosed = "ROOM_CLOSED"
+  roomClosed = "ROOM_CLOSED",
+  // Everyone left the room, so the server deleted it
+  roomRemoved = "ROOM_REMOVED"
 }
 
 export interface RoomEvent {

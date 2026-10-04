@@ -142,6 +142,13 @@ export class FakePipokerServer {
     this.broadcast(room, RoomEventType.roomClosed, {});
   }
 
+  // Like pipoker-app when nobody came back to the room after the last person left
+  removeEmptyRoom(roomId: string) {
+    const room = this.rooms.get(roomId)!;
+    this.rooms.delete(roomId);
+    this.broadcast(room, RoomEventType.roomRemoved, {});
+  }
+
   // Every open connection breaks at once, like when the network is gone
   loseConnections() {
     [...this.clients].forEach(client => client.lose());

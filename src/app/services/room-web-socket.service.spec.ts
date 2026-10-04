@@ -284,6 +284,7 @@ describe("RoomWebSocketService", () => {
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.clearVotes});
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.participantRemoved, participant: participant("Alex", true)});
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.roomClosed});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.roomRemoved});
 
       expect((store.dispatch as jasmine.Spy).calls.allArgs()).toEqual([
         [RoomAction.addParticipantSuccess({participant: participant("Alex", true)})],
@@ -291,7 +292,8 @@ describe("RoomWebSocketService", () => {
         [RoomAction.showVotingResultSuccess()],
         [RoomAction.startNewVotingSuccess()],
         [RoomAction.removeParticipantSuccess({participant: participant("Alex", true)})],
-        [RoomAction.closed({roomId: ROOM_ID})]
+        [RoomAction.closed({roomId: ROOM_ID})],
+        [RoomAction.removed({roomId: ROOM_ID})]
       ]);
     });
 
