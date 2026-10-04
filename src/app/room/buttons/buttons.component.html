@@ -8,7 +8,7 @@
             }"
             [disabled]="!(voted$ | async)"
             (click)="mainBtnClick()">
-      {{!(voted$ | async) ? 'Voting...' : !(showVotingResult$ | async) ? 'Reveal Cards' : 'Start New Voting'}}
+      {{(!(voted$ | async) ? 'room.voting' : !(showVotingResult$ | async) ? 'room.revealCards' : 'room.startNewVoting') | translate}}
     </button>
   </div>
 </div>

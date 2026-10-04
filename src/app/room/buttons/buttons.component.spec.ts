@@ -3,6 +3,7 @@ import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {ButtonsComponent} from "./buttons.component";
 import * as RoomAction from "../../store/room/room.action";
 import {appState, room, votes} from "../../testing/test-data";
+import {TranslatePipe} from "../../i18n/translate.pipe";
 
 describe("ButtonsComponent", () => {
   let fixture: ComponentFixture<ButtonsComponent>;
@@ -11,6 +12,7 @@ describe("ButtonsComponent", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [ButtonsComponent],
+      imports: [TranslatePipe],
       providers: [provideMockStore({initialState: appState()})]
     });
     store = TestBed.inject(MockStore);

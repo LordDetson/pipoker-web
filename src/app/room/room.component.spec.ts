@@ -9,6 +9,7 @@ import {RoomStatus} from "../store/room/room-state";
 import {CurrentParticipantStatus} from "../store/participant/current-participant-state";
 import {appState, participant, ROOM_ID} from "../testing/test-data";
 import {SeatStorage} from "../common/seat-storage";
+import {TranslatePipe} from "../i18n/translate.pipe";
 
 describe("RoomComponent", () => {
   let fixture: ComponentFixture<RoomComponent>;
@@ -20,6 +21,7 @@ describe("RoomComponent", () => {
     sessionStorage.clear();
     TestBed.configureTestingModule({
       declarations: [RoomComponent],
+      imports: [TranslatePipe],
       providers: [
         provideMockStore({initialState: appState()}),
         {provide: ActivatedRoute, useValue: {snapshot: {params: {id: ROOM_ID}}}}

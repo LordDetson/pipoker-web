@@ -26,6 +26,8 @@ import {VotingResultChartComponent} from './room/voting-result-chart/voting-resu
 import {NgChartsModule} from "ng2-charts";
 import {Chart} from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import {AboutComponent} from './about/about.component';
+import {TranslatePipe} from './i18n/translate.pipe';
 
 Chart.register(ChartDataLabels);
 
@@ -42,7 +44,8 @@ Chart.register(ChartDataLabels);
     DeckComponent,
     DeckCardComponent,
     TableCardComponent,
-    VotingResultChartComponent
+    VotingResultChartComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule,
@@ -60,7 +63,8 @@ Chart.register(ChartDataLabels);
     }),
     StoreDevtoolsModule.instrument({maxAge: 25}),
     EffectsModule.forRoot([RoomEffect, ParticipantEffect]),
-    NgChartsModule
+    NgChartsModule,
+    TranslatePipe
   ],
   providers: [],
   bootstrap: [AppComponent]

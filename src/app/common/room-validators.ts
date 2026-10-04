@@ -1,4 +1,6 @@
 import {AbstractControl, ValidationErrors} from "@angular/forms";
+import {I18nService} from "../i18n/i18n.service";
+import {TranslationKey} from "../i18n/translations";
 
 // The same limits pipoker-app checks when a room is created or joined, so the forms reject what the server would.
 export class RoomValidators {
@@ -50,31 +52,33 @@ export function parseDeck(deck: string): string[] {
     .filter(card => card.length > 0);
 }
 
-export function validationMessage(errors: ValidationErrors | null | undefined, field: string): string | undefined {
+export function validationMessage(errors: ValidationErrors | null | undefined, field: TranslationKey,
+                                  i18n: I18nService): string | undefined {
   if (!errors) {
     return undefined;
   }
+  const name = i18n.translate(field);
   if (errors["required"]) {
-    return field + " is required";
+    return i18n.translate("validation.required", {field: name});
   }
   if (errors["minlength"]) {
-    return field + " must be at least " + errors["minlength"].requiredLength + " characters long";
+    return i18n.translate("validation.minLength", {field: name, length: errors["minlength"].requiredLength});
   }
   if (errors["maxlength"]) {
-    return field + " must be at most " + errors["maxlength"].requiredLength + " characters long";
+    return i18n.translate("validation.maxLength", {field: name, length: errors["maxlength"].requiredLength});
   }
   if (errors["tooManyCards"]) {
-    return "The deck can contain at most " + errors["tooManyCards"].max + " cards";
+    return i18n.translate("validation.tooManyCards", {max: errors["tooManyCards"].max});
   }
   if (errors["cardTooLong"]) {
-    return "Card values can be at most " + RoomValidators.maxCardLength + " characters long: "
-      + errors["cardTooLong"].cards.join(", ");
+    return i18n.translate("validation.cardTooLong",
+      {length: RoomValidators.maxCardLength, cards: errors["cardTooLong"].cards.join(", ")});
   }
   if (errors["duplicateCards"]) {
-    return "Card values must be unique: " + errors["duplicateCards"].cards.join(", ");
+    return i18n.translate("validation.duplicateCards", {cards: errors["duplicateCards"].cards.join(", ")});
   }
   if (errors["taken"]) {
-    return errors["taken"].nickname + " is already in the room";
+    return i18n.translate("validation.nicknameTaken", {nickname: errors["taken"].nickname});
   }
   return undefined;
 }

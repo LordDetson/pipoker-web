@@ -7,6 +7,8 @@ import {AppConstants} from "../common/app-constants";
 import * as RoomAction from "../store/room/room.action";
 import {appState, cards} from "../testing/test-data";
 import {RoomStatus} from "../store/room/room-state";
+import {TranslatePipe} from "../i18n/translate.pipe";
+import {AboutComponent} from "../about/about.component";
 
 describe("CreateRoomComponent", () => {
   let fixture: ComponentFixture<CreateRoomComponent>;
@@ -15,8 +17,8 @@ describe("CreateRoomComponent", () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      declarations: [CreateRoomComponent],
-      imports: [ReactiveFormsModule],
+      declarations: [CreateRoomComponent, AboutComponent],
+      imports: [ReactiveFormsModule, TranslatePipe],
       providers: [
         provideMockStore({initialState: appState()}),
         {provide: RoomService, useValue: {}}

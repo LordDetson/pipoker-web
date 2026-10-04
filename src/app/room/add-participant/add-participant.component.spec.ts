@@ -9,6 +9,8 @@ import {AppConstants} from "../../common/app-constants";
 import * as RoomAction from "../../store/room/room.action";
 import {appState, participant, ROOM_ID} from "../../testing/test-data";
 import {RoomStatus} from "../../store/room/room-state";
+import {TranslatePipe} from "../../i18n/translate.pipe";
+import {AboutComponent} from "../../about/about.component";
 
 describe("AddParticipantComponent", () => {
   let fixture: ComponentFixture<AddParticipantComponent>;
@@ -21,8 +23,8 @@ describe("AddParticipantComponent", () => {
     roomService = jasmine.createSpyObj<RoomService>("RoomService", ["checkIfNicknameExist"]);
     roomService.checkIfNicknameExist.and.callFake((id, nickname) => of(takenNicknames.includes(nickname.toLowerCase())));
     TestBed.configureTestingModule({
-      declarations: [AddParticipantComponent],
-      imports: [ReactiveFormsModule],
+      declarations: [AddParticipantComponent, AboutComponent],
+      imports: [ReactiveFormsModule, TranslatePipe],
       providers: [
         provideMockStore({initialState: appState()}),
         {provide: RoomService, useValue: roomService},

@@ -5,6 +5,14 @@
   max-height: 12vh;
 }
 
+/* On narrow screens the logo, the room name and the buttons take a line each */
+@media (max-width: 767.98px) {
+  :host {
+    height: auto;
+    max-height: none;
+  }
+}
+
 .add-user-icon {
   display: inline-block;
   height: 26px;
@@ -29,12 +37,20 @@
   --bs-btn-focus-shadow-rgb: 241, 95, 44;
 }
 
+.tagline {
+  white-space: nowrap;
+}
+
 .heart-icon {
   font-size: 1.2rem;
   line-height: 1;
 }
 
-.support-link:hover > .heart-icon {
+.support-link:hover > .tagline {
+  white-space: nowrap;
+}
+
+.heart-icon {
   transform: scale(1.15);
 }
 

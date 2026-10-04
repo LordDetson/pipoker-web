@@ -1,53 +1,50 @@
-<div class="container-fluid d-flex justify-content-center align-content-center flex-wrap" style="height: 75vh">
+<div class="container-fluid d-flex flex-column align-items-center py-5">
   <form [formGroup]="createRoomForm" (submit)="createRoom()"
         class="col-10 col-md-8 col-lg-6">
     <div class="form-group mb-3">
-      <label for="nicknameInput" class="form-label">Nickname</label>
+      <label for="nicknameInput" class="form-label">{{"form.nickname" | translate}}</label>
       <input type="text"
              class="form-control common-transition"
              id="nicknameInput"
              formControlName="nickname"
-             placeholder="Choose your display name"
+             [placeholder]="'form.nicknamePlaceholder' | translate"
              maxlength="32"
              [ngClass]="{'is-invalid': this.createRoomForm.controls['nickname'].touched &&
                  this.createRoomForm.controls['nickname'].errors,
                  'is-valid': this.createRoomForm.controls['nickname'].valid &&
                  this.createRoomForm.controls['nickname'].touched}">
-      <div class="invalid-feedback">{{errorMessage("nickname", "Nickname")}}</div>
+      <div class="invalid-feedback">{{errorMessage("nickname", "validation.nickname")}}</div>
     </div>
     <div class="form-group mb-3">
-      <label for="roomNameInput" class="form-label">Room Name</label>
+      <label for="roomNameInput" class="form-label">{{"form.roomName" | translate}}</label>
       <input type="text"
              class="form-control common-transition"
              id="roomNameInput"
              formControlName="roomName"
-             placeholder="Choose room display name"
+             [placeholder]="'form.roomNamePlaceholder' | translate"
              maxlength="32"
              [ngClass]="{'is-invalid': this.createRoomForm.controls['roomName'].touched &&
                  this.createRoomForm.controls['roomName'].errors,
                  'is-valid': this.createRoomForm.controls['roomName'].valid &&
                  this.createRoomForm.controls['roomName'].touched}">
-      <div class="invalid-feedback">{{errorMessage("roomName", "Room name")}}</div>
+      <div class="invalid-feedback">{{errorMessage("roomName", "validation.roomName")}}</div>
     </div>
     <div class="form-group mb-3">
-      <label for="deckInput" class="form-label">Deck</label>
+      <label for="deckInput" class="form-label">{{"form.deck" | translate}}</label>
       <input type="text"
              class="form-control common-transition"
              id="deckInput"
              formControlName="deck"
              aria-labelledby="deckHelp"
-             placeholder="Deck Format: [card_value_1]; [card_value_2]; ... ; [card_value_20]"
+             [placeholder]="'form.deckPlaceholder' | translate"
              maxlength="158"
              [ngClass]="{'is-invalid': this.createRoomForm.controls['deck'].touched &&
                  this.createRoomForm.controls['deck'].errors,
                  'is-valid': this.createRoomForm.controls['deck'].valid &&
                  this.createRoomForm.controls['deck'].touched}">
-      <div class="invalid-feedback">{{errorMessage("deck", "Deck")}}</div>
+      <div class="invalid-feedback">{{errorMessage("deck", "validation.deck")}}</div>
       <div id="deckHelp" class="form-text common-transition">
-        Deck is a set of cards that participants can choose during a vote.
-        The deck contains no more than 20 cards.
-        Card values must be unique and no more than 6 characters.
-        Deck Format: [card_value_1]; [card_value_2]; ... ; [card_value_20]
+        {{"form.deckHelp" | translate}}
       </div>
     </div>
     <div class="form-check mb-3">
@@ -56,12 +53,13 @@
              id="watcherInput"
              formControlName="watcher">
       <label class="form-check-label" for="watcherInput">
-        Join as watcher
+        {{"form.watcher" | translate}}
       </label>
     </div>
     <div *ngIf="error$ | async as error" class="alert alert-danger" role="alert">{{error}}</div>
     <div class="d-grid gap-2">
-      <button class="btn btn-primary" type="submit" [disabled]="createRoomForm.invalid">Create Room</button>
+      <button class="btn btn-primary" type="submit" [disabled]="createRoomForm.invalid">{{"form.createRoom" | translate}}</button>
     </div>
   </form>
+  <app-about class="col-10 col-md-8 col-lg-6 mt-5"/>
 </div>

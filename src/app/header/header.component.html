@@ -1,16 +1,19 @@
 <div class="container-fluid">
-  <header class="row d-flex justify-content-between align-items-center py-2 shadow-sm common-transition">
-    <a class="col-4 d-flex align-items-center link-body-emphasis text-decoration-none" href="/">
+  <header class="row d-flex justify-content-between align-items-center row-gap-2 py-2 shadow-sm common-transition">
+    <a class="col-12 col-md-4 d-flex align-items-center justify-content-center justify-content-md-start link-body-emphasis text-decoration-none" href="/">
       <img src="/assets/svg/pipoker-logo.svg"
            width="55"
            height="55"
            class="me-3"
            alt="PiPoker Logo">
-      <strong class="fs-1">PiPoker</strong>
+      <span class="d-flex flex-column">
+        <strong class="fs-1 lh-1">PiPoker</strong>
+        <small class="tagline text-body-secondary">{{"header.tagline" | translate}}</small>
+      </span>
     </a>
-    <strong *ngIf="roomName$ | async as roomName" class="col-4 text-center fs-3">{{roomName}}</strong>
-    <div class="col-4 d-flex justify-content-end align-items-center">
-      <button *ngIf="roomId$ | async as roomId" type="button" class="btn common-transition me-3 d-flex align-items-center"
+    <strong *ngIf="roomName$ | async as roomName" class="col-12 col-md-4 text-center fs-3">{{roomName}}</strong>
+    <div class="col-12 col-md-4 d-flex flex-wrap justify-content-center justify-content-md-end align-items-center gap-3">
+      <button *ngIf="roomId$ | async as roomId" type="button" class="btn common-transition d-flex align-items-center"
               [ngClass]="{
                 'btn-primary': !copied,
                 'btn-success': copied,
@@ -19,13 +22,17 @@
               }"
               (click)="copyInvitationLink(roomId)">
         <span class="add-user-icon common-transition"></span>
-        Copy Invitation Link
+        {{"header.copyInvitationLink" | translate}}
       </button>
-      <a *ngIf="supportUrl" class="btn common-transition me-3 d-flex align-items-center support-link"
-         [href]="supportUrl" target="_blank" rel="noopener" title="Support PiPoker">
+      <a *ngIf="supportUrl" class="btn common-transition d-flex align-items-center support-link"
+         [href]="supportUrl" target="_blank" rel="noopener" [title]="'header.supportTitle' | translate">
         <span class="heart-icon me-1" aria-hidden="true">&#9829;</span>
-        Support
+        {{"header.support" | translate}}
       </a>
+      <button type="button" class="btn btn-outline-secondary common-transition language-switch"
+              (click)="i18n.switchLanguage()">
+        {{"header.switchLanguage" | translate}}
+      </button>
       <app-theme-switcher/>
     </div>
   </header>

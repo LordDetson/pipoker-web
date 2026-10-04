@@ -8,6 +8,8 @@ import {Card} from "../models/card.model";
 import {Observable, Subject, takeUntil} from "rxjs";
 import {parseDeck, RoomValidators, validationMessage} from "../common/room-validators";
 import * as RoomSelector from "../store/room/room.selector";
+import {I18nService} from "../i18n/i18n.service";
+import {TranslationKey} from "../i18n/translations";
 
 interface CreateRoomFormGroup {
   nickname: FormControl<string>;
@@ -29,7 +31,8 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
 
   constructor(
     private roomService: RoomService,
-    private store: Store
+    private store: Store,
+    private i18n: I18nService
   ) {
   }
 
@@ -68,8 +71,8 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     this.ngDestroyed$.complete();
   }
 
-  errorMessage(field: keyof CreateRoomFormGroup, label: string): string | undefined {
-    return validationMessage(this.createRoomForm.controls[field].errors, label);
+  errorMessage(field: keyof CreateRoomFormGroup, label: TranslationKey): string | undefined {
+    return validationMessage(this.createRoomForm.controls[field].errors, label, this.i18n);
   }
 
   createRoom(): void {
