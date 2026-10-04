@@ -42,7 +42,7 @@ describe("HistoryComponent", () => {
 
   it("shows a closed button with the number of rounds", () => {
     expect(texts(".history-toggle")).toEqual(["History 2"]);
-    expect(element(".history-panel")).toBeNull();
+    expect(element(".history-panel")!.classList).not.toContain("open");
     expect(element(".history-toggle")!.getAttribute("aria-expanded")).toBe("false");
   });
 
@@ -66,16 +66,42 @@ describe("HistoryComponent", () => {
     expect(element(".round:last-child .tally .badge")!.classList).toContain("text-bg-secondary");
   });
 
-  it("closes with the close button and with Escape", () => {
+  it("closes with the cross, a click beside the panel and Escape", () => {
     openPanel();
-    element(".history-panel .btn-close")!.click();
+    expect(element(".history-panel")!.classList).toContain("open");
+    element(".history-panel .history-close")!.click();
     fixture.detectChanges();
-    expect(element(".history-panel")).toBeNull();
+    expect(element(".history-panel")!.classList).not.toContain("open");
+    expect(element(".history-backdrop")).toBeNull();
+
+    openPanel();
+    element(".history-backdrop")!.click();
+    fixture.detectChanges();
+    expect(element(".history-panel")!.classList).not.toContain("open");
 
     openPanel();
     document.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
     fixture.detectChanges();
-    expect(element(".history-panel")).toBeNull();
+    expect(element(".history-panel")!.classList).not.toContain("open");
+  });
+
+  it("keeps a click inside the panel from closing it", () => {
+    openPanel();
+    element(".history-panel .round")!.click();
+    fixture.detectChanges();
+
+    expect(element(".history-panel")!.classList).toContain("open");
+  });
+
+  it("slides the panel in from the right and keeps it out of reach while closed", () => {
+    const panel = element(".history-panel")!;
+    expect(getComputedStyle(panel).transform).not.toBe("none");
+    expect(getComputedStyle(panel).transitionProperty).toContain("transform");
+
+    openPanel();
+
+    expect(panel.classList).toContain("open");
+    expect(getComputedStyle(panel).visibility).toBe("visible");
   });
 
   it("tells that the history is empty before the first round is revealed", () => {
