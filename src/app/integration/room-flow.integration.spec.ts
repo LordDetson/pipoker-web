@@ -3,10 +3,9 @@ import {RouterTestingModule} from "@angular/router/testing";
 import {Router} from "@angular/router";
 import {Location} from "@angular/common";
 import {ReactiveFormsModule} from "@angular/forms";
-import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
+import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 import {StoreModule} from "@ngrx/store";
 import {EffectsModule} from "@ngrx/effects";
-import {NgChartsModule} from "ng2-charts";
 import {AppComponent} from "../app.component";
 import {routes} from "../app-routing.module";
 import {CreateRoomComponent} from "../create-room/create-room.component";
@@ -62,7 +61,7 @@ describe("PiPoker room (integration)", () => {
       ],
       imports: [
         RouterTestingModule.withRoutes(routes),
-        NgbModule,
+        NgbDropdownModule,
         ReactiveFormsModule,
         StoreModule.forRoot(reducers, {
           metaReducers,
@@ -72,7 +71,6 @@ describe("PiPoker room (integration)", () => {
           }
         }),
         EffectsModule.forRoot([RoomEffect, ParticipantEffect]),
-        NgChartsModule,
         TranslatePipe
       ],
       providers: [

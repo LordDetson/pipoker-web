@@ -1,13 +1,3 @@
 <div class="voting-result-view container-fluid">
-  <canvas
-    baseChart
-    class="chart"
-    type="doughnut"
-    [data]="doughnutChartData"
-    [options]="doughnutChartOptions"
-  >
-  </canvas>
-  <!-- Workaround to enable animation of the chart -->
-  <div style="height: 5px"
-       [style.display]="initialized ? 'none' : 'block'"></div>
+  <canvas #canvas class="chart"></canvas>
 </div>

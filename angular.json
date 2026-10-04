@@ -24,7 +24,7 @@
               "src/assets"
             ],
             "styles": [
-              "node_modules/bootstrap/scss/bootstrap.scss",
+              "src/bootstrap.scss",
               "src/rubik-fonts.scss",
               "src/styles.scss"
             ],
@@ -53,6 +53,10 @@
                 {
                   "replace": "src/env/env.ts",
                   "with": "src/env/env.prod.ts"
+                },
+                {
+                  "replace": "src/env/store-devtools.ts",
+                  "with": "src/env/store-devtools.prod.ts"
                 }
               ]
             },
@@ -101,7 +105,7 @@
               "src/assets"
             ],
             "styles": [
-              "node_modules/bootstrap/scss/bootstrap.scss",
+              "src/bootstrap.scss",
               "src/styles.scss"
             ],
             "scripts": [],
