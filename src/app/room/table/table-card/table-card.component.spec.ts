@@ -85,4 +85,17 @@ describe("TableCardComponent", () => {
     expect(card().classList).not.toContain("rotateY180");
     expect(backValue()).toBeUndefined();
   });
+
+  it("turns the card over after the cards of lower votes", () => {
+    create(participant("Dmitry"), {Dmitry: "1d", Alex: "1h"}, true);
+
+    expect(card().style.getPropertyValue("--flip-delay")).toBe("0.3s");
+    expect(getComputedStyle(card()).transitionDelay).toBe("0.3s");
+  });
+
+  it("has no delay while the votes are hidden, so all cards turn back for a new round at once", () => {
+    create(participant("Dmitry"), {Dmitry: "1d", Alex: "1h"});
+
+    expect(card().style.getPropertyValue("--flip-delay")).toBe("0s");
+  });
 });

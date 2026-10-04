@@ -32,3 +32,21 @@ export const showVotingResultSelector = createSelector(
 export const errorSelector = createSelector(
   roomFeatureSelector,
   (state: RoomState): string | undefined => state.status === RoomStatus.error ? errorMessage(state.error) : undefined);
+
+// Revealed cards turn over one after another in the order of the deck: the lowest voted value at once, every next
+// voted value one step later, equal votes together. Deck values nobody voted for add no wait, and with many different
+// votes the step shrinks so that the last card starts turning no later than the limit.
+const FLIP_STEP_SECONDS = 0.3;
+const LAST_FLIP_DELAY_LIMIT_SECONDS = 1.5;
+
+// The delay in seconds before the card of every participant who voted turns over, by nickname
+export const flipDelaysSelector = createSelector(
+  cardsSelector,
+  votingResultSelector,
+  (deck: Card[], votingResult: VotingResult): Map<string, number> => {
+    const deckValues = deck.map(card => card.value);
+    const votedValues = [...new Set([...votingResult.map.values()].map(card => card.value))]
+      .sort((first, second) => deckValues.indexOf(first) - deckValues.indexOf(second));
+    const step = Math.min(FLIP_STEP_SECONDS, LAST_FLIP_DELAY_LIMIT_SECONDS / Math.max(votedValues.length - 1, 1));
+    return new Map([...votingResult.map].map(([nickname, card]) => [nickname, votedValues.indexOf(card.value) * step]));
+  });

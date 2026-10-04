@@ -7,13 +7,14 @@
   height: 9rem;
   position: relative;
   transform-style: preserve-3d;
+  transition-delay: var(--flip-delay);
 }
 
 // Only the face turned to the viewer is shown. backface-visibility is not enough for this: Firefox and WebKit draw
 // the front face of a turned card mirrored. The faces switch when the card is edge-on: it turns with "ease",
-// which reaches half of the turn at 29% of the time.
+// which reaches half of the turn at 29% of the time after the card starts turning.
 .card-body {
-  transition: visibility 0s calc(var(--common-transition-duration) * 0.29);
+  transition: visibility 0s calc(var(--flip-delay) + var(--common-transition-duration) * 0.29);
 }
 
 .card.rotateY180 > .card-body:not(.card-body-back),

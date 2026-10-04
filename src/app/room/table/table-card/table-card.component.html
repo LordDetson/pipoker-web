@@ -1,4 +1,5 @@
 <div class="card common-transition m-2"
+     [style.--flip-delay]="(flipDelaySeconds$ | async) + 's'"
      [ngClass]="{
       'voted': voted$ | async,
       'bg-body-secondary': !(voted$ | async),
