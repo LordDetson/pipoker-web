@@ -11,12 +11,17 @@ app-table {
   min-height: 16rem;
 }
 
-/* The timer above the status button in the middle of the table */
+/* The status button stays in the very middle of the table, and the timer hangs above it,
+   so the button doesn't move when the timer appears or goes */
 .table-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+  position: relative;
+}
+
+.table-controls app-timer {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* The deck and the chart share one cell, which gets as narrow as the page: the deck measures its own width

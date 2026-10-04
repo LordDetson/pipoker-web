@@ -80,6 +80,20 @@ describe("RoomComponent", () => {
     expect(fixture.nativeElement.querySelector("app-voting-result-chart")).toBeNull();
   });
 
+  it("keeps the status button in place whether the timer is shown or not", () => {
+    create();
+    const controls: HTMLElement = fixture.nativeElement.querySelector(".table-controls");
+    const timer: HTMLElement = controls.querySelector("app-timer")!;
+    const buttons: HTMLElement = controls.querySelector("app-buttons")!;
+    buttons.style.display = "block";
+    buttons.style.height = "40px";
+    timer.style.height = "48px";
+
+    expect(controls.offsetHeight).withContext("the timer takes no room next to the button").toBe(40);
+    expect(timer.getBoundingClientRect().bottom).withContext("the timer is above the button")
+      .toBeLessThanOrEqual(buttons.getBoundingClientRect().top);
+  });
+
   it("shows the chart in place of the deck once the votes are revealed", () => {
     store.setState(appState({showVotingResult: true}));
     create();
