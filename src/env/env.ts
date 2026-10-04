@@ -2,5 +2,6 @@ export const environment = {
   production: false,
   profile: "dev",
   wsUrl: "http://localhost:8080/ws",
-  invitationUrl: "http://localhost:4200/room/"
+  invitationUrl: "http://localhost:4200/room/",
+  supportUrl: "https://boosty.to/detson"
 };
