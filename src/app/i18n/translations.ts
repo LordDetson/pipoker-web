@@ -17,7 +17,8 @@ export const LANGUAGES: LanguageOption[] = [
 // Every text of the interface. Values may contain {name} placeholders, filled in by I18nService.translate.
 const en = {
   "header.tagline": "Free Planning Poker for teams",
-  "header.copyInvitationLink": "Copy Invitation Link",
+  "header.invite": "Invite",
+  "header.copyInvitationLink": "Copy the invitation link",
   "header.support": "Support",
   "header.supportTitle": "Support PiPoker",
   "header.language": "Language",
@@ -69,7 +70,8 @@ export type TranslationKey = keyof typeof en;
 
 const ru: Record<TranslationKey, string> = {
   "header.tagline": "Бесплатный Planning Poker для команд",
-  "header.copyInvitationLink": "Скопировать приглашение",
+  "header.invite": "Пригласить",
+  "header.copyInvitationLink": "Скопировать ссылку-приглашение",
   "header.support": "Поддержать",
   "header.supportTitle": "Поддержать PiPoker",
   "header.language": "Язык",
