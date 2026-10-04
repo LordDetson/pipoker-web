@@ -25,6 +25,7 @@ import {VotingResultChartComponent} from './room/voting-result-chart/voting-resu
 import {AboutComponent} from './about/about.component';
 import {TranslatePipe} from './i18n/translate.pipe';
 import {storeDevtools} from "../env/store-devtools";
+import {HistoryComponent} from './room/history/history.component';
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import {storeDevtools} from "../env/store-devtools";
     DeckCardComponent,
     TableCardComponent,
     VotingResultChartComponent,
+    HistoryComponent,
     AboutComponent
   ],
   imports: [

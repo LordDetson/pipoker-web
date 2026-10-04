@@ -1,0 +1,35 @@
+<ng-container *ngIf="rounds$ | async as rounds">
+  <button type="button" class="history-toggle btn btn-sm btn-outline-secondary"
+          aria-controls="roomHistory" [attr.aria-expanded]="open" (click)="toggle()">
+    {{"history.title" | translate}}
+    <span *ngIf="rounds.length" class="badge rounded-pill text-bg-secondary">{{rounds.length}}</span>
+  </button>
+  <aside *ngIf="open" id="roomHistory" class="history-panel" aria-labelledby="roomHistoryTitle">
+    <div class="history-head">
+      <h2 id="roomHistoryTitle" class="h5 m-0">{{"history.title" | translate}}</h2>
+      <button type="button" class="btn-close" [attr.aria-label]="'history.close' | translate" (click)="close()"></button>
+    </div>
+    <p *ngIf="!rounds.length" class="text-body-secondary m-0">{{"history.empty" | translate}}</p>
+    <ol class="list-unstyled m-0">
+      <li *ngFor="let round of rounds; trackBy: numberOf" class="round">
+        <div class="round-head">
+          <span class="fw-medium">{{"history.round" | translate:{number: round.number} }}</span>
+          <time class="text-body-secondary" [attr.datetime]="round.revealedAt">{{timeOf(round)}}</time>
+        </div>
+        <div class="tally">
+          <span *ngFor="let entry of round.tally" class="badge"
+                [ngClass]="entry.card === round.result ? 'leader' : 'text-bg-secondary'">{{entry.card}} × {{entry.count}}</span>
+          <span class="result">
+            {{round.result !== undefined ? ("history.result" | translate:{card: round.result}) : ("history.split" | translate)}}
+          </span>
+        </div>
+        <ul class="votes list-unstyled text-body-secondary">
+          <li *ngFor="let vote of round.votes">
+            <span class="text-truncate">{{vote.nickname}}</span>
+            <span class="card-value">{{vote.card}}</span>
+          </li>
+        </ul>
+      </li>
+    </ol>
+  </aside>
+</ng-container>

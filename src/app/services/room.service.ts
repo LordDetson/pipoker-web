@@ -135,6 +135,7 @@ function toRoom(room: RoomDto): Room {
     deck: {cards: room.deck.cards.map(value => ({value}))},
     participants: room.participants ?? [],
     votingResult: {map},
-    votesShown: room.votesShown ?? false
+    votesShown: room.votesShown ?? false,
+    history: room.history ?? []
   };
 }
