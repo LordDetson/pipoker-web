@@ -23,7 +23,8 @@
             "assets": [
               "src/assets",
               "src/robots.txt",
-              "src/sitemap.xml"
+              "src/sitemap.xml",
+              "src/yandex_c90ecc8c52f19341.html"
             ],
             "styles": [
               "src/bootstrap.scss",
