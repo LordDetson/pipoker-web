@@ -4,6 +4,7 @@ import {Participant} from "../../models/participant.model";
 import {CreateRoomInfo} from "../../models/create-room.model";
 import {Card} from "../../models/card.model";
 import {Vote} from "../../models/vote";
+import {RoundDto} from "../../models/room-dto.model";
 
 export enum RoomActionType {
   create = "[Room] create",
@@ -64,7 +65,9 @@ export const cardSelectionSuccess = createAction(RoomActionType.cardSelectionSuc
 export const cardSelectionFailure = createAction(RoomActionType.cardSelectionFailure,
   props<{ error: any }>());
 export const showVotingResult = createAction(RoomActionType.showVotingResult);
-export const showVotingResultSuccess = createAction(RoomActionType.showVotingResultSuccess);
+// The cards are revealed. The first reveal of a round with votes brings the round that entered the room's history.
+export const showVotingResultSuccess = createAction(RoomActionType.showVotingResultSuccess,
+  props<{ round?: RoundDto }>());
 export const startNewVoting = createAction(RoomActionType.startNewVoting);
 export const startNewVotingSuccess = createAction(RoomActionType.startNewVotingSuccess);
 export const startNewVotingFailure = createAction(RoomActionType.startNewVotingFailure,

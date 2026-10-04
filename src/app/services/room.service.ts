@@ -146,6 +146,7 @@ function toRoom(room: RoomDto): Room {
     participants: room.participants ?? [],
     votingResult: {map},
     votesShown: room.votesShown ?? false,
+    history: room.history ?? [],
     timer: room.timer && toTimer(room.timer)
   };
 }

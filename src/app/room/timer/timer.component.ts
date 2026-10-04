@@ -1,4 +1,4 @@
-import {Component, NgZone} from '@angular/core';
+import {ChangeDetectionStrategy, Component, NgZone} from '@angular/core';
 import {Store} from "@ngrx/store";
 import {map, Observable, of, switchMap} from "rxjs";
 import {RoomTimer} from "../../models/room.model";
@@ -16,7 +16,9 @@ const CHECK_INTERVAL = 200;
 @Component({
   selector: 'app-timer',
   templateUrl: './timer.component.html',
-  styleUrls: ['./timer.component.css']
+  styleUrls: ['./timer.component.css'],
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class TimerComponent {
 

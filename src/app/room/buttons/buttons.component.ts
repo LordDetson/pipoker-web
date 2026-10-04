@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {Store} from "@ngrx/store";
 import {filter, map, Observable, switchMap, take, tap} from "rxjs";
 import {VotingResult} from "../../models/voting-result.model";
@@ -8,7 +8,9 @@ import * as RoomAction from "../../store/room/room.action";
 @Component({
   selector: 'app-buttons',
   templateUrl: './buttons.component.html',
-  styleUrls: ['./buttons.component.css']
+  styleUrls: ['./buttons.component.css'],
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class ButtonsComponent {
 

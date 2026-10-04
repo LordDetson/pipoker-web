@@ -1,5 +1,5 @@
 import {Participant} from "../models/participant.model";
-import {RoomDto, TimerDto, VoteDto} from "../models/room-dto.model";
+import {RoomDto, RoundDto, TimerDto, VoteDto} from "../models/room-dto.model";
 import {ErrorCode, ErrorEvent, RoomEvent, RoomEventType} from "../models/room-event";
 
 export interface SentFrame {
@@ -94,6 +94,7 @@ interface ServerRoom {
   votes: VoteDto[];
   votesShown?: boolean;
   timer?: { seconds: number, endsAt: number };
+  history: RoundDto[];
 }
 
 // An in-memory imitation of the pipoker-app STOMP API, so tests can run the whole client against it.
@@ -111,7 +112,7 @@ export class FakePipokerServer {
 
   addRoom(name: string, cards: string[], participants: Participant[] = [], votes: VoteDto[] = []): string {
     const id = "room-" + this.nextRoomId++;
-    this.rooms.set(id, {id, name, cards, participants, votes});
+    this.rooms.set(id, {id, name, cards, participants, votes, history: []});
     return id;
   }
 
@@ -247,10 +248,18 @@ export class FakePipokerServer {
         room.timer = undefined;
         this.broadcast(room, RoomEventType.clearVotes, {});
         break;
-      case "votes/show":
+      case "votes/show": {
+        // Like pipoker-app, the first reveal of a round with votes records it in the history
+        const round: RoundDto | undefined = room.votesShown || !room.votes.length
+          ? undefined
+          : {revealedAt: new Date().toISOString(), votes: room.votes.map(vote => ({...vote}))};
+        if (round) {
+          room.history = [...room.history, round];
+        }
         room.votesShown = true;
-        this.broadcast(room, RoomEventType.showVotes, {});
+        this.broadcast(room, RoomEventType.showVotes, round ? {round} : {});
         break;
+      }
       case "timer/start": {
         const {seconds} = JSON.parse(body);
         room.timer = {seconds, endsAt: Date.now() + seconds * 1000};
@@ -287,6 +296,7 @@ function toDto(room: ServerRoom): RoomDto {
     deck: {cards: [...room.cards]},
     participants: room.participants.map(participant => ({...participant})),
     votes: room.votes.map(vote => ({...vote})),
+    ...(room.history.length ? {history: room.history.map(round => ({...round, votes: round.votes.map(vote => ({...vote}))}))} : {}),
     // Like pipoker-app, which leaves it out while the cards are hidden
     ...(room.votesShown ? {votesShown: true} : {}),
     ...(room.timer ? {timer: toTimerDto(room.timer)} : {})

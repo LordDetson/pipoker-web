@@ -278,8 +278,10 @@ describe("RoomWebSocketService", () => {
 
     it("dispatches room events to the store", () => {
       const client = connectedClient();
+      const round = {revealedAt: "2026-10-04T17:00:00.123Z", votes: [{nickname: "Alex", card: "1d"}]};
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.participantAdded, participant: participant("Alex", true)});
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.voteAdded, vote: {nickname: "Alex", card: "1d"}});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.showVotes, round});
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.showVotes});
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.clearVotes});
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.participantRemoved, participant: participant("Alex", true)});
@@ -292,7 +294,8 @@ describe("RoomWebSocketService", () => {
       expect((store.dispatch as jasmine.Spy).calls.allArgs()).toEqual([
         [RoomAction.addParticipantSuccess({participant: participant("Alex", true)})],
         [RoomAction.cardSelectionSuccess({participant: participant("Alex"), card: {value: "1d"}})],
-        [RoomAction.showVotingResultSuccess()],
+        [RoomAction.showVotingResultSuccess({round})],
+        [RoomAction.showVotingResultSuccess({round: undefined})],
         [RoomAction.startNewVotingSuccess()],
         [RoomAction.removeParticipantSuccess({participant: participant("Alex", true)})],
         [RoomAction.closed({roomId: ROOM_ID})],

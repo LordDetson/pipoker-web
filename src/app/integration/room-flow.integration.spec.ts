@@ -3,10 +3,9 @@ import {RouterTestingModule} from "@angular/router/testing";
 import {Router} from "@angular/router";
 import {Location} from "@angular/common";
 import {ReactiveFormsModule} from "@angular/forms";
-import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
+import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 import {StoreModule} from "@ngrx/store";
 import {EffectsModule} from "@ngrx/effects";
-import {NgChartsModule} from "ng2-charts";
 import {AppComponent} from "../app.component";
 import {routes} from "../app-routing.module";
 import {CreateRoomComponent} from "../create-room/create-room.component";
@@ -32,6 +31,7 @@ import {TranslatePipe} from "../i18n/translate.pipe";
 import {AboutComponent} from "../about/about.component";
 import {TimerComponent} from "../room/timer/timer.component";
 import {TimerSignal} from "../room/timer/timer-signal";
+import {HistoryComponent} from "../room/history/history.component";
 
 // Runs the whole client (components, store, effects and services) against an in-memory imitation
 // of the pipoker-app STOMP API. Only the STOMP connection itself is replaced.
@@ -58,12 +58,13 @@ describe("PiPoker room (integration)", () => {
         DeckCardComponent,
         TableCardComponent,
         VotingResultChartComponent,
+        HistoryComponent,
         AboutComponent,
         TimerComponent
       ],
       imports: [
         RouterTestingModule.withRoutes(routes),
-        NgbModule,
+        NgbDropdownModule,
         ReactiveFormsModule,
         StoreModule.forRoot(reducers, {
           metaReducers,
@@ -73,7 +74,6 @@ describe("PiPoker room (integration)", () => {
           }
         }),
         EffectsModule.forRoot([RoomEffect, ParticipantEffect]),
-        NgChartsModule,
         TranslatePipe
       ],
       providers: [
@@ -231,6 +231,47 @@ describe("PiPoker room (integration)", () => {
     expect(deckCards().some(card => card.classList.contains("selected"))).toBeFalse();
     expect(tableCards().every(card => !card.voted)).toBeTrue();
     expect(button("Voting...").disabled).toBeTrue();
+  });
+
+  it("keeps every revealed round in the history everyone in the room sees", async () => {
+    const roomId = await createRoom("Dmitry", "Sprint", "1h; 4h; 1d");
+    server.join(roomId, participant("Alex"));
+    await settle();
+    const rounds = () => Array.from(page.querySelectorAll(".history-panel .round")).map(round => ({
+      title: round.querySelector(".round-head .fw-medium")!.textContent!.trim(),
+      tally: Array.from(round.querySelectorAll(".tally .badge")).map(badge => badge.textContent!.trim()),
+      votes: Array.from(round.querySelectorAll(".votes li")).map(vote =>
+        Array.from(vote.children).map(part => part.textContent!.trim()).join(" "))
+    }));
+
+    await click(deckCard("4h").querySelector(".card-body")!);
+    server.vote(roomId, "Alex", "1d");
+    await settle();
+    await click(button("Reveal Cards"));
+    await click(button("Start New Voting"));
+    await click(deckCard("1d").querySelector(".card-body")!);
+    server.showVotes(roomId);
+    await settle();
+    await click(page.querySelector<HTMLElement>(".history-toggle")!);
+
+    expect(rounds()).toEqual([
+      {title: "Round 2", tally: ["1d × 1"], votes: ["Dmitry 1d"]},
+      {title: "Round 1", tally: ["4h × 1", "1d × 1"], votes: ["Dmitry 4h", "Alex 1d"]}
+    ]);
+  });
+
+  it("shows the history of the room to someone who joins later", async () => {
+    const roomId = server.addRoom("Planning", ["S", "M", "L"], [participant("Dmitry")], [{nickname: "Dmitry", card: "M"}]);
+    server.showVotes(roomId);
+    await settle();
+
+    await open("/room/" + roomId);
+    await type("#nicknameInput", "Alex");
+    await click(button("Join Room"));
+    await click(page.querySelector<HTMLElement>(".history-toggle")!);
+
+    expect(page.querySelector(".history-panel .round-head")!.textContent).toContain("Round 1");
+    expect(page.querySelector(".history-panel .tally .badge")!.textContent!.trim()).toBe("M × 1");
   });
 
   it("lays the deck out in more rows when the window gets narrower", async () => {

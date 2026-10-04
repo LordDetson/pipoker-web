@@ -16,6 +16,11 @@ export const LANGUAGES: LanguageOption[] = [
 
 // Every text of the interface. Values may contain {name} placeholders, filled in by I18nService.translate.
 const en = {
+  // The page title and the description shown in search results (src/index.html holds the Russian ones too)
+  "meta.title": "PiPoker — free online Planning Poker for agile teams",
+  "meta.description": "Free online Planning Poker for scrum and agile teams: create a room, share the link "
+    + "and estimate tasks together. No sign-up, works on a computer and on a phone.",
+
   "header.tagline": "Free Planning Poker for teams",
   "header.invite": "Invite",
   "header.copyInvitationLink": "Copy the invitation link",
@@ -65,6 +70,12 @@ const en = {
   "timer.minutes": "{minutes} min",
   "timer.stop": "Stop the timer",
   "timer.timeUp": "Time's up",
+  "history.title": "History",
+  "history.close": "Close the history",
+  "history.empty": "Revealed rounds will appear here.",
+  "history.round": "Round {number}",
+  "history.result": "Result: {card}",
+  "history.split": "Votes split",
 
   "about.title": "What is PiPoker?",
   "about.description": "PiPoker is a free online Planning Poker for agile teams. Estimate tasks together: "
@@ -83,6 +94,10 @@ const en = {
 export type TranslationKey = keyof typeof en;
 
 const ru: Record<TranslationKey, string> = {
+  "meta.title": "PiPoker — бесплатный Planning Poker онлайн для оценки задач",
+  "meta.description": "Бесплатный Planning Poker онлайн для scrum-команд: создайте комнату, отправьте ссылку "
+    + "и оценивайте задачи вместе. Без регистрации, на компьютере и телефоне.",
+
   "header.tagline": "Бесплатный Planning Poker для команд",
   "header.invite": "Пригласить",
   "header.copyInvitationLink": "Скопировать ссылку-приглашение",
@@ -132,6 +147,12 @@ const ru: Record<TranslationKey, string> = {
   "timer.minutes": "{minutes} мин",
   "timer.stop": "Остановить таймер",
   "timer.timeUp": "Время вышло",
+  "history.title": "История",
+  "history.close": "Закрыть историю",
+  "history.empty": "Здесь появятся раунды после того, как карты откроют.",
+  "history.round": "Раунд {number}",
+  "history.result": "Итог: {card}",
+  "history.split": "Голоса разделились",
 
   "about.title": "Что такое PiPoker?",
   "about.description": "PiPoker — бесплатный онлайн Planning Poker для команд. Оценивайте задачи вместе: "

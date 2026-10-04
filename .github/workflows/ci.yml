@@ -16,7 +16,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -49,9 +49,27 @@ jobs:
           for page in / /index.html /room/some-room; do
             [ "$(header "$page")" = "Cache-Control: no-cache" ] || { echo "$page: $(header "$page")"; exit 1; }
           done
-          bundle=$(curl -sf http://localhost:8080/ | grep -o 'main\.[0-9a-f]\{16\}\.js' | head -1)
+          bundle=$(curl -sf http://localhost:8080/ | grep -o 'main-[0-9A-Z]\{8\}\.js' | head -1)
           [ -n "$bundle" ] || { echo "index.html names no main bundle"; exit 1; }
           [ "$(header "/$bundle")" = "Cache-Control: public, max-age=31536000, immutable" ] || { echo "$bundle: $(header "/$bundle")"; exit 1; }
+
+      - name: Check that the files for search engines and link previews are served, not the app page
+        run: |
+          content_type() { curl -sfI "http://localhost:8080$1" | tr -d '\r' | grep -i '^content-type:' | cut -d' ' -f2 | cut -d';' -f1 ; }
+          check() { [ "$(content_type "$1")" = "$2" ] || { echo "$1: $(content_type "$1"), expected $2"; exit 1; } ; }
+          check /robots.txt text/plain
+          check /sitemap.xml text/xml
+          check /assets/og-image.png image/png
+          check /assets/apple-touch-icon.png image/png
+          curl -sf http://localhost:8080/robots.txt | grep -qx 'Disallow: /room/'
+          # Yandex Webmaster and Google Search Console confirm the site is ours by these files
+          curl -sf http://localhost:8080/yandex_c90ecc8c52f19341.html | grep -q 'Verification: c90ecc8c52f19341'
+          curl -sf http://localhost:8080/google9a20c15ce7c2be97.html | grep -q 'google-site-verification: google9a20c15ce7c2be97.html'
+          # Every file index.html links by its full address must exist; a missing one would be answered with the app page
+          for path in $(curl -sf http://localhost:8080/ | grep -o 'https://pipoker.duckdns.org/[^"]\+' | sed 's#^https://pipoker.duckdns.org##' | sort -u); do
+            served=$(content_type "$path")
+            [ -n "$served" ] && [ "$served" != text/html ] || { echo "$path is not served"; exit 1; }
+          done
 
   image:
     # Images are published only from main, pull requests are just built and tested.

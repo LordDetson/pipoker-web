@@ -1,4 +1,4 @@
-import {Component, HostBinding, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, HostBinding, Input, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {Store} from "@ngrx/store";
 import * as RoomAction from "../../../store/room/room.action";
 import {Participant} from "../../../models/participant.model";
@@ -11,8 +11,10 @@ import * as ParticipantAction from "../../../store/participant/participant.selec
   templateUrl: './deck-card.component.html',
   styleUrls: ['./deck-card.component.scss'],
   host: {
-    class: "card common-transition"
-  }
+      class: "card common-transition"
+  },
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class DeckCardComponent implements OnInit, OnDestroy {
 

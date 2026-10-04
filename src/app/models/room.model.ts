@@ -1,7 +1,7 @@
-import {TimerDto} from "./room-dto.model";
 import {Deck} from "./deck.model";
 import {Participant} from "./participant.model";
 import {VotingResult} from "./voting-result.model";
+import {RoundDto, TimerDto} from "./room-dto.model";
 
 // The discussion timer as this page counts it down: endsAt is the moment by the clock of this computer
 export interface RoomTimer {
@@ -16,6 +16,8 @@ export interface Room {
   participants: Participant[];
   votingResult: VotingResult;
   votesShown?: boolean;
+  // The revealed rounds, oldest first
+  history: RoundDto[];
   timer?: RoomTimer;
 }
 

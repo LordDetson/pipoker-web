@@ -26,6 +26,7 @@ export function room(overrides: Partial<Room> = {}): Room {
     deck: {cards: cards("1h", "2h", "1d")},
     participants: [participant("Dmitry")],
     votingResult: {map: votes()},
+    history: [],
     ...overrides
   };
 }

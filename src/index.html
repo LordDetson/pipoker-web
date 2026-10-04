@@ -1,16 +1,58 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>PiPoker</title>
+  <!-- Search engines and link previews read these tags before the app starts, so they are in Russian,
+       the language of most visitors. Once the app starts, I18nService puts the title and the description
+       ("meta.title", "meta.description") in the visitor's language. -->
+  <title>PiPoker — бесплатный Planning Poker онлайн для оценки задач</title>
+  <meta name="description" content="Бесплатный Planning Poker онлайн для scrum-команд: создайте комнату, отправьте ссылку и оценивайте задачи вместе. Без регистрации, на компьютере и телефоне.">
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#212529">
+  <link rel="canonical" href="https://pipoker.duckdns.org/">
   <link rel="icon" type="image/x-icon" href="assets/pipoker-logo.ico">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+  <!-- The preview shown for a shared link in Telegram, VK, Slack and other messengers -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PiPoker">
+  <meta property="og:url" content="https://pipoker.duckdns.org/">
+  <meta property="og:title" content="PiPoker — бесплатный Planning Poker для команд">
+  <meta property="og:description" content="Создайте комнату, отправьте ссылку команде и оценивайте задачи вместе. Без регистрации, на компьютере и телефоне.">
+  <meta property="og:image" content="https://pipoker.duckdns.org/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="PiPoker — бесплатный Planning Poker для команд">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "PiPoker",
+      "url": "https://pipoker.duckdns.org/",
+      "description": "Бесплатный Planning Poker онлайн для scrum-команд: создайте комнату, отправьте ссылку и оценивайте задачи вместе.",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Any",
+      "inLanguage": ["ru", "en"],
+      "isAccessibleForFree": true,
+      "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+  </script>
   <script>
     var global = global || window
   </script>
 </head>
 <body data-bs-theme="dark" class="common-transition">
 <app-root></app-root>
+<noscript>
+  <h1>PiPoker — бесплатный Planning Poker онлайн</h1>
+  <p>PiPoker помогает scrum- и agile-командам оценивать задачи вместе: каждый выбирает карту втайне,
+    потом все карты открываются одновременно. Бесплатно и без регистрации. Для работы нужен JavaScript.</p>
+  <p lang="en">PiPoker is a free online Planning Poker for agile teams. It needs JavaScript to run.</p>
+</noscript>
 </body>
 </html>

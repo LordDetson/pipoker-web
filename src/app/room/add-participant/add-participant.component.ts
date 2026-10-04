@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {RoomService} from "../../services/room.service";
 import {AbstractControl, AsyncValidatorFn, FormControl, FormGroup, ValidationErrors} from "@angular/forms";
@@ -13,7 +13,9 @@ import {I18nService} from "../../i18n/i18n.service";
 
 @Component({
   selector: 'app-add-participant',
-  templateUrl: './add-participant.component.html'
+  templateUrl: './add-participant.component.html',
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class AddParticipantComponent implements OnInit, OnDestroy {
 

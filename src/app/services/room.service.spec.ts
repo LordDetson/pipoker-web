@@ -107,6 +107,17 @@ describe("RoomService", () => {
     webSocket.emit("/app/room/" + roomId, {id: roomId, name: "Sprint", deck: {cards: ["1h"]}, votesShown: true});
 
     expect(room!.votesShown).toBeTrue();
+    expect(room!.history).toEqual([]);
+  });
+
+  it("loads the history of the room", () => {
+    let room: Room | undefined;
+    service.get(roomId).subscribe(result => room = result);
+    const history = [{revealedAt: "2026-10-04T17:00:00.123Z", votes: [{nickname: "Dmitry", card: "1h"}]}];
+
+    webSocket.emit("/app/room/" + roomId, {id: roomId, name: "Sprint", deck: {cards: ["1h"]}, history});
+
+    expect(room!.history).toEqual(history);
   });
 
   it("counts the loaded timer down from the time left by the clock of this computer", () => {

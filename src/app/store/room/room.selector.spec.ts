@@ -69,4 +69,49 @@ describe("room selectors", () => {
       expect(flipDelays(["1h", "2h"], {})).toEqual(new Map());
     });
   });
+
+  describe("history", () => {
+    function history(deck: string[], rounds: { [nickname: string]: string }[]): RoomSelector.HistoryRound[] {
+      return RoomSelector.historySelector(appState({room: room({
+        deck: {cards: cards(...deck)},
+        history: rounds.map((votesByNickname, index) => ({
+          revealedAt: `2026-10-04T17:0${index}:00.000Z`,
+          votes: Object.entries(votesByNickname).map(([nickname, card]) => ({nickname, card}))
+        }))
+      })}));
+    }
+
+    it("lists the latest round first, numbered in the order they were revealed", () => {
+      const rounds = history(["1h", "1d"], [{Dmitry: "1h"}, {Dmitry: "1d"}]);
+
+      expect(rounds.map(round => [round.number, round.revealedAt])).toEqual([
+        [2, "2026-10-04T17:01:00.000Z"],
+        [1, "2026-10-04T17:00:00.000Z"]
+      ]);
+    });
+
+    it("counts the votes for every card in the order of the deck", () => {
+      const [round] = history(["1h", "2h", "1d"], [{Dmitry: "1d", Alex: "1h", Kate: "1d"}]);
+
+      expect(round.tally).toEqual([{card: "1h", count: 1}, {card: "1d", count: 2}]);
+      expect(round.result).toBe("1d");
+      expect(round.votes).toEqual([{nickname: "Dmitry", card: "1d"}, {nickname: "Alex", card: "1h"}, {nickname: "Kate", card: "1d"}]);
+    });
+
+    it("have no result when several cards share the most votes", () => {
+      const [round] = history(["1h", "1d"], [{Dmitry: "1d", Alex: "1h"}]);
+
+      expect(round.result).toBeUndefined();
+    });
+
+    it("put cards that aren't in the deck anymore last", () => {
+      const [round] = history(["S", "M"], [{Dmitry: "1h", Alex: "M"}]);
+
+      expect(round.tally.map(entry => entry.card)).toEqual(["M", "1h"]);
+    });
+
+    it("are empty before the first round is revealed", () => {
+      expect(history(["1h"], [])).toEqual([]);
+    });
+  });
 });
