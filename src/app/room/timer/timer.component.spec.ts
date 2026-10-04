@@ -52,6 +52,18 @@ describe("TimerComponent", () => {
     expect(store.dispatch).toHaveBeenCalledOnceWith(RoomAction.startTimer({seconds: 180}));
   });
 
+  it("offers no timer once the cards are revealed", () => {
+    store.setState(appState({room: room(), showVotingResult: true}));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector(".timer-toggle")).toBeNull();
+
+    store.setState(appState({room: room(), showVotingResult: false}));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector(".timer-toggle")).not.toBeNull();
+  });
+
   it("counts down and signals once when the time runs out", fakeAsync(() => {
     runTimer(60, Date.now() + 12000);
     expect(shown()).toBe("0:12");

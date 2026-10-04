@@ -336,6 +336,17 @@ describe("PiPoker room (integration)", () => {
     server.clearVotes(roomId);
     await settle();
     expect(timer()).withContext("a new round stops the timer").toBeUndefined();
+
+    server.startTimer(roomId, 60);
+    await settle();
+    server.showVotes(roomId);
+    await settle();
+    expect(timer()).withContext("revealing the cards stops the timer").toBeUndefined();
+    expect(button("Timer")).withContext("no timer until the next round").toBeUndefined();
+
+    server.clearVotes(roomId);
+    await settle();
+    expect(button("Timer")).toBeDefined();
   });
 
   it("removes a participant who left", async () => {

@@ -70,6 +70,7 @@ const en = {
   "serverError.participantNotFound": "You are no longer in this room. Join it again",
   "serverError.watcherCannotVote": "Watchers don't vote",
   "serverError.cardNotInDeck": "This card isn't in the room's deck",
+  "serverError.cardsRevealed": "The cards are already revealed. The timer can start in the next round",
   "serverError.invalidData": "The server didn't accept the data. Check it and try again",
   "serverError.unexpected": "Something went wrong on the server. Try again",
 
@@ -166,6 +167,7 @@ const ru: Record<TranslationKey, string> = {
   "serverError.participantNotFound": "Вас больше нет в этой комнате. Войдите в неё снова",
   "serverError.watcherCannotVote": "Наблюдатели не голосуют",
   "serverError.cardNotInDeck": "Такой карты нет в колоде комнаты",
+  "serverError.cardsRevealed": "Карты уже раскрыты. Таймер можно запустить в следующем раунде",
   "serverError.invalidData": "Сервер не принял данные. Проверьте их и попробуйте снова",
   "serverError.unexpected": "На сервере что-то пошло не так. Попробуйте ещё раз",
 

@@ -36,6 +36,7 @@ export enum ErrorCode {
   participantNotFound = "PARTICIPANT_NOT_FOUND",
   watcherCannotVote = "WATCHER_CANNOT_VOTE",
   cardNotInDeck = "CARD_NOT_IN_DECK",
+  cardsRevealed = "CARDS_REVEALED",
   invalidData = "INVALID_DATA",
   unexpected = "UNEXPECTED"
 }

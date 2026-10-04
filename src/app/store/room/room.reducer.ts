@@ -86,12 +86,17 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
     };
   }),
   on(RoomAction.cardSelectionFailure, failed),
-  // The room loaded again after a reconnect may already have the round of a late event
+  // The room loaded again after a reconnect may already have the round of a late event.
+  // Revealing the cards ends the discussion, so the timer stops.
   on(RoomAction.showVotingResultSuccess, (state, {round}) => ({
     ...state,
-    room: round && !state.room.history.some(recorded => recorded.revealedAt === round.revealedAt)
-      ? {...state.room, history: [...state.room.history, round]}
-      : state.room,
+    room: {
+      ...state.room,
+      history: round && !state.room.history.some(recorded => recorded.revealedAt === round.revealedAt)
+        ? [...state.room.history, round]
+        : state.room.history,
+      timer: undefined
+    },
     showVotingResult: true
   })),
   // A new round also stops the timer of the previous one

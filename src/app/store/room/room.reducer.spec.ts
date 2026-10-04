@@ -136,7 +136,16 @@ describe("roomReducer", () => {
     const state = roomReducer(before, RoomAction.showVotingResultSuccess({}));
 
     expect(state.showVotingResult).toBeTrue();
-    expect(state.room).withContext("the history does not change without a new round").toBe(before.room);
+    expect(state.room.history).withContext("the history does not change without a new round").toBe(before.room.history);
+  });
+
+  it("stops the timer when the votes are revealed", () => {
+    const before = roomState({room: room({timer: {seconds: 60, endsAt: Date.now() + 30000}})});
+
+    const state = roomReducer(before, RoomAction.showVotingResultSuccess({}));
+
+    expect(state.room.timer).toBeUndefined();
+    expect(before.room.timer).withContext("previous state is not mutated").toBeDefined();
   });
 
   it("adds the revealed round to the history", () => {
