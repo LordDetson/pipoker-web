@@ -15,6 +15,7 @@ export class HeaderComponent {
   roomId$: Observable<string> = this.store.pipe(select(idSelector));
   roomName$: Observable<string> = this.store.pipe(select(nameSelector));
   copied: boolean;
+  supportUrl: string = environment.supportUrl;
 
   constructor(
     private store: Store,

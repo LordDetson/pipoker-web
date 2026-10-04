@@ -15,6 +15,15 @@
   transform: translate(0px, -2px);
 }
 
+.heart-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.support-link:hover > .heart-icon {
+  transform: scale(1.15);
+}
+
 .not-copied > .add-user-icon {
   background: url("src/assets/svg/add-user.svg") no-repeat;
   background-size: 26px 26px;
