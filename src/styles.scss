@@ -14,3 +14,25 @@ html, body {
 .common-transition {
   transition: all var(--common-transition-duration) ease 0s;
 }
+
+/*
+ * The start page and the page joining a room: the form, and what PiPoker is.
+ * Narrow screens stack them. From 992px the description stands beside the form. The columns are capped
+ * in rem rather than set in percent: the form gets room for a long deck, the description a comfortable
+ * line length, and on wide screens the pair stays centred instead of stretching (60/40 at full width).
+ */
+.start-page {
+  display: grid;
+  grid-template-columns: minmax(0, 36rem);
+  justify-content: center;
+  align-items: start;
+  row-gap: 3rem;
+  padding: 3rem 1rem;
+}
+
+@media (min-width: 992px) {
+  .start-page {
+    grid-template-columns: minmax(0, 36rem) minmax(0, 24rem);
+    column-gap: 2rem;
+  }
+}
