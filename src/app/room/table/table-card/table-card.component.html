@@ -1,22 +1,13 @@
-<div class="card common-transition m-2"
+<div class="playing-card common-transition"
      [style.--flip-delay]="(flipDelaySeconds$ | async) + 's'"
      [ngClass]="{
       'voted': voted$ | async,
-      'bg-body-secondary': !(voted$ | async),
-      'rotateY180': (showVotingResult$ | async) && (voted$ | async)
+      'turned': (showVotingResult$ | async) && (voted$ | async)
      }">
-  <div class="card-body d-flex align-items-center flex-column">
-    <h5 class="card-title">{{participant.nickname}}</h5>
-    <p *ngIf="participant.watcher"
-       class="card-text m-auto fs-5">
-      <span class="eye-icon"></span>
-    </p>
-  </div>
-  <div class="card-body card-body-back d-flex align-items-center flex-column rotateY180">
-    <h5 class="card-title">{{participant.nickname}}</h5>
-    <p *ngIf="(showVotingResult$ | async) && (selectedCard$ | async)"
-       class="card-text m-auto fs-5">
-      {{(selectedCard$ | async)!.value}}
-    </p>
+  <div class="card-back"></div>
+  <div class="card-face">
+    <span *ngIf="(showVotingResult$ | async) && (selectedCard$ | async) as card"
+          class="card-value" [style.--value-length]="card.value.length">{{card.value}}</span>
   </div>
 </div>
+<span class="nickname text-truncate" [title]="participant.nickname">{{participant.nickname}}</span>

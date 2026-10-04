@@ -48,6 +48,7 @@ const en = {
   "validation.nicknameTaken": "{nickname} is already in the room",
 
   "room.returning": "Returning to the table",
+  "room.watchers": "Watchers",
   "room.voting": "Voting...",
   "room.revealCards": "Reveal Cards",
   "room.startNewVoting": "Start New Voting",
@@ -106,6 +107,7 @@ const ru: Record<TranslationKey, string> = {
   "validation.nicknameTaken": "{nickname} уже в комнате",
 
   "room.returning": "Возвращаем вас за стол",
+  "room.watchers": "Наблюдатели",
   "room.voting": "Голосование...",
   "room.revealCards": "Открыть карты",
   "room.startNewVoting": "Новое голосование",

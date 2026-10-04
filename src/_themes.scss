@@ -1,6 +1,8 @@
 [data-bs-theme="light"] {
   --bs-gray-800-rgb: 52, 58, 64;
   --bs-emphasis-color-rgb: var(--bs-gray-800-rgb);
+  --table-felt: #2f7a55;
+  --table-rim: #1e4d36;
 
   header {
     background-color: var(--bs-gray-200) !important;
@@ -10,6 +12,8 @@
 
 [data-bs-theme="dark"] {
   --bs-blue: #4b6eaf;
+  --table-felt: #1f5a3f;
+  --table-rim: #143a29;
 
   header {
     background-color: var(--bs-gray-700) !important;

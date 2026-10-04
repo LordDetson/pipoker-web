@@ -71,17 +71,22 @@ describe("RoomComponent", () => {
     expect(renderedChildren()).toEqual(["app-add-participant"]);
   });
 
-  it("shows the table and the deck while voting", () => {
+  it("shows the table with the status button in the middle and the deck under it while voting", () => {
     create();
 
-    expect(renderedChildren()).toEqual(["app-buttons", "app-table", "app-deck"]);
+    expect(renderedChildren()).toEqual(["app-table", "div"]);
+    expect(fixture.nativeElement.querySelector("app-table > app-buttons")).not.toBeNull();
+    expect(fixture.nativeElement.querySelector(".hand > app-deck").classList).not.toContain("invisible");
+    expect(fixture.nativeElement.querySelector("app-voting-result-chart")).toBeNull();
   });
 
-  it("shows the chart instead of the deck once the votes are revealed", () => {
+  it("shows the chart in place of the deck once the votes are revealed", () => {
     store.setState(appState({showVotingResult: true}));
     create();
 
-    expect(renderedChildren()).toEqual(["app-buttons", "app-table", "app-voting-result-chart"]);
+    expect(fixture.nativeElement.querySelector(".hand > app-voting-result-chart")).not.toBeNull();
+    expect(fixture.nativeElement.querySelector(".hand > app-deck").classList)
+      .withContext("the deck keeps its place, so the table does not change its size").toContain("invisible");
   });
 
   it("takes the seat back after the page is reloaded", () => {

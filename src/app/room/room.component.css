@@ -1,6 +1,28 @@
 :host {
-  display: block;
-  height: 88vh;
-  min-height: 88vh;
-  max-height: 88vh;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The table takes whatever the deck leaves, see TableComponent */
+app-table {
+  flex: 1 1 0;
+  min-height: 16rem;
+}
+
+/* The deck and the chart share one cell, which gets as narrow as the page: the deck measures its own width
+   to lay itself out in rows, so the cell must not keep the width of its current rows. The chart gets at least
+   the height it had under the table before. */
+.hand {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: max(8rem, 23vh);
+}
+
+.hand > * {
+  grid-area: 1 / 1;
+}
+
+.hand > app-deck {
+  align-self: center;
 }

@@ -1,3 +1,10 @@
+/* Takes the space of the deck under the table without changing its height */
+:host {
+  position: relative;
+}
+
 .voting-result-view {
-  height: 23vh;
+  position: absolute;
+  inset: 0;
+  padding-bottom: 0.5rem;
 }

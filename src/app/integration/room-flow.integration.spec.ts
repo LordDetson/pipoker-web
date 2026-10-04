@@ -123,12 +123,17 @@ describe("PiPoker room (integration)", () => {
     return TestBed.inject(Location).path();
   }
 
+  // The seats at the table, starting with the one of the person looking at the page
   function tableCards(): { nickname: string, voted: boolean, value?: string }[] {
-    return Array.from(page.querySelectorAll("app-table-card .card")).map(card => ({
-      nickname: card.querySelector(".card-title")!.textContent!.trim(),
-      voted: card.classList.contains("voted"),
-      value: card.querySelector(".card-body-back .card-text")?.textContent!.trim()
+    return Array.from(page.querySelectorAll("app-table-card")).map(seat => ({
+      nickname: seat.querySelector(".nickname")!.textContent!.trim(),
+      voted: seat.querySelector(".playing-card")!.classList.contains("voted"),
+      value: seat.querySelector(".card-face .card-value")?.textContent!.trim()
     }));
+  }
+
+  function watchers(): string[] {
+    return Array.from(page.querySelectorAll(".watchers .watcher")).map(watcher => watcher.textContent!.trim());
   }
 
   function deckCards(): HTMLElement[] {
@@ -205,7 +210,7 @@ describe("PiPoker room (integration)", () => {
 
     await click(button("Reveal Cards"));
     expect(page.querySelector("app-voting-result-chart canvas")).not.toBeNull();
-    expect(page.querySelector("app-deck")).toBeNull();
+    expect(page.querySelector("app-deck")!.classList).withContext("the chart is shown in place of the deck").toContain("invisible");
     expect(tableCards()).toEqual([
       {nickname: "Dmitry", voted: true, value: "4h"},
       {nickname: "Alex", voted: true, value: "1d"}
@@ -214,9 +219,22 @@ describe("PiPoker room (integration)", () => {
     await click(button("Start New Voting"));
     expect(server.rooms.get(roomId)!.votes).toEqual([]);
     expect(page.querySelector("app-voting-result-chart")).toBeNull();
+    expect(page.querySelector("app-deck")!.classList).not.toContain("invisible");
     expect(deckCards().some(card => card.classList.contains("selected"))).toBeFalse();
     expect(tableCards().every(card => !card.voted)).toBeTrue();
     expect(button("Voting...").disabled).toBeTrue();
+  });
+
+  it("lays the deck out in more rows when the window gets narrower", async () => {
+    await createRoom("Dmitry", "Sprint", "1h; 4h; 1d");
+    const deckRows = () => Array.from(page.querySelectorAll(".deck-row")).map(row => row.querySelectorAll("app-deck-card").length);
+    expect(deckRows()).toEqual([3]);
+
+    page.style.width = "200px";
+    window.dispatchEvent(new Event("resize"));
+    await settle();
+
+    expect(deckRows()).toEqual([2, 1]);
   });
 
   it("sees the votes being revealed by another participant", async () => {
@@ -240,8 +258,8 @@ describe("PiPoker room (integration)", () => {
     await click(button("Join Room"));
 
     expect(tableCards()).toEqual([
-      {nickname: "Dmitry", voted: true, value: "M"},
-      {nickname: "Alex", voted: false, value: undefined}
+      {nickname: "Alex", voted: false, value: undefined},
+      {nickname: "Dmitry", voted: true, value: "M"}
     ]);
     expect(button("Start New Voting")).toBeDefined();
   });
@@ -275,8 +293,8 @@ describe("PiPoker room (integration)", () => {
 
     expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry"), participant("Alex")]);
     expect(tableCards()).toEqual([
-      {nickname: "Dmitry", voted: true, value: undefined},
-      {nickname: "Alex", voted: false, value: undefined}
+      {nickname: "Alex", voted: false, value: undefined},
+      {nickname: "Dmitry", voted: true, value: undefined}
     ]);
     expect(deckCards().map(card => card.textContent!.trim())).toEqual(["S", "M", "L"]);
     expect(button("Reveal Cards")).toBeDefined();
@@ -353,15 +371,17 @@ describe("PiPoker room (integration)", () => {
     await click(button("Join Room"));
 
     expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry"), participant("Kate", true)]);
-    expect(tableCards().map(card => card.nickname)).toEqual(["Dmitry", "Kate"]);
+    expect(tableCards().map(card => card.nickname)).toEqual(["Dmitry"]);
+    expect(watchers()).toEqual(["Kate"]);
     expect(deckCards()).toEqual([]);
   });
 
   it("does not show the deck to a watcher", async () => {
     await createRoom("Dmitry", "Sprint", "1h; 1d", true);
 
-    expect(tableCards().map(card => card.nickname)).toEqual(["Dmitry"]);
-    expect(page.querySelector("app-table-card .eye-icon")).not.toBeNull();
+    expect(tableCards()).withContext("a watcher has no seat at the table").toEqual([]);
+    expect(watchers()).toEqual(["Dmitry"]);
+    expect(page.querySelector(".watchers .eye-icon")).not.toBeNull();
     expect(deckCards()).toEqual([]);
   });
 
@@ -374,8 +394,8 @@ describe("PiPoker room (integration)", () => {
 
     expect(button("Join Room")).withContext("no need to join again").toBeUndefined();
     expect(tableCards()).toEqual([
-      {nickname: "Dmitry", voted: false, value: undefined},
-      {nickname: "Alex", voted: true, value: undefined}
+      {nickname: "Alex", voted: true, value: undefined},
+      {nickname: "Dmitry", voted: false, value: undefined}
     ]);
     expect(deckCard("M").classList).withContext("the vote made before the reload").toContain("selected");
     expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry"), participant("Alex")]);
@@ -419,7 +439,8 @@ describe("PiPoker room (integration)", () => {
     await click(button("Join Room"));
 
     expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry"), participant("Kate", true)]);
-    expect(tableCards().map(card => card.nickname)).toEqual(["Dmitry", "Kate"]);
+    expect(tableCards().map(card => card.nickname)).toEqual(["Dmitry"]);
+    expect(watchers()).toEqual(["Kate"]);
   });
 
   it("explains invalid input before anything is sent to the server", async () => {

@@ -24,13 +24,13 @@
     </ng-container>
   </ng-template>
   <ng-template #room>
-    <app-buttons/>
-    <app-table/>
-    <ng-container *ngIf="!(showVotingResult$ | async); else chart">
-      <app-deck/>
-    </ng-container>
-    <ng-template #chart>
-      <app-voting-result-chart/>
-    </ng-template>
+    <app-table>
+      <app-buttons/>
+    </app-table>
+    <!-- The chart takes the place of the deck, which keeps its size so the table does not jump when the cards are revealed -->
+    <div class="hand">
+      <app-deck [class.invisible]="showVotingResult$ | async"/>
+      <app-voting-result-chart *ngIf="showVotingResult$ | async"/>
+    </div>
   </ng-template>
 </ng-template>

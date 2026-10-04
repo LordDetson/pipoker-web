@@ -24,66 +24,66 @@ describe("TableCardComponent", () => {
   }
 
   function card(): HTMLElement {
-    return fixture.nativeElement.querySelector(".card");
+    return fixture.nativeElement.querySelector(".playing-card");
   }
 
-  function backValue(): string | undefined {
-    return fixture.nativeElement.querySelector(".card-body-back .card-text")?.textContent.trim();
+  function value(): HTMLElement | null {
+    return fixture.nativeElement.querySelector(".card-face .card-value");
   }
 
-  function visibility(face: string): string {
-    return getComputedStyle(fixture.nativeElement.querySelector(face)).visibility;
+  function visibility(side: string): string {
+    return getComputedStyle(fixture.nativeElement.querySelector(side)).visibility;
   }
 
-  it("shows the nickname of a participant who has not voted", () => {
+  it("shows the nickname under an empty place until the participant votes", () => {
     create(participant("Dmitry"));
 
-    expect(fixture.nativeElement.querySelector(".card-title").textContent).toBe("Dmitry");
-    expect(card().classList).toContain("bg-body-secondary");
+    const nickname: HTMLElement = fixture.nativeElement.querySelector(".nickname");
+    expect(nickname.textContent).toBe("Dmitry");
+    expect(nickname.title).withContext("a long nickname is cut, the whole one is in the tooltip").toBe("Dmitry");
     expect(card().classList).not.toContain("voted");
-    expect(fixture.nativeElement.querySelector(".eye-icon")).toBeNull();
-  });
-
-  it("marks a watcher", () => {
-    create(participant("Alex", true));
-
-    expect(fixture.nativeElement.querySelector(".eye-icon")).not.toBeNull();
   });
 
   it("hides the card value until the votes are revealed", () => {
     create(participant("Dmitry"), {Dmitry: "1d"});
 
     expect(card().classList).toContain("voted");
-    expect(card().classList).not.toContain("rotateY180");
-    expect(backValue()).toBeUndefined();
+    expect(card().classList).not.toContain("turned");
+    expect(value()).toBeNull();
   });
 
   it("turns the card over when the votes are revealed", () => {
     create(participant("Dmitry"), {Dmitry: "1d"}, true);
 
-    expect(card().classList).toContain("rotateY180");
-    expect(backValue()).toBe("1d");
+    expect(card().classList).toContain("turned");
+    expect(value()!.textContent).toBe("1d");
   });
 
-  it("shows only the face of the card that is turned to the viewer", () => {
+  it("gives longer values a smaller font", () => {
+    create(participant("Dmitry"), {Dmitry: "100500"}, true);
+
+    expect(value()!.style.getPropertyValue("--value-length")).toBe("6");
+  });
+
+  it("shows only the side of the card that is turned to the viewer", () => {
     create(participant("Dmitry"), {Dmitry: "1d"});
 
-    expect(visibility(".card-body:not(.card-body-back)")).toBe("visible");
-    expect(visibility(".card-body-back")).toBe("hidden");
+    expect(visibility(".card-back")).toBe("visible");
+    expect(visibility(".card-face")).toBe("hidden");
   });
 
-  it("hides the front of a turned card, which browsers would otherwise show mirrored", () => {
+  it("hides the back of a turned card, which browsers would otherwise show mirrored", () => {
     create(participant("Dmitry"), {Dmitry: "1d"}, true);
 
-    expect(visibility(".card-body:not(.card-body-back)")).toBe("hidden");
-    expect(visibility(".card-body-back")).toBe("visible");
+    expect(visibility(".card-back")).toBe("hidden");
+    expect(visibility(".card-face")).toBe("visible");
   });
 
   it("does not turn over the card of a participant who did not vote", () => {
     create(participant("Alex"), {Dmitry: "1d"}, true);
 
-    expect(card().classList).not.toContain("rotateY180");
-    expect(backValue()).toBeUndefined();
+    expect(card().classList).not.toContain("turned");
+    expect(value()).toBeNull();
   });
 
   it("turns the card over after the cards of lower votes", () => {
