@@ -55,7 +55,8 @@ describe("roomReducer", () => {
       RoomAction.addParticipantFailure({error}),
       RoomAction.removeParticipantFailure({error}),
       RoomAction.cardSelectionFailure({error}),
-      RoomAction.startNewVotingFailure({error})
+      RoomAction.startNewVotingFailure({error}),
+      RoomAction.changeRoleFailure({error})
     ];
 
     failures.forEach(action => {
@@ -111,6 +112,24 @@ describe("roomReducer", () => {
     const state = roomReducer(before, RoomAction.removeParticipantSuccess({participant: participant("Alex")}));
 
     expect(state.room.participants).toEqual([participant("Dmitry")]);
+    expect(state.room.votingResult.map).toEqual(votes({Dmitry: "1h"}));
+    expect(before.room.votingResult.map.size).withContext("previous state is not mutated").toBe(2);
+  });
+
+  it("changes the role of a participant, who keeps their place among the others", () => {
+    const before = roomState({room: room({participants: [participant("Dmitry"), participant("Alex"), participant("Kate")]})});
+
+    const state = roomReducer(before, RoomAction.roleChanged({participant: participant(" alex ", true)}));
+
+    expect(state.room.participants).toEqual([participant("Dmitry"), participant("Alex", true), participant("Kate")]);
+    expect(before.room.participants[1].watcher).withContext("previous state is not mutated").toBeFalse();
+  });
+
+  it("removes a vote taken back", () => {
+    const before = roomState({room: room({votingResult: {map: votes({Dmitry: "1h", Alex: "1d"})}})});
+
+    const state = roomReducer(before, RoomAction.voteRemoved({nickname: "Alex"}));
+
     expect(state.room.votingResult.map).toEqual(votes({Dmitry: "1h"}));
     expect(before.room.votingResult.map.size).withContext("previous state is not mutated").toBe(2);
   });

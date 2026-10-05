@@ -63,6 +63,22 @@ describe("currentParticipantReducer", () => {
     expect(state.status).toBe(CurrentParticipantStatus.success);
   });
 
+  it("takes the new role of the person looking at the page, not of others", () => {
+    const before = currentParticipantState();
+
+    expect(currentParticipantReducer(before, RoomAction.roleChanged({participant: participant("DMITRY", true)})).currentParticipant)
+      .toEqual(participant("Dmitry", true));
+    expect(currentParticipantReducer(before, RoomAction.roleChanged({participant: participant("Alex", true)})).currentParticipant)
+      .toEqual(participant("Dmitry"));
+  });
+
+  it("forgets the selected card when the own vote is taken back", () => {
+    const before = currentParticipantState({selectedCard: {value: "1h"}});
+
+    expect(currentParticipantReducer(before, RoomAction.voteRemoved({nickname: "dmitry"})).selectedCard).toBeUndefined();
+    expect(currentParticipantReducer(before, RoomAction.voteRemoved({nickname: "Alex"})).selectedCard).toEqual({value: "1h"});
+  });
+
   it("stores and clears the selected card", () => {
     let state = currentParticipantReducer(currentParticipantState(), ParticipantAction.initSelectedCurdSuccess({card: {value: "1d"}}));
     expect(state.selectedCard).toEqual({value: "1d"});

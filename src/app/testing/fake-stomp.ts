@@ -125,6 +125,10 @@ export class FakePipokerServer {
     this.received(undefined, "/app/room/" + roomId + "/participants/remove", nickname);
   }
 
+  changeRole(roomId: string, nickname: string, watcher: boolean) {
+    this.received(undefined, "/app/room/" + roomId + "/participants/role", JSON.stringify({nickname, watcher}));
+  }
+
   vote(roomId: string, nickname: string, card: string) {
     this.received(undefined, "/app/room/" + roomId + "/votes/add", JSON.stringify({nickname, card}));
   }
@@ -236,6 +240,25 @@ export class FakePipokerServer {
         room.participants = room.participants.filter(existing => existing !== participant);
         room.votes = room.votes.filter(vote => !sameNickname(vote.nickname, body));
         this.broadcast(room, RoomEventType.participantRemoved, {participant});
+        break;
+      }
+      case "participants/role": {
+        // Like pipoker-app: a voter who becomes a watcher before the reveal loses the vote, which the room hears first
+        const {nickname, watcher}: Participant = JSON.parse(body);
+        const index = room.participants.findIndex(existing => sameNickname(existing.nickname, nickname));
+        if (index < 0) {
+          this.error(client, destination, "Participant \"" + nickname + "\" is not found in the room \"" + roomId + "\"",
+            ErrorCode.participantNotFound);
+          return;
+        }
+        const participant = {...room.participants[index], watcher};
+        room.participants[index] = participant;
+        const vote = room.votes.find(existing => sameNickname(existing.nickname, nickname));
+        if (watcher && !room.votesShown && vote) {
+          room.votes = room.votes.filter(existing => existing !== vote);
+          this.broadcast(room, RoomEventType.voteRemoved, {vote});
+        }
+        this.broadcast(room, RoomEventType.participantRoleChanged, {participant});
         break;
       }
       case "votes/add": {

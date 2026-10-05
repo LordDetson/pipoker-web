@@ -10,6 +10,7 @@ import * as RoomSelector from "../room/room.selector";
 import * as ParticipantSelector from "./participant.selector";
 import {SeatStorage} from "../../common/seat-storage";
 import {AppConstants} from "../../common/app-constants";
+import {sameNickname} from "../../models/participant.model";
 
 // How long to wait for the server to give the seat back before asking for the nickname again
 export const RETURN_TIMEOUT = 15000;
@@ -40,6 +41,24 @@ export class ParticipantEffect {
         ofType(ParticipantAction.initSuccess),
         withLatestFrom(this.store.select(RoomSelector.idSelector)),
         tap(([{participant}, roomId]) => SeatStorage.save(roomId, participant))
+      ),
+    {dispatch: false}
+  );
+
+  // The tab takes its seat back with the new role after a reload, and the next room the person joins or creates
+  // offers the role they chose last, like the checkbox on the join form does
+  rememberRole$ = createEffect(() =>
+      this.actions$.pipe(
+        ofType(RoomAction.roleChanged),
+        withLatestFrom(
+          this.store.select(RoomSelector.idSelector),
+          this.store.select(ParticipantSelector.currentParticipantSelector)
+        ),
+        filter(([{participant}, , current]) => !!current && sameNickname(participant.nickname, current.nickname)),
+        tap(([, roomId, current]) => {
+          SeatStorage.save(roomId, current);
+          localStorage.setItem(AppConstants.lastWatcher, current.watcher.toString());
+        })
       ),
     {dispatch: false}
   );
