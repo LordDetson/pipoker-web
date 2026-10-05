@@ -173,7 +173,7 @@ describe("roomReducer", () => {
       showVotingResult: true
     });
 
-    const state = roomReducer(before, RoomAction.startNewVotingSuccess());
+    const state = roomReducer(before, RoomAction.startNewVotingSuccess({}));
 
     expect(state.room.votingResult.map.size).toBe(0);
     expect(state.showVotingResult).toBeFalse();
@@ -186,12 +186,32 @@ describe("roomReducer", () => {
     expect(roomReducer(before, RoomAction.doNothing())).toBe(before);
   });
 
+  it("follows the task of the round, and takes the one the server kept for the next round", () => {
+    const task = {name: "PIP-25", url: "https://example.com/PIP-25"};
+
+    const named = roomReducer(roomState(), RoomAction.taskChanged({task}));
+    expect(named.room.task).toBe(task);
+    expect(roomReducer(named, RoomAction.taskChanged({})).room.task).toBeUndefined();
+    expect(roomReducer(named, RoomAction.startNewVotingSuccess({task})).room.task).toBe(task);
+    expect(roomReducer(named, RoomAction.startNewVotingSuccess({})).room.task).toBeUndefined();
+  });
+
+  it("puts the accepted estimate on its round of the history", () => {
+    const first = {revealedAt: "2026-10-05T12:00:00.000Z", votes: [{nickname: "Dmitry", card: "1h"}]};
+    const second = {revealedAt: "2026-10-05T12:05:00.000Z", votes: [{nickname: "Dmitry", card: "1d"}]};
+    const accepted = {...second, estimate: "2h"};
+
+    const state = roomReducer(roomState({room: room({history: [first, second]})}), RoomAction.estimateAccepted({round: accepted}));
+
+    expect(state.room.history).toEqual([first, accepted]);
+  });
+
   it("keeps the timer until it is stopped or the next round starts", () => {
     const timer = {seconds: 120, endsAt: 1000};
 
     const started = roomReducer(roomState(), RoomAction.timerStarted({timer}));
     expect(started.room.timer).toBe(timer);
     expect(roomReducer(started, RoomAction.timerStopped()).room.timer).toBeUndefined();
-    expect(roomReducer(started, RoomAction.startNewVotingSuccess()).room.timer).toBeUndefined();
+    expect(roomReducer(started, RoomAction.startNewVotingSuccess({})).room.timer).toBeUndefined();
   });
 });

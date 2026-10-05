@@ -100,7 +100,7 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
     showVotingResult: true
   })),
   // A new round also stops the timer of the previous one
-  on(RoomAction.startNewVotingSuccess, state => ({
+  on(RoomAction.startNewVotingSuccess, (state, {task}) => ({
     ...state,
     room: {
       ...state.room,
@@ -108,7 +108,8 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
         ...state.room.votingResult,
         map: new Map<string, Card>()
       },
-      timer: undefined
+      timer: undefined,
+      task
     },
     showVotingResult: false,
     status: RoomStatus.success
@@ -121,6 +122,17 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
   on(RoomAction.timerStopped, state => ({
     ...state,
     room: {...state.room, timer: undefined}
+  })),
+  on(RoomAction.taskChanged, (state, {task}) => ({
+    ...state,
+    room: {...state.room, task}
+  })),
+  on(RoomAction.estimateAccepted, (state, {round}) => ({
+    ...state,
+    room: {
+      ...state.room,
+      history: state.room.history.map(recorded => recorded.revealedAt === round.revealedAt ? round : recorded)
+    }
   })),
   // Nothing of the room is left: no name or invitation in the header
   on(RoomAction.closed, () => ({

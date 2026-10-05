@@ -1,0 +1,52 @@
+/* The dropdown would make the group a block, which puts the arrow under the button */
+.btn-group {
+  display: inline-flex;
+}
+
+/* Light on the felt of the table, above the status button, like the timer before the cards are revealed */
+.accept {
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+}
+
+.accept:hover, .accept.show {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* The arrow beside the button that accepts the offered card */
+.accept.split {
+  padding-inline: 0.5rem;
+}
+
+.accepted {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-color: transparent;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.accepted:hover, .accepted.show {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+/* The cards of the deck in rows, so a deck of twenty fits on a phone */
+.cards {
+  display: none;
+  grid-template-columns: repeat(5, minmax(2.75rem, auto));
+  gap: 0.25rem;
+  padding: 0.375rem;
+}
+
+.cards.show {
+  display: grid;
+}
+
+.card-choice {
+  padding: 0.25rem 0;
+  text-align: center;
+  border-radius: var(--bs-border-radius);
+}

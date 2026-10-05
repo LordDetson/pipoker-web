@@ -27,6 +27,8 @@ import {TranslatePipe} from './i18n/translate.pipe';
 import {ServerErrorPipe} from './i18n/server-error.pipe';
 import {storeDevtools} from "../env/store-devtools";
 import {HistoryComponent} from './room/history/history.component';
+import {TaskComponent} from './room/task/task.component';
+import {EstimateComponent} from './room/estimate/estimate.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +46,9 @@ import {HistoryComponent} from './room/history/history.component';
     VotingResultChartComponent,
     HistoryComponent,
     AboutComponent,
-    TimerComponent
+    TimerComponent,
+    TaskComponent,
+    EstimateComponent
   ],
   imports: [
     BrowserModule,

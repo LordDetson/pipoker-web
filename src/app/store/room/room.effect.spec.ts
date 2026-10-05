@@ -28,7 +28,8 @@ describe("RoomEffect", () => {
   beforeEach(() => {
     actions$ = new ReplaySubject<Action>();
     roomService = jasmine.createSpyObj<RoomService>("RoomService",
-      ["create", "get", "addParticipant", "removeParticipant", "returnParticipant", "vote", "clearVotingResult", "showVotingResult"]);
+      ["create", "get", "addParticipant", "removeParticipant", "returnParticipant", "vote", "clearVotingResult", "showVotingResult",
+        "acceptEstimate"]);
     reconnected$ = new Subject<void>();
     webSocket = jasmine.createSpyObj<RoomWebSocketService>("RoomWebSocketService", ["connect"], {reconnected$});
     router = jasmine.createSpyObj<Router>("Router", ["navigate"]);
@@ -259,6 +260,14 @@ describe("RoomEffect", () => {
     expect(roomService.showVotingResult).toHaveBeenCalledWith("room-2");
   });
 
+  it("accepts the estimate of the revealed round in the current room", () => {
+    actions$.next(RoomAction.acceptEstimate({revealedAt: "2026-10-05T12:00:00.000Z", card: "1d"}));
+
+    collect(effects.acceptEstimate$);
+
+    expect(roomService.acceptEstimate).toHaveBeenCalledWith(ROOM_ID, {revealedAt: "2026-10-05T12:00:00.000Z", card: "1d"});
+  });
+
   describe("startNewVoting$", () => {
     it("clears the votes of the current room", () => {
       roomService.clearVotingResult.and.returnValue(of(undefined));
@@ -280,7 +289,7 @@ describe("RoomEffect", () => {
   });
 
   it("forgets the selected card when a new voting starts", () => {
-    actions$.next(RoomAction.startNewVotingSuccess());
+    actions$.next(RoomAction.startNewVotingSuccess({}));
 
     expect(collect(effects.dispatchDestroySelectedCurdSuccess$)).toEqual([ParticipantAction.destroySelectedCurdSuccess()]);
   });

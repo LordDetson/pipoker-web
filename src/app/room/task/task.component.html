@@ -1,0 +1,36 @@
+<form *ngIf="editing; else shown" class="task-form" [formGroup]="form" (ngSubmit)="save()" (keydown.escape)="cancel()">
+  <input #nameInput type="text" class="form-control form-control-sm" formControlName="name"
+         [attr.maxlength]="maxNameLength" [attr.aria-label]="'task.name' | translate"
+         [placeholder]="'task.namePlaceholder' | translate" autocomplete="off">
+  <input type="url" class="form-control form-control-sm" formControlName="url" [class.is-invalid]="form.controls.url.invalid"
+         [attr.maxlength]="maxUrlLength" [attr.aria-label]="'task.url' | translate"
+         [placeholder]="'task.urlPlaceholder' | translate" autocomplete="off">
+  <div class="task-actions">
+    <button type="submit" class="btn btn-sm btn-primary" [disabled]="form.invalid || saving">{{"task.save" | translate}}</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancel()">{{"task.cancel" | translate}}</button>
+    <button *ngIf="task$ | async" type="button" class="btn btn-sm btn-outline-danger" [disabled]="saving"
+            (click)="remove()">{{"task.remove" | translate}}</button>
+  </div>
+  <div *ngIf="form.controls.url.invalid" class="task-error text-danger">{{"task.urlInvalid" | translate}}</div>
+  <div *ngIf="error" class="task-error text-danger" role="alert">{{error | serverError}}</div>
+</form>
+
+<ng-template #shown>
+  <div *ngIf="task$ | async as task; else none" class="task">
+    <span class="task-label text-body-secondary">{{"task.label" | translate}}</span>
+    <a *ngIf="task.url; else plain" class="task-name" [href]="task.url" target="_blank" rel="noopener noreferrer"
+       [title]="task.name">{{task.name}}</a>
+    <ng-template #plain><span class="task-name" [title]="task.name">{{task.name}}</span></ng-template>
+    <button *ngIf="!(revealed$ | async)" type="button" class="task-edit" (click)="edit()"
+            [title]="'task.edit' | translate" [attr.aria-label]="'task.edit' | translate">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M11 2.5l2.5 2.5L6 12.5H3.5V10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+  <ng-template #none>
+    <button *ngIf="!(revealed$ | async)" type="button" class="btn btn-sm btn-outline-secondary task-add" (click)="edit()">
+      {{"task.add" | translate}}
+    </button>
+  </ng-template>
+</ng-template>

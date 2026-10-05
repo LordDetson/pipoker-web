@@ -4,7 +4,7 @@ import {Participant} from "../../models/participant.model";
 import {CreateRoomInfo} from "../../models/create-room.model";
 import {Card} from "../../models/card.model";
 import {Vote} from "../../models/vote";
-import {RoundDto} from "../../models/room-dto.model";
+import {RoundDto, TaskDto} from "../../models/room-dto.model";
 
 export enum RoomActionType {
   create = "[Room] create",
@@ -30,6 +30,9 @@ export enum RoomActionType {
   timerStarted = "[Room] timer started",
   stopTimer = "[Room] stop timer",
   timerStopped = "[Room] timer stopped",
+  taskChanged = "[Room] task changed",
+  acceptEstimate = "[Room] accept estimate",
+  estimateAccepted = "[Room] estimate accepted",
   closed = "[Room] closed",
   removed = "[Room] removed",
   doNothing = "[Room] do nothing",
@@ -69,7 +72,9 @@ export const showVotingResult = createAction(RoomActionType.showVotingResult);
 export const showVotingResultSuccess = createAction(RoomActionType.showVotingResultSuccess,
   props<{ round?: RoundDto }>());
 export const startNewVoting = createAction(RoomActionType.startNewVoting);
-export const startNewVotingSuccess = createAction(RoomActionType.startNewVotingSuccess);
+// A new round starts, with the task the server kept for it: the same one when the team votes on it again
+export const startNewVotingSuccess = createAction(RoomActionType.startNewVotingSuccess,
+  props<{ task?: TaskDto }>());
 export const startNewVotingFailure = createAction(RoomActionType.startNewVotingFailure,
   props<{ error: any }>());
 export const startTimer = createAction(RoomActionType.startTimer,
@@ -78,6 +83,13 @@ export const timerStarted = createAction(RoomActionType.timerStarted,
   props<{ timer: RoomTimer }>());
 export const stopTimer = createAction(RoomActionType.stopTimer);
 export const timerStopped = createAction(RoomActionType.timerStopped);
+export const taskChanged = createAction(RoomActionType.taskChanged,
+  props<{ task?: TaskDto }>());
+// The estimate of the revealed round: any card of the deck
+export const acceptEstimate = createAction(RoomActionType.acceptEstimate,
+  props<{ revealedAt: string, card: string }>());
+export const estimateAccepted = createAction(RoomActionType.estimateAccepted,
+  props<{ round: RoundDto }>());
 export const closed = createAction(RoomActionType.closed,
   props<{ roomId: string }>());
 // Everyone left the room while this page was open on it without a seat, for example on the join form

@@ -33,6 +33,8 @@ import {AboutComponent} from "../about/about.component";
 import {TimerComponent} from "../room/timer/timer.component";
 import {TimerSignal} from "../room/timer/timer-signal";
 import {HistoryComponent} from "../room/history/history.component";
+import {TaskComponent} from "../room/task/task.component";
+import {EstimateComponent} from "../room/estimate/estimate.component";
 
 // Runs the whole client (components, store, effects and services) against an in-memory imitation
 // of the pipoker-app STOMP API. Only the STOMP connection itself is replaced.
@@ -61,7 +63,9 @@ describe("PiPoker room (integration)", () => {
         VotingResultChartComponent,
         HistoryComponent,
         AboutComponent,
-        TimerComponent
+        TimerComponent,
+        TaskComponent,
+        EstimateComponent
       ],
       imports: [
         RouterTestingModule.withRoutes(routes),
@@ -260,6 +264,51 @@ describe("PiPoker room (integration)", () => {
       {title: "Round 2", tally: ["1d × 1"], votes: ["Dmitry 1d"]},
       {title: "Round 1", tally: ["4h × 1", "1d × 1"], votes: ["Dmitry 4h", "Alex 1d"]}
     ]);
+  });
+
+  it("names the task of the round and keeps it in the history with the estimate the team accepted", async () => {
+    const roomId = await createRoom("Dmitry", "Sprint", "1h; 4h; 1d");
+    server.join(roomId, participant("Alex"));
+    await settle();
+    const task = () => page.querySelector(".task .task-name")?.textContent!.trim();
+    const estimate = () => {
+      const buttons = Array.from(page.querySelectorAll("app-estimate .btn-group > button"));
+      return buttons.length ? buttons.map(shown => shown.textContent!.trim()).join(" ") : undefined;
+    };
+
+    await click(button("What are we estimating?"));
+    await type("app-task input[formControlName=name]", "PIP-25 Task name");
+    await type("app-task input[formControlName=url]", "https://example.com/PIP-25");
+    await click(button("Save"));
+    expect(task()).toBe("PIP-25 Task name");
+    expect(server.rooms.get(roomId)!.task).toEqual({name: "PIP-25 Task name", url: "https://example.com/PIP-25"});
+
+    server.setTask(roomId, {name: "PIP-26"});
+    await settle();
+    expect(task()).withContext("someone else changed it").toBe("PIP-26");
+
+    await click(deckCard("4h").querySelector(".card-body")!);
+    server.vote(roomId, "Alex", "4h");
+    await settle();
+    expect(estimate()).withContext("nothing to accept before the cards are revealed").toBeUndefined();
+    await click(button("Reveal Cards"));
+    expect(page.querySelector(".task-edit")).withContext("the task is fixed once the cards are revealed").toBeNull();
+
+    await click(button("Accept 4h"));
+    expect(estimate()).toBe("Estimate: 4h");
+    expect(server.rooms.get(roomId)!.history[0].estimate).toBe("4h");
+
+    const revealedAt = server.rooms.get(roomId)!.history[0].revealedAt;
+    server.acceptEstimate(roomId, {revealedAt, card: "1d"});
+    await settle();
+    expect(estimate()).withContext("someone else changed it").toBe("Estimate: 1d");
+
+    await click(button("Start New Voting"));
+    expect(task()).withContext("the next round goes on to the next task").toBeUndefined();
+    expect(estimate()).toBeUndefined();
+    await click(page.querySelector<HTMLElement>(".history-toggle")!);
+    expect(page.querySelector(".history-panel .round-task")!.textContent!.trim()).toBe("PIP-26");
+    expect(page.querySelector(".history-panel .estimate")!.textContent!.trim()).toBe("Estimate: 1d");
   });
 
   it("shows the history of the room to someone who joins later", async () => {
