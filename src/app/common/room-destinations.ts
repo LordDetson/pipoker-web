@@ -61,4 +61,8 @@ export class RoomDestinations {
   public static estimate(roomId: string): string {
     return RoomDestinations.room(roomId) + "/estimate";
   }
+
+  public static autoReveal(roomId: string): string {
+    return RoomDestinations.room(roomId) + "/auto-reveal";
+  }
 }

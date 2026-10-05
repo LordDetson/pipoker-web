@@ -59,7 +59,8 @@ describe("RoomService", () => {
       nickname: "Dmitry",
       roomName: "Sprint",
       deck: {cards: [{value: "1h"}, {value: "1d"}]},
-      watcher: false
+      watcher: false,
+      autoReveal: true
     }).subscribe(result => room = result);
 
     expect(webSocket.sent).toEqual([{
@@ -67,7 +68,8 @@ describe("RoomService", () => {
       body: {
         name: "Sprint",
         deck: {cards: ["1h", "1d"]},
-        participants: [{nickname: "Dmitry", watcher: false}]
+        participants: [{nickname: "Dmitry", watcher: false}],
+        autoReveal: true
       }
     }]);
 
@@ -75,13 +77,30 @@ describe("RoomService", () => {
       id: roomId,
       name: "Sprint",
       deck: {cards: ["1h", "1d"]},
-      participants: [{nickname: "Dmitry", watcher: false}]
+      participants: [{nickname: "Dmitry", watcher: false}],
+      autoReveal: true
     });
 
     expect(room!.id).toBe(roomId);
     expect(room!.deck.cards).toEqual([{value: "1h"}, {value: "1d"}]);
     expect(room!.participants).toEqual([{nickname: "Dmitry", watcher: false}]);
     expect(room!.votingResult.map.size).toBe(0);
+    expect(room!.autoReveal).toBeTrue();
+  });
+
+  it("loads a room that doesn't reveal the cards by itself", () => {
+    let room: Room | undefined;
+    service.get(roomId).subscribe(result => room = result);
+
+    webSocket.emit("/app/room/" + roomId, {id: roomId, name: "Sprint", deck: {cards: ["1h"]}});
+
+    expect(room!.autoReveal).toBeFalse();
+  });
+
+  it("turns on or off revealing the cards by themselves", () => {
+    service.setAutoReveal(roomId, false);
+
+    expect(webSocket.sent).toEqual([{destination: "/app/room/" + roomId + "/auto-reveal", body: {autoReveal: false}}]);
   });
 
   it("loads a room with its votes", () => {
@@ -258,7 +277,7 @@ describe("RoomService", () => {
 
   it("fails to create a room when the server rejects it", () => {
     let error: any;
-    service.create({nickname: "Dmitry", roomName: "Sprint", deck: {cards: []}, watcher: false})
+    service.create({nickname: "Dmitry", roomName: "Sprint", deck: {cards: []}, watcher: false, autoReveal: false})
       .subscribe({error: e => error = e});
 
     webSocket.emit("/user/topic/room.errors", {destination: "/app/room/create", message: "invalid deck"});

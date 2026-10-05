@@ -36,6 +36,15 @@ app-table:last-child {
   width: max-content;
 }
 
+/* Under the button, out of the way of the menus that open above it */
+.table-controls app-auto-reveal {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+}
+
 /* The deck and the chart share one cell, which gets as narrow as the page: the deck measures its own width
    to lay itself out in rows, so the cell must not keep the width of its current rows. The chart gets at least
    the height it had under the table before. */

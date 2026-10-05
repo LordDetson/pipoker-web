@@ -6,7 +6,7 @@ import {Participant, sameNickname} from "../models/participant.model";
 import {Vote} from "../models/vote";
 import {RoomWebSocketService} from "./room-web-socket.service";
 import {CreateRoomInfo} from "../models/create-room.model";
-import {EstimateDto, RoomCreationDto, RoomDto, TaskDto, TimerDto} from "../models/room-dto.model";
+import {AutoRevealDto, EstimateDto, RoomCreationDto, RoomDto, TaskDto, TimerDto} from "../models/room-dto.model";
 import {ErrorEvent, RoomEvent, RoomEventType} from "../models/room-event";
 import {RoomDestinations} from "../common/room-destinations";
 
@@ -24,7 +24,8 @@ export class RoomService {
     const roomCreation: RoomCreationDto = {
       name: createRoomInfo.roomName,
       deck: {cards: createRoomInfo.deck.cards.map(card => card.value)},
-      participants: [{nickname: createRoomInfo.nickname, watcher: createRoomInfo.watcher}]
+      participants: [{nickname: createRoomInfo.nickname, watcher: createRoomInfo.watcher}],
+      autoReveal: createRoomInfo.autoReveal
     };
     return this.exchange(RoomDestinations.create(), roomCreation,
       this.roomWebSocketService.watch<RoomDto>(RoomDestinations.created).pipe(
@@ -136,6 +137,12 @@ export class RoomService {
     this.roomWebSocketService.send(RoomDestinations.estimate(roomId), estimate);
   }
 
+  // Everyone in the room hears the change, this page too. The server reveals the cards at once if everyone has voted.
+  setAutoReveal(roomId: string, autoReveal: boolean) {
+    const body: AutoRevealDto = {autoReveal};
+    this.roomWebSocketService.send(RoomDestinations.autoReveal(roomId), body);
+  }
+
   private exchange<T>(destination: string, body: any, reply$: Observable<T>): Observable<T> {
     return new Observable<T>(subscriber => {
       const subscription = merge(reply$, this.errors(destination)).pipe(take(1)).subscribe(subscriber);
@@ -172,6 +179,7 @@ function toRoom(room: RoomDto): Room {
     votesShown: room.votesShown ?? false,
     history: room.history ?? [],
     timer: room.timer && toTimer(room.timer),
-    task: room.task
+    task: room.task,
+    autoReveal: room.autoReveal ?? false
   };
 }

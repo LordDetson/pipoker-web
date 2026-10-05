@@ -151,6 +151,10 @@ const _roomReducer = createReducer<RoomState>(initialRoomState,
     ...state,
     room: {...state.room, task}
   })),
+  on(RoomAction.autoRevealChanged, (state, {autoReveal}) => ({
+    ...state,
+    room: {...state.room, autoReveal}
+  })),
   on(RoomAction.estimateAccepted, (state, {round}) => ({
     ...state,
     room: {

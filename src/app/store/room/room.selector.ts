@@ -36,6 +36,9 @@ export const taskSelector = createSelector(
 export const timerSelector = createSelector(
   roomFeatureSelector,
   (state: RoomState): RoomTimer | undefined => state.room.timer);
+export const autoRevealSelector = createSelector(
+  roomFeatureSelector,
+  (state: RoomState): boolean => state.room.autoReveal ?? false);
 // Why the room can't be shown: closed while this page was in it, or missing when the page opened it
 export const goneSelector = createSelector(
   roomFeatureSelector,

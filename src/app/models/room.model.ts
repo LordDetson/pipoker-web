@@ -21,6 +21,8 @@ export interface Room {
   timer?: RoomTimer;
   // What the current round estimates
   task?: TaskDto;
+  // The server reveals the cards by itself once every voter at the table has voted
+  autoReveal?: boolean;
 }
 
 // The page counts down from the time left when it got the timer, as the clock of this computer may differ from the server's

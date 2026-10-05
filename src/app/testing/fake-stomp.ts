@@ -1,5 +1,5 @@
 import {Participant} from "../models/participant.model";
-import {EstimateDto, RoomDto, RoundDto, TaskDto, TimerDto, VoteDto} from "../models/room-dto.model";
+import {AutoRevealDto, EstimateDto, RoomDto, RoundDto, TaskDto, TimerDto, VoteDto} from "../models/room-dto.model";
 import {ErrorCode, ErrorEvent, RoomEvent, RoomEventType} from "../models/room-event";
 
 export interface SentFrame {
@@ -96,6 +96,7 @@ interface ServerRoom {
   timer?: { seconds: number, endsAt: number };
   history: RoundDto[];
   task?: TaskDto;
+  autoReveal?: boolean;
 }
 
 // An in-memory imitation of the pipoker-app STOMP API, so tests can run the whole client against it.
@@ -154,6 +155,10 @@ export class FakePipokerServer {
     this.received(undefined, "/app/room/" + roomId + "/task", JSON.stringify(task));
   }
 
+  setAutoReveal(roomId: string, autoReveal: boolean) {
+    this.received(undefined, "/app/room/" + roomId + "/auto-reveal", JSON.stringify({autoReveal}));
+  }
+
   acceptEstimate(roomId: string, estimate: EstimateDto) {
     this.received(undefined, "/app/room/" + roomId + "/estimate", JSON.stringify(estimate));
   }
@@ -207,6 +212,7 @@ export class FakePipokerServer {
         return;
       }
       const id = this.addRoom(creation.name, creation.deck.cards, creation.participants);
+      this.rooms.get(id)!.autoReveal = creation.autoReveal ?? false;
       later(() => client?.deliver("/user/topic/room.created", toDto(this.rooms.get(id)!)));
       return;
     }
@@ -249,6 +255,7 @@ export class FakePipokerServer {
         room.participants = room.participants.filter(existing => existing !== participant);
         room.votes = room.votes.filter(vote => !sameNickname(vote.nickname, body));
         this.broadcast(room, RoomEventType.participantRemoved, {participant});
+        this.revealIfEveryoneVoted(room);
         break;
       }
       case "participants/role": {
@@ -268,12 +275,14 @@ export class FakePipokerServer {
           this.broadcast(room, RoomEventType.voteRemoved, {vote});
         }
         this.broadcast(room, RoomEventType.participantRoleChanged, {participant});
+        this.revealIfEveryoneVoted(room);
         break;
       }
       case "votes/add": {
         const vote: VoteDto = JSON.parse(body);
         room.votes = room.votes.filter(existing => !sameNickname(existing.nickname, vote.nickname)).concat(vote);
         this.broadcast(room, RoomEventType.voteAdded, {vote});
+        this.revealIfEveryoneVoted(room);
         break;
       }
       case "votes/clear":
@@ -286,21 +295,14 @@ export class FakePipokerServer {
         room.timer = undefined;
         this.broadcast(room, RoomEventType.clearVotes, room.task ? {task: {...room.task}} : {});
         break;
-      case "votes/show": {
-        // Like pipoker-app, the first reveal of a round with votes records it in the history
-        const round: RoundDto | undefined = room.votesShown || !room.votes.length
-          ? undefined
-          : {
-            revealedAt: new Date().toISOString(),
-            votes: room.votes.map(vote => ({...vote})),
-            ...(room.task ? {task: {...room.task}} : {})
-          };
-        if (round) {
-          room.history = [...room.history, round];
-        }
-        room.votesShown = true;
-        room.timer = undefined;
-        this.broadcast(room, RoomEventType.showVotes, round ? {round} : {});
+      case "votes/show":
+        this.reveal(room);
+        break;
+      case "auto-reveal": {
+        const {autoReveal}: AutoRevealDto = JSON.parse(body);
+        room.autoReveal = autoReveal;
+        this.broadcast(room, RoomEventType.autoRevealChanged, {autoReveal});
+        this.revealIfEveryoneVoted(room);
         break;
       }
       case "timer/start": {
@@ -346,6 +348,33 @@ export class FakePipokerServer {
     }
   }
 
+  private reveal(room: ServerRoom) {
+    // Like pipoker-app, the first reveal of a round with votes records it in the history
+    const round: RoundDto | undefined = room.votesShown || !room.votes.length
+      ? undefined
+      : {
+        revealedAt: new Date().toISOString(),
+        votes: room.votes.map(vote => ({...vote})),
+        ...(room.task ? {task: {...room.task}} : {})
+      };
+    if (round) {
+      room.history = [...room.history, round];
+    }
+    room.votesShown = true;
+    room.timer = undefined;
+    this.broadcast(room, RoomEventType.showVotes, round ? {round} : {});
+  }
+
+  // Like pipoker-app, once every voter has voted in a room that wants it, right after the change that completed the round
+  private revealIfEveryoneVoted(room: ServerRoom) {
+    const everyoneVoted = room.votes.length > 0 && room.participants
+      .filter(participant => !participant.watcher)
+      .every(participant => room.votes.some(vote => sameNickname(vote.nickname, participant.nickname)));
+    if (room.autoReveal && !room.votesShown && everyoneVoted) {
+      this.reveal(room);
+    }
+  }
+
   private broadcast(room: ServerRoom, eventType: RoomEventType, details: Partial<RoomEvent>) {
     const event: RoomEvent = {roomId: room.id, eventType, ...details};
     later(() => this.clients.forEach(client => client.deliver("/topic/room." + room.id, event)));
@@ -372,7 +401,8 @@ function toDto(room: ServerRoom): RoomDto {
     // Like pipoker-app, which leaves it out while the cards are hidden
     ...(room.votesShown ? {votesShown: true} : {}),
     ...(room.timer ? {timer: toTimerDto(room.timer)} : {}),
-    ...(room.task ? {task: {...room.task}} : {})
+    ...(room.task ? {task: {...room.task}} : {}),
+    ...(room.autoReveal ? {autoReveal: true} : {})
   };
 }
 

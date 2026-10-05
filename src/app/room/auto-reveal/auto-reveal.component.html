@@ -1,0 +1,5 @@
+<div class="form-check form-switch m-0" [title]="'room.autoRevealTitle' | translate">
+  <input class="form-check-input" type="checkbox" role="switch" id="autoRevealSwitch"
+         [checked]="autoReveal$ | async" (click)="toggle($event)">
+  <label class="form-check-label" for="autoRevealSwitch">{{"room.autoReveal" | translate}}</label>
+</div>

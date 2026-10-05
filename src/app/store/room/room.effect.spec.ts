@@ -22,7 +22,7 @@ describe("RoomEffect", () => {
   let router: jasmine.SpyObj<Router>;
   let store: MockStore;
 
-  const createRoomInfo = {nickname: " alex ", roomName: "Sprint", deck: {cards: cards("1h")}, watcher: false};
+  const createRoomInfo = {nickname: " alex ", roomName: "Sprint", deck: {cards: cards("1h")}, watcher: false, autoReveal: true};
   const error = new Error("boom");
 
   beforeEach(() => {

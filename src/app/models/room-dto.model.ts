@@ -54,10 +54,18 @@ export interface RoomDto {
   history?: RoundDto[];
   // What the current round estimates, left out when nobody has named it
   task?: TaskDto;
+  // The cards are revealed by themselves once everyone has voted; left out when they aren't
+  autoReveal?: boolean;
 }
 
 export interface RoomCreationDto {
   name: string;
   deck: DeckDto;
   participants: Participant[];
+  autoReveal: boolean;
+}
+
+// Whether the cards are revealed by themselves once everyone has voted
+export interface AutoRevealDto {
+  autoReveal: boolean;
 }

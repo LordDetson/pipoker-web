@@ -4,6 +4,7 @@ export class AppConstants {
   public static lastRoomName: string = "last-room-name";
   public static lastDeck: string = "last-deck";
   public static lastWatcher: string = "last-watcher";
+  public static lastAutoReveal: string = "last-auto-reveal";
   public static myDecks: string = "my-decks";
   public static lastTheme: string = "last-theme";
   public static language: string = "language";

@@ -39,6 +39,7 @@ const en = {
   "form.deckHelp": "Pick a ready deck or type your own cards separated by \";\" and save them under a name: "
     + "your decks are kept in this browser. A deck holds up to 20 cards, each unique and at most 6 characters long.",
   "form.watcher": "Join as watcher",
+  "form.autoReveal": "Reveal the cards when everyone has voted",
   "form.createRoom": "Create Room",
   "form.joinRoom": "Join Room",
 
@@ -81,6 +82,8 @@ const en = {
   "room.watcherSwitchTitle": "Watch the vote without voting. Switch back to vote again.",
   "room.voting": "Voting...",
   "room.revealCards": "Reveal Cards",
+  "room.autoReveal": "When everyone has voted",
+  "room.autoRevealTitle": "The cards are revealed by themselves once every voter at the table has voted. Watchers aren't waited for.",
   "room.startNewVoting": "Start New Voting",
   "room.closedTitle": "The room is closed",
   "room.closedText": "Nobody did anything in the room for a long time, so it was closed and everyone left it.",
@@ -167,6 +170,7 @@ const ru: Record<TranslationKey, string> = {
   "form.deckHelp": "Выберите готовую колоду или впишите свои карты через «;» и сохраните их под своим названием: "
     + "ваши колоды хранятся в этом браузере. В колоде до 20 карт, значения не повторяются и содержат не больше 6 символов.",
   "form.watcher": "Войти как наблюдатель",
+  "form.autoReveal": "Открывать карты, когда все проголосовали",
   "form.createRoom": "Создать комнату",
   "form.joinRoom": "Войти в комнату",
 
@@ -209,6 +213,8 @@ const ru: Record<TranslationKey, string> = {
   "room.watcherSwitchTitle": "Следить за голосованием, не голосуя. Выключите, чтобы снова голосовать.",
   "room.voting": "Голосование...",
   "room.revealCards": "Открыть карты",
+  "room.autoReveal": "Когда все проголосовали",
+  "room.autoRevealTitle": "Карты откроются сами, как только проголосуют все за столом. Наблюдателей не ждут.",
   "room.startNewVoting": "Новое голосование",
   "room.closedTitle": "Комната закрыта",
   "room.closedText": "В комнате долго ничего не происходило, поэтому она закрыта и все участники её покинули.",

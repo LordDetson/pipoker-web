@@ -294,6 +294,8 @@ describe("RoomWebSocketService", () => {
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.taskChanged});
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.estimateAccepted, round: {...round, estimate: "1d"}});
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.clearVotes, task: {name: "PIP-25"}});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.autoRevealChanged, autoReveal: true});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.autoRevealChanged, autoReveal: false});
 
       expect((store.dispatch as jasmine.Spy).calls.allArgs()).toEqual([
         [RoomAction.addParticipantSuccess({participant: participant("Alex", true)})],
@@ -309,7 +311,9 @@ describe("RoomWebSocketService", () => {
         [RoomAction.taskChanged({task: {name: "PIP-25"}})],
         [RoomAction.taskChanged({task: undefined})],
         [RoomAction.estimateAccepted({round: {...round, estimate: "1d"}})],
-        [RoomAction.startNewVotingSuccess({task: {name: "PIP-25"}})]
+        [RoomAction.startNewVotingSuccess({task: {name: "PIP-25"}})],
+        [RoomAction.autoRevealChanged({autoReveal: true})],
+        [RoomAction.autoRevealChanged({autoReveal: false})]
       ]);
     });
 

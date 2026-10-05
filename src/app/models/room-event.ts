@@ -20,6 +20,9 @@ export enum RoomEventType {
   taskChanged = "TASK_CHANGED",
   // Someone accepted the estimate of the revealed round, in place of the one accepted before
   estimateAccepted = "ESTIMATE_ACCEPTED",
+  // Someone turned on or off revealing the cards by themselves once everyone has voted. Turned on when everyone has
+  // voted already, it comes right before showVotes.
+  autoRevealChanged = "AUTO_REVEAL_CHANGED",
   // Nobody did anything in the room for long, so the server closed it and everyone left
   roomClosed = "ROOM_CLOSED",
   // Everyone left the room, so the server deleted it
@@ -36,7 +39,9 @@ export interface RoomEvent {
   round?: RoundDto,
   timer?: TimerDto,
   // With taskChanged and clearVotes: the task of the current round, none when there is none
-  task?: TaskDto
+  task?: TaskDto,
+  // With autoRevealChanged: whether the cards are revealed by themselves now
+  autoReveal?: boolean
 }
 
 // Why the server refused a request, see ErrorCode in pipoker-app. The page shows its own text for each of them.

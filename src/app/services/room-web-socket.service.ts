@@ -188,6 +188,9 @@ export class RoomWebSocketService implements OnDestroy {
       case RoomEventType.estimateAccepted:
         this.store.dispatch(RoomAction.estimateAccepted({round: event.round!}));
         break;
+      case RoomEventType.autoRevealChanged:
+        this.store.dispatch(RoomAction.autoRevealChanged({autoReveal: event.autoReveal ?? false}));
+        break;
       case RoomEventType.roomClosed:
         this.store.dispatch(RoomAction.closed({roomId: event.roomId}));
         break;
