@@ -249,6 +249,7 @@ export class FakePipokerServer {
         room.participants = room.participants.filter(existing => existing !== participant);
         room.votes = room.votes.filter(vote => !sameNickname(vote.nickname, body));
         this.broadcast(room, RoomEventType.participantRemoved, {participant});
+        this.revealIfEveryoneVoted(room);
         break;
       }
       case "participants/role": {
@@ -268,12 +269,14 @@ export class FakePipokerServer {
           this.broadcast(room, RoomEventType.voteRemoved, {vote});
         }
         this.broadcast(room, RoomEventType.participantRoleChanged, {participant});
+        this.revealIfEveryoneVoted(room);
         break;
       }
       case "votes/add": {
         const vote: VoteDto = JSON.parse(body);
         room.votes = room.votes.filter(existing => !sameNickname(existing.nickname, vote.nickname)).concat(vote);
         this.broadcast(room, RoomEventType.voteAdded, {vote});
+        this.revealIfEveryoneVoted(room);
         break;
       }
       case "votes/clear":
@@ -286,23 +289,9 @@ export class FakePipokerServer {
         room.timer = undefined;
         this.broadcast(room, RoomEventType.clearVotes, room.task ? {task: {...room.task}} : {});
         break;
-      case "votes/show": {
-        // Like pipoker-app, the first reveal of a round with votes records it in the history
-        const round: RoundDto | undefined = room.votesShown || !room.votes.length
-          ? undefined
-          : {
-            revealedAt: new Date().toISOString(),
-            votes: room.votes.map(vote => ({...vote})),
-            ...(room.task ? {task: {...room.task}} : {})
-          };
-        if (round) {
-          room.history = [...room.history, round];
-        }
-        room.votesShown = true;
-        room.timer = undefined;
-        this.broadcast(room, RoomEventType.showVotes, round ? {round} : {});
+      case "votes/show":
+        this.reveal(room);
         break;
-      }
       case "timer/start": {
         if (room.votesShown) {
           this.error(client, destination, "The cards are revealed, so the timer can start in the next round",
@@ -343,6 +332,33 @@ export class FakePipokerServer {
       }
       default:
         this.error(client, destination, "Unknown destination", ErrorCode.unexpected);
+    }
+  }
+
+  private reveal(room: ServerRoom) {
+    // Like pipoker-app, the first reveal of a round with votes records it in the history
+    const round: RoundDto | undefined = room.votesShown || !room.votes.length
+      ? undefined
+      : {
+        revealedAt: new Date().toISOString(),
+        votes: room.votes.map(vote => ({...vote})),
+        ...(room.task ? {task: {...room.task}} : {})
+      };
+    if (round) {
+      room.history = [...room.history, round];
+    }
+    room.votesShown = true;
+    room.timer = undefined;
+    this.broadcast(room, RoomEventType.showVotes, round ? {round} : {});
+  }
+
+  // Like pipoker-app, once every voter has voted, right after the change that completed the round
+  private revealIfEveryoneVoted(room: ServerRoom) {
+    const everyoneVoted = room.votes.length > 0 && room.participants
+      .filter(participant => !participant.watcher)
+      .every(participant => room.votes.some(vote => sameNickname(vote.nickname, participant.nickname)));
+    if (!room.votesShown && everyoneVoted) {
+      this.reveal(room);
     }
   }
 
