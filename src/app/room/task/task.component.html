@@ -1,0 +1,54 @@
+<div class="task" [formGroup]="form" [class.task-empty]="form.disabled && !form.controls.name.value"
+     [style.--task-icons]="icons">
+  <!-- The field is as wide as its name, so the icon of the link stays right beside it -->
+  <div class="task-field" [class.task-editing]="focused === 'name'" [attr.data-value]="form.controls.name.value || ('task.name' | translate)">
+    <input #name type="text" class="form-control task-name" formControlName="name" [title]="form.controls.name.value"
+           [attr.maxlength]="maxNameLength" [placeholder]="'task.name' | translate" [attr.aria-label]="'task.name' | translate"
+           autocomplete="off" enterkeyhint="done"
+           (focus)="focused = 'name'" (blur)="leave()" (keydown.enter)="save(); name.blur()"
+           (keydown.escape)="revert('name'); name.blur()">
+    <!-- mousedown would take the cursor out of the field before the click -->
+    <button *ngIf="focused === 'name' && form.controls.name.value" type="button" class="task-icon task-clear"
+            [title]="'task.clear' | translate" [attr.aria-label]="'task.clear' | translate"
+            (mousedown)="$event.preventDefault()" (click)="clear('name')">
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <button *ngIf="!form.disabled" type="button" class="task-icon task-link" [class.active]="linkOpen"
+          [title]="'task.url' | translate" [attr.aria-label]="'task.url' | translate" [attr.aria-expanded]="linkOpen"
+          (mousedown)="linkOpen && $event.preventDefault()" (click)="openLink()">
+    <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" fill="none"
+            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <a *ngIf="link" class="task-icon task-open" [href]="link" target="_blank" rel="noopener noreferrer"
+     [title]="link" [attr.aria-label]="'task.open' | translate">
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M9 2.5h4.5V7M13.5 2.5L7 9M11.5 9.5v4h-9v-9h4" fill="none" stroke="currentColor" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <div *ngIf="linkOpen" class="task-link-field">
+    <input #url type="url" class="form-control form-control-sm task-url" formControlName="url"
+           [class.is-invalid]="form.controls.url.invalid"
+           [attr.maxlength]="maxUrlLength" [placeholder]="'task.url' | translate" [attr.aria-label]="'task.url' | translate"
+           autocomplete="off" enterkeyhint="done"
+           (focus)="focused = 'url'" (blur)="leave()" (keydown.enter)="save(); url.blur()"
+           (keydown.escape)="revert('url'); url.blur()">
+    <button *ngIf="form.controls.url.value" type="button" class="task-icon task-clear"
+            [title]="'task.clear' | translate" [attr.aria-label]="'task.clear' | translate"
+            (mousedown)="$event.preventDefault()" (click)="clear('url')">
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div *ngIf="form.controls.url.invalid" class="task-error text-danger">{{"task.urlInvalid" | translate}}</div>
+  </div>
+</div>
+<div *ngIf="error" class="task-error text-danger" role="alert">{{error | serverError}}</div>
+

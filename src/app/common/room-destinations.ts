@@ -53,4 +53,12 @@ export class RoomDestinations {
   public static stopTimer(roomId: string): string {
     return RoomDestinations.room(roomId) + "/timer/stop";
   }
+
+  public static task(roomId: string): string {
+    return RoomDestinations.room(roomId) + "/task";
+  }
+
+  public static estimate(roomId: string): string {
+    return RoomDestinations.room(roomId) + "/estimate";
+  }
 }

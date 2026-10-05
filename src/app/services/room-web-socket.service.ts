@@ -174,13 +174,19 @@ export class RoomWebSocketService implements OnDestroy {
         this.store.dispatch(RoomAction.showVotingResultSuccess({round: event.round}));
         break;
       case RoomEventType.clearVotes:
-        this.store.dispatch(RoomAction.startNewVotingSuccess());
+        this.store.dispatch(RoomAction.startNewVotingSuccess({task: event.task}));
         break;
       case RoomEventType.timerStarted:
         this.store.dispatch(RoomAction.timerStarted({timer: toTimer(event.timer!)}));
         break;
       case RoomEventType.timerStopped:
         this.store.dispatch(RoomAction.timerStopped());
+        break;
+      case RoomEventType.taskChanged:
+        this.store.dispatch(RoomAction.taskChanged({task: event.task}));
+        break;
+      case RoomEventType.estimateAccepted:
+        this.store.dispatch(RoomAction.estimateAccepted({round: event.round!}));
         break;
       case RoomEventType.roomClosed:
         this.store.dispatch(RoomAction.closed({roomId: event.roomId}));

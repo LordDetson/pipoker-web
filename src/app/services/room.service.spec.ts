@@ -132,6 +132,41 @@ describe("RoomService", () => {
     expect(room!.timer).toEqual({seconds: 120, endsAt: 100000});
   });
 
+  it("loads the task of the current round", () => {
+    let room: Room | undefined;
+    service.get(roomId).subscribe(result => room = result);
+
+    webSocket.emit("/app/room/" + roomId, {
+      id: roomId, name: "Sprint", deck: {cards: ["1h"]}, task: {name: "PIP-25", url: "https://example.com/PIP-25"}
+    });
+
+    expect(room!.task).toEqual({name: "PIP-25", url: "https://example.com/PIP-25"});
+  });
+
+  it("names the task and resolves when the room hears it, or fails with the server's error", () => {
+    const task = {name: "PIP-25", url: ""};
+    const named: unknown[] = [];
+    service.setTask(roomId, task).subscribe(result => named.push(result));
+
+    expect(webSocket.sent).toEqual([{destination: "/app/room/" + roomId + "/task", body: task}]);
+    webSocket.emit("/topic/room." + roomId, {roomId, eventType: RoomEventType.taskChanged, task: {name: "PIP-25"}});
+    expect(named).toEqual([{name: "PIP-25"}]);
+
+    let error: any;
+    service.setTask(roomId, task).subscribe({error: e => error = e});
+    webSocket.emit("/user/topic/room.errors", {destination: "/app/room/" + roomId + "/task", message: "revealed", code: "CARDS_REVEALED"});
+    expect(error.code).toBe("CARDS_REVEALED");
+  });
+
+  it("accepts the estimate of the revealed round", () => {
+    service.acceptEstimate(roomId, {revealedAt: "2026-10-05T12:00:00.000Z", card: "1d"});
+
+    expect(webSocket.sent).toEqual([{
+      destination: "/app/room/" + roomId + "/estimate",
+      body: {revealedAt: "2026-10-05T12:00:00.000Z", card: "1d"}
+    }]);
+  });
+
   it("checks nickname against the current room participants", () => {
     const results: boolean[] = [];
     service.checkIfNicknameExist(roomId, " dmitry ").subscribe(result => results.push(result));

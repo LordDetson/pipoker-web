@@ -214,6 +214,15 @@ export class RoomEffect {
     {dispatch: false}
   );
 
+  acceptEstimate$ = createEffect(() =>
+      this.actions$.pipe(
+        ofType(RoomAction.acceptEstimate),
+        withLatestFrom(this.store.select(RoomSelector.idSelector)),
+        tap(([{revealedAt, card}, roomId]) => this.roomService.acceptEstimate(roomId, {revealedAt, card}))
+      ),
+    {dispatch: false}
+  );
+
   startNewVoting$ = createEffect(() =>
     this.actions$.pipe(
       ofType(RoomAction.startNewVoting),

@@ -26,9 +26,12 @@
   <ng-template #room>
     <app-role-switch/>
     <app-history/>
+    <app-task/>
     <app-table>
       <div class="table-controls">
+        <!-- The timer runs while people vote, the estimate is accepted after the cards are revealed -->
         <app-timer/>
+        <app-estimate/>
         <app-buttons/>
       </div>
     </app-table>

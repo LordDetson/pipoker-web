@@ -20,13 +20,15 @@ app-table {
   position: relative;
 }
 
-/* Above the button too, so the menu of lengths covers it rather than going under it */
-.table-controls app-timer {
+/* Above the button too, so the menu of lengths or cards covers it rather than going under it.
+   As wide as their content: half of the button's width is all an element placed at its middle would get. */
+.table-controls app-timer, .table-controls app-estimate {
   position: absolute;
   z-index: 1;
   bottom: calc(100% + 0.5rem);
   left: 50%;
   transform: translateX(-50%);
+  width: max-content;
 }
 
 /* The deck and the chart share one cell, which gets as narrow as the page: the deck measures its own width

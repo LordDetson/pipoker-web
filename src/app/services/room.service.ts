@@ -6,7 +6,7 @@ import {Participant, sameNickname} from "../models/participant.model";
 import {Vote} from "../models/vote";
 import {RoomWebSocketService} from "./room-web-socket.service";
 import {CreateRoomInfo} from "../models/create-room.model";
-import {RoomCreationDto, RoomDto, TimerDto} from "../models/room-dto.model";
+import {EstimateDto, RoomCreationDto, RoomDto, TaskDto, TimerDto} from "../models/room-dto.model";
 import {ErrorEvent, RoomEvent, RoomEventType} from "../models/room-event";
 import {RoomDestinations} from "../common/room-destinations";
 
@@ -122,6 +122,20 @@ export class RoomService {
     this.roomWebSocketService.send(RoomDestinations.stopTimer(roomId), roomId);
   }
 
+  // Names what the current round estimates; a blank name clears it. Everyone in the room hears the change.
+  setTask(roomId: string, task: TaskDto): Observable<TaskDto | undefined> {
+    return this.exchange(RoomDestinations.task(roomId), task,
+      this.roomEvents(roomId, RoomEventType.taskChanged).pipe(
+        map(event => event.task)
+      )
+    );
+  }
+
+  // Everyone in the room hears the accepted estimate, this page too
+  acceptEstimate(roomId: string, estimate: EstimateDto) {
+    this.roomWebSocketService.send(RoomDestinations.estimate(roomId), estimate);
+  }
+
   private exchange<T>(destination: string, body: any, reply$: Observable<T>): Observable<T> {
     return new Observable<T>(subscriber => {
       const subscription = merge(reply$, this.errors(destination)).pipe(take(1)).subscribe(subscriber);
@@ -157,6 +171,7 @@ function toRoom(room: RoomDto): Room {
     votingResult: {map},
     votesShown: room.votesShown ?? false,
     history: room.history ?? [],
-    timer: room.timer && toTimer(room.timer)
+    timer: room.timer && toTimer(room.timer),
+    task: room.task
   };
 }
