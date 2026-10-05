@@ -77,7 +77,6 @@ describe("CreateRoomComponent", () => {
     expect(input("roomNameInput").value).toBe("");
     expect(input("deckInput").value).toBe(AppConstants.defaultDeck);
     expect(input("watcherInput").checked).toBeFalse();
-    expect(input("autoRevealInput").checked).withContext("the cards are revealed by themselves unless asked not to").toBeTrue();
     expect(submitButton().disabled).toBeTrue();
   });
 
@@ -86,14 +85,12 @@ describe("CreateRoomComponent", () => {
     localStorage.setItem(AppConstants.lastRoomName, "Sprint");
     localStorage.setItem(AppConstants.lastDeck, "1; 2; 3");
     localStorage.setItem(AppConstants.lastWatcher, "true");
-    localStorage.setItem(AppConstants.lastAutoReveal, "false");
     create();
 
     expect(input("nicknameInput").value).toBe("Dmitry");
     expect(input("roomNameInput").value).toBe("Sprint");
     expect(input("deckInput").value).toBe("1; 2; 3");
     expect(input("watcherInput").checked).toBeTrue();
-    expect(input("autoRevealInput").checked).toBeFalse();
     expect(submitButton().disabled).toBeFalse();
   });
 
@@ -103,13 +100,11 @@ describe("CreateRoomComponent", () => {
     type("roomNameInput", "Planning");
     type("deckInput", "S; M; L");
     input("watcherInput").click();
-    input("autoRevealInput").click();
 
     expect(localStorage.getItem(AppConstants.lastNickname)).toBe("Alex");
     expect(localStorage.getItem(AppConstants.lastRoomName)).toBe("Planning");
     expect(localStorage.getItem(AppConstants.lastDeck)).toBe("S; M; L");
     expect(localStorage.getItem(AppConstants.lastWatcher)).toBe("true");
-    expect(localStorage.getItem(AppConstants.lastAutoReveal)).toBe("false");
   });
 
   it("marks invalid fields and keeps the form from being submitted", () => {
@@ -136,7 +131,7 @@ describe("CreateRoomComponent", () => {
     submitButton().click();
 
     expect(store.dispatch).toHaveBeenCalledWith(RoomAction.create({
-      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d", "1w")}, watcher: true, autoReveal: true}
+      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d", "1w")}, watcher: true}
     }));
   });
 
@@ -161,7 +156,7 @@ describe("CreateRoomComponent", () => {
     submitButton().click();
 
     expect(store.dispatch).toHaveBeenCalledWith(RoomAction.create({
-      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d", "1w")}, watcher: false, autoReveal: true}
+      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d", "1w")}, watcher: false}
     }));
   });
 

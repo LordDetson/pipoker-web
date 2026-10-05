@@ -36,7 +36,6 @@ import {HistoryComponent} from "../room/history/history.component";
 import {TaskComponent} from "../room/task/task.component";
 import {EstimateComponent} from "../room/estimate/estimate.component";
 import {RoleSwitchComponent} from "../room/role-switch/role-switch.component";
-import {AutoRevealComponent} from "../room/auto-reveal/auto-reveal.component";
 
 // Runs the whole client (components, store, effects and services) against an in-memory imitation
 // of the pipoker-app STOMP API. Only the STOMP connection itself is replaced.
@@ -68,8 +67,7 @@ describe("PiPoker room (integration)", () => {
         TimerComponent,
         TaskComponent,
         EstimateComponent,
-        RoleSwitchComponent,
-        AutoRevealComponent
+        RoleSwitchComponent
       ],
       imports: [
         RouterTestingModule.withRoutes(routes),
@@ -162,17 +160,13 @@ describe("PiPoker room (integration)", () => {
     return deckCards().find(card => card.textContent!.trim() === value)!;
   }
 
-  // The rooms of most tests wait for someone to reveal the cards, so the tests show each step of a round
-  async function createRoom(nickname: string, roomName: string, deck: string, watcher = false, autoReveal = false): Promise<string> {
+  async function createRoom(nickname: string, roomName: string, deck: string, watcher = false): Promise<string> {
     await open("/");
     await type("#nicknameInput", nickname);
     await type("#roomNameInput", roomName);
     await type("#deckInput", deck);
     if (watcher) {
       await click(page.querySelector<HTMLElement>("#watcherInput")!);
-    }
-    if (!autoReveal) {
-      await click(page.querySelector<HTMLElement>("#autoRevealInput")!);
     }
     await click(button("Create Room"));
     return path().replace("/room/", "");
@@ -222,15 +216,14 @@ describe("PiPoker room (integration)", () => {
     await click(deckCard("4h").querySelector(".card-body")!);
     expect(deckCard("4h").classList).toContain("selected");
     expect(server.rooms.get(roomId)!.votes).toEqual([{nickname: "Dmitry", card: "4h"}]);
-
-    server.vote(roomId, "Alex", "1d");
-    await settle();
     expect(tableCards()).toEqual([
       {nickname: "Dmitry", voted: true, value: undefined},
-      {nickname: "Alex", voted: true, value: undefined}
+      {nickname: "Alex", voted: false, value: undefined}
     ]);
 
-    await click(button("Reveal Cards"));
+    // The last vote reveals the cards
+    server.vote(roomId, "Alex", "1d");
+    await settle();
     expect(page.querySelector("app-voting-result-chart canvas")).not.toBeNull();
     expect(page.querySelector("app-deck")!.classList).withContext("the chart is shown in place of the deck").toContain("invisible");
     expect(tableCards()).toEqual([
@@ -247,11 +240,8 @@ describe("PiPoker room (integration)", () => {
     expect(button("Voting...").disabled).toBeTrue();
   });
 
-  it("reveals the cards by themselves once everyone at the table has voted, until someone turns it off", async () => {
-    const roomId = await createRoom("Dmitry", "Sprint", "1h; 4h; 1d", false, true);
-    const autoReveal = () => page.querySelector<HTMLInputElement>("#autoRevealSwitch")!;
-    expect(server.rooms.get(roomId)!.autoReveal).toBeTrue();
-    expect(autoReveal().checked).toBeTrue();
+  it("reveals the cards by themselves once everyone at the table has voted", async () => {
+    const roomId = await createRoom("Dmitry", "Sprint", "1h; 4h; 1d");
     server.join(roomId, participant("Alex"));
     server.join(roomId, participant("Olga", true));
     await settle();
@@ -266,22 +256,7 @@ describe("PiPoker room (integration)", () => {
       {nickname: "Dmitry", voted: true, value: "4h"},
       {nickname: "Alex", voted: true, value: "1d"}
     ]);
-
-    // Alex turns it off for everyone
-    await click(button("Start New Voting"));
-    server.setAutoReveal(roomId, false);
-    await settle();
-    expect(autoReveal().checked).toBeFalse();
-    await click(deckCard("1h").querySelector(".card-body")!);
-    server.vote(roomId, "Alex", "1h");
-    await settle();
-    expect(page.querySelector("app-voting-result-chart")).toBeNull();
-    expect(button("Reveal Cards").disabled).toBeFalse();
-
-    // Turned on again when everyone has voted, it reveals the cards at once
-    await click(autoReveal());
-    expect(autoReveal().checked).toBeTrue();
-    expect(page.querySelector("app-voting-result-chart canvas")).not.toBeNull();
+    expect(server.rooms.get(roomId)!.history.length).toBe(1);
   });
 
   it("keeps every revealed round in the history everyone in the room sees", async () => {
@@ -298,7 +273,6 @@ describe("PiPoker room (integration)", () => {
     await click(deckCard("4h").querySelector(".card-body")!);
     server.vote(roomId, "Alex", "1d");
     await settle();
-    await click(button("Reveal Cards"));
     await click(button("Start New Voting"));
     await click(deckCard("1d").querySelector(".card-body")!);
     server.showVotes(roomId);
@@ -332,9 +306,8 @@ describe("PiPoker room (integration)", () => {
     expect(name().value).withContext("someone else changed it").toBe("PIP-26");
 
     await click(deckCard("4h").querySelector(".card-body")!);
-    server.vote(roomId, "Alex", "4h");
-    await settle();
     expect(estimate()).withContext("nothing to accept before the cards are revealed").toBeUndefined();
+    // Without waiting for Alex
     await click(button("Reveal Cards"));
     expect(name().disabled).withContext("the task is fixed once the cards are revealed").toBeTrue();
 
@@ -614,7 +587,7 @@ describe("PiPoker room (integration)", () => {
     server.vote(roomId, "Alex", "1d");
     await settle();
     await click(deckCard("1h").querySelector(".card-body")!);
-    await click(button("Reveal Cards"));
+    expect(button("Start New Voting")).withContext("the last vote revealed the cards").toBeDefined();
 
     await click(page.querySelector<HTMLElement>("#watcherSwitch")!);
 

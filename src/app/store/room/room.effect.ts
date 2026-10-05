@@ -214,15 +214,6 @@ export class RoomEffect {
     {dispatch: false}
   );
 
-  setAutoReveal$ = createEffect(() =>
-      this.actions$.pipe(
-        ofType(RoomAction.setAutoReveal),
-        withLatestFrom(this.store.select(RoomSelector.idSelector)),
-        tap(([{autoReveal}, roomId]) => this.roomService.setAutoReveal(roomId, autoReveal))
-      ),
-    {dispatch: false}
-  );
-
   acceptEstimate$ = createEffect(() =>
       this.actions$.pipe(
         ofType(RoomAction.acceptEstimate),

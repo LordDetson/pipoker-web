@@ -24,7 +24,6 @@ import {VotingResultChartComponent} from './room/voting-result-chart/voting-resu
 import {AboutComponent} from './about/about.component';
 import {TimerComponent} from './room/timer/timer.component';
 import {RoleSwitchComponent} from "./room/role-switch/role-switch.component";
-import {AutoRevealComponent} from "./room/auto-reveal/auto-reveal.component";
 import {TranslatePipe} from './i18n/translate.pipe';
 import {ServerErrorPipe} from './i18n/server-error.pipe';
 import {storeDevtools} from "../env/store-devtools";
@@ -51,8 +50,7 @@ import {EstimateComponent} from './room/estimate/estimate.component';
     TimerComponent,
     TaskComponent,
     EstimateComponent,
-    RoleSwitchComponent,
-    AutoRevealComponent
+    RoleSwitchComponent
   ],
   imports: [
     BrowserModule,

@@ -20,7 +20,7 @@ describe("roomReducer", () => {
     const pending = roomState({status: RoomStatus.pending});
 
     expect(roomReducer(pending, RoomAction.create({
-      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h")}, watcher: false, autoReveal: true}
+      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h")}, watcher: false}
     })).status).toBe(RoomStatus.loading);
     expect(roomReducer(pending, RoomAction.get({roomId: "id"})).status).toBe(RoomStatus.loading);
   });
@@ -213,13 +213,6 @@ describe("roomReducer", () => {
     expect(roomReducer(named, RoomAction.taskChanged({})).room.task).toBeUndefined();
     expect(roomReducer(named, RoomAction.startNewVotingSuccess({task})).room.task).toBe(task);
     expect(roomReducer(named, RoomAction.startNewVotingSuccess({})).room.task).toBeUndefined();
-  });
-
-  it("follows whether the room reveals the cards by itself", () => {
-    const on = roomReducer(roomState(), RoomAction.autoRevealChanged({autoReveal: true}));
-
-    expect(on.room.autoReveal).toBeTrue();
-    expect(roomReducer(on, RoomAction.autoRevealChanged({autoReveal: false})).room.autoReveal).toBeFalse();
   });
 
   it("puts the accepted estimate on its round of the history", () => {

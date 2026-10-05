@@ -37,8 +37,6 @@ export enum RoomActionType {
   taskChanged = "[Room] task changed",
   acceptEstimate = "[Room] accept estimate",
   estimateAccepted = "[Room] estimate accepted",
-  setAutoReveal = "[Room] set auto reveal",
-  autoRevealChanged = "[Room] auto reveal changed",
   closed = "[Room] closed",
   removed = "[Room] removed",
   doNothing = "[Room] do nothing",
@@ -107,12 +105,6 @@ export const acceptEstimate = createAction(RoomActionType.acceptEstimate,
   props<{ revealedAt: string, card: string }>());
 export const estimateAccepted = createAction(RoomActionType.estimateAccepted,
   props<{ round: RoundDto }>());
-// The person looking at the page turns on or off revealing the cards by themselves once everyone has voted
-export const setAutoReveal = createAction(RoomActionType.setAutoReveal,
-  props<{ autoReveal: boolean }>());
-// Someone in the room turned it on or off, maybe the person looking at the page
-export const autoRevealChanged = createAction(RoomActionType.autoRevealChanged,
-  props<{ autoReveal: boolean }>());
 export const closed = createAction(RoomActionType.closed,
   props<{ roomId: string }>());
 // Everyone left the room while this page was open on it without a seat, for example on the join form

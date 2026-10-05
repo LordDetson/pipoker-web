@@ -17,7 +17,6 @@ interface CreateRoomFormGroup {
   roomName: FormControl<string>;
   deck: FormControl<string>;
   watcher: FormControl<boolean>;
-  autoReveal: FormControl<boolean>;
 }
 
 @Component({
@@ -51,7 +50,6 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     const roomName: string = localStorage.getItem(AppConstants.lastRoomName) ?? "";
     const deck: string = localStorage.getItem(AppConstants.lastDeck) ?? AppConstants.defaultDeck;
     const watcher: boolean = JSON.parse(localStorage.getItem(AppConstants.lastWatcher) as string) ?? false;
-    const autoReveal: boolean = JSON.parse(localStorage.getItem(AppConstants.lastAutoReveal) as string) ?? true;
     this.createRoomForm = new FormGroup<CreateRoomFormGroup>({
       nickname: new FormControl<string>(nickname, {
         nonNullable: true,
@@ -65,8 +63,7 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
         nonNullable: true,
         validators: RoomValidators.deck
       }),
-      watcher: new FormControl<boolean>(watcher, {nonNullable: true}),
-      autoReveal: new FormControl<boolean>(autoReveal, {nonNullable: true})
+      watcher: new FormControl<boolean>(watcher, {nonNullable: true})
     });
     this.createRoomForm.get("nickname")?.valueChanges.pipe(takeUntil(this.ngDestroyed$))
       .subscribe(value => localStorage.setItem(AppConstants.lastNickname, value));
@@ -80,8 +77,6 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     this.selectedDeck = this.findDeck(deck);
     this.createRoomForm.get("watcher")?.valueChanges.pipe(takeUntil(this.ngDestroyed$))
       .subscribe(value => localStorage.setItem(AppConstants.lastWatcher, value.toString()));
-    this.createRoomForm.get("autoReveal")?.valueChanges.pipe(takeUntil(this.ngDestroyed$))
-      .subscribe(value => localStorage.setItem(AppConstants.lastAutoReveal, value.toString()));
   }
 
   ngOnDestroy(): void {
@@ -143,8 +138,7 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
           nickname: this.createRoomForm.value.nickname!.trim(),
           roomName: this.createRoomForm.value.roomName!.trim(),
           deck: {cards},
-          watcher: this.createRoomForm.value.watcher!,
-          autoReveal: this.createRoomForm.value.autoReveal!
+          watcher: this.createRoomForm.value.watcher!
         }
       }));
     }

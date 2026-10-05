@@ -97,15 +97,6 @@
         {{"form.watcher" | translate}}
       </label>
     </div>
-    <div class="form-check mb-3">
-      <input class="form-check-input common-transition"
-             type="checkbox"
-             id="autoRevealInput"
-             formControlName="autoReveal">
-      <label class="form-check-label" for="autoRevealInput">
-        {{"form.autoReveal" | translate}}
-      </label>
-    </div>
     <div *ngIf="error$ | async as error" class="alert alert-danger" role="alert">{{error | serverError}}</div>
     <div class="d-grid gap-2">
       <button class="btn btn-primary" type="submit" [disabled]="createRoomForm.invalid">{{"form.createRoom" | translate}}</button>

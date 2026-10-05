@@ -1,5 +1,5 @@
 import {Participant} from "../models/participant.model";
-import {AutoRevealDto, EstimateDto, RoomDto, RoundDto, TaskDto, TimerDto, VoteDto} from "../models/room-dto.model";
+import {EstimateDto, RoomDto, RoundDto, TaskDto, TimerDto, VoteDto} from "../models/room-dto.model";
 import {ErrorCode, ErrorEvent, RoomEvent, RoomEventType} from "../models/room-event";
 
 export interface SentFrame {
@@ -96,7 +96,6 @@ interface ServerRoom {
   timer?: { seconds: number, endsAt: number };
   history: RoundDto[];
   task?: TaskDto;
-  autoReveal?: boolean;
 }
 
 // An in-memory imitation of the pipoker-app STOMP API, so tests can run the whole client against it.
@@ -155,10 +154,6 @@ export class FakePipokerServer {
     this.received(undefined, "/app/room/" + roomId + "/task", JSON.stringify(task));
   }
 
-  setAutoReveal(roomId: string, autoReveal: boolean) {
-    this.received(undefined, "/app/room/" + roomId + "/auto-reveal", JSON.stringify({autoReveal}));
-  }
-
   acceptEstimate(roomId: string, estimate: EstimateDto) {
     this.received(undefined, "/app/room/" + roomId + "/estimate", JSON.stringify(estimate));
   }
@@ -212,7 +207,6 @@ export class FakePipokerServer {
         return;
       }
       const id = this.addRoom(creation.name, creation.deck.cards, creation.participants);
-      this.rooms.get(id)!.autoReveal = creation.autoReveal ?? false;
       later(() => client?.deliver("/user/topic/room.created", toDto(this.rooms.get(id)!)));
       return;
     }
@@ -298,13 +292,6 @@ export class FakePipokerServer {
       case "votes/show":
         this.reveal(room);
         break;
-      case "auto-reveal": {
-        const {autoReveal}: AutoRevealDto = JSON.parse(body);
-        room.autoReveal = autoReveal;
-        this.broadcast(room, RoomEventType.autoRevealChanged, {autoReveal});
-        this.revealIfEveryoneVoted(room);
-        break;
-      }
       case "timer/start": {
         if (room.votesShown) {
           this.error(client, destination, "The cards are revealed, so the timer can start in the next round",
@@ -365,12 +352,12 @@ export class FakePipokerServer {
     this.broadcast(room, RoomEventType.showVotes, round ? {round} : {});
   }
 
-  // Like pipoker-app, once every voter has voted in a room that wants it, right after the change that completed the round
+  // Like pipoker-app, once every voter has voted, right after the change that completed the round
   private revealIfEveryoneVoted(room: ServerRoom) {
     const everyoneVoted = room.votes.length > 0 && room.participants
       .filter(participant => !participant.watcher)
       .every(participant => room.votes.some(vote => sameNickname(vote.nickname, participant.nickname)));
-    if (room.autoReveal && !room.votesShown && everyoneVoted) {
+    if (!room.votesShown && everyoneVoted) {
       this.reveal(room);
     }
   }
@@ -401,8 +388,7 @@ function toDto(room: ServerRoom): RoomDto {
     // Like pipoker-app, which leaves it out while the cards are hidden
     ...(room.votesShown ? {votesShown: true} : {}),
     ...(room.timer ? {timer: toTimerDto(room.timer)} : {}),
-    ...(room.task ? {task: {...room.task}} : {}),
-    ...(room.autoReveal ? {autoReveal: true} : {})
+    ...(room.task ? {task: {...room.task}} : {})
   };
 }
 
