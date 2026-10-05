@@ -1,8 +1,8 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {ComponentFixture, fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {ReactiveFormsModule} from "@angular/forms";
 import {Subject} from "rxjs";
-import {TaskComponent} from "./task.component";
+import {TASK_SAVE_DELAY_MS, TaskComponent} from "./task.component";
 import {appState, room, ROOM_ID} from "../../testing/test-data";
 import {TranslatePipe} from "../../i18n/translate.pipe";
 import {ServerErrorPipe} from "../../i18n/server-error.pipe";
@@ -39,104 +39,161 @@ describe("TaskComponent", () => {
     return fixture.nativeElement.querySelector(selector);
   }
 
+  const name = () => element<HTMLInputElement>(".task-name")!;
+  const url = () => element<HTMLInputElement>(".task-url")!;
+
   function setState(task: TaskDto | undefined, showVotingResult: boolean = false): void {
     store.setState(appState({room: room({task}), showVotingResult}));
     fixture.detectChanges();
   }
 
-  function type(selector: string, value: string): void {
-    const input = element<HTMLInputElement>(selector)!;
+  function focus(input: HTMLInputElement): void {
+    input.dispatchEvent(new Event("focus"));
+    fixture.detectChanges();
+  }
+
+  function leave(input: HTMLInputElement): void {
+    input.dispatchEvent(new Event("blur"));
+    fixture.detectChanges();
+  }
+
+  function type(input: HTMLInputElement, value: string): void {
     input.value = value;
     input.dispatchEvent(new Event("input"));
     fixture.detectChanges();
   }
 
-  it("offers to name the task while the cards are hidden", () => {
-    expect(element(".task-add")!.textContent!.trim()).toBe("What are we estimating?");
+  function press(input: HTMLInputElement, key: string): void {
+    input.dispatchEvent(new KeyboardEvent("keydown", {key}));
+    fixture.detectChanges();
+  }
 
-    setState(undefined, true);
+  it("shows the task of the round in fields everyone can change while the cards are hidden", () => {
+    expect(name().placeholder).toBe("Task name");
+    expect(url().placeholder).toBe("Link to the task");
+    expect(element(".task-open")).toBeNull();
 
-    expect(element(".task-add")).toBeNull();
+    setState({name: "PIP-25", url: "https://example.com/PIP-25"});
+    expect(name().value).toBe("PIP-25");
+    expect(url().value).toBe("https://example.com/PIP-25");
+    const open = element<HTMLAnchorElement>(".task-open")!;
+    expect(open.href).toBe("https://example.com/PIP-25");
+    expect(open.rel).toBe("noopener noreferrer");
+
+    setState({name: "PIP-25"}, true);
+    expect(name().disabled).toBeTrue();
+    expect(url().disabled).toBeTrue();
   });
 
-  it("shows the task to everyone, as a link when it has one", () => {
-    setState({name: "PIP-25 Task name", url: "https://example.com/PIP-25"});
+  it("sends the task once the person stops typing", fakeAsync(() => {
+    focus(name());
+    type(name(), "PIP");
+    tick(TASK_SAVE_DELAY_MS / 2);
+    type(name(), " PIP-25 ");
+    tick(TASK_SAVE_DELAY_MS - 1);
+    expect(roomService.setTask).not.toHaveBeenCalled();
 
-    const link = element<HTMLAnchorElement>("a.task-name")!;
-    expect(link.textContent).toBe("PIP-25 Task name");
-    expect(link.href).toBe("https://example.com/PIP-25");
-    expect(link.rel).toBe("noopener noreferrer");
-    expect(element(".task-edit")).not.toBeNull();
+    tick(1);
+    expect(roomService.setTask).toHaveBeenCalledOnceWith(ROOM_ID, {name: "PIP-25", url: ""});
+  }));
 
-    setState({name: "PIP-26"}, true);
+  it("sends the link the same way, with the name the room has", fakeAsync(() => {
+    setState({name: "PIP-25"});
+    focus(url());
+    type(url(), "https://example.com/PIP-25");
+    press(url(), "Enter");
+    expect(roomService.setTask).toHaveBeenCalledOnceWith(ROOM_ID, {name: "PIP-25", url: "https://example.com/PIP-25"});
 
-    expect(element("span.task-name")!.textContent).toBe("PIP-26");
-    expect(element(".task-edit")).toBeNull();
-  });
+    tick(TASK_SAVE_DELAY_MS);
+    leave(url());
+    expect(roomService.setTask).withContext("sent once").toHaveBeenCalledTimes(1);
+  }));
 
-  it("sends what was typed and closes the form when the room hears it", () => {
-    setState({name: "PIP-24"});
-    element<HTMLButtonElement>(".task-edit")!.click();
-    fixture.detectChanges();
-    expect(element<HTMLInputElement>(".task-form input")!.value).toBe("PIP-24");
+  it("keeps a link until it has a name", fakeAsync(() => {
+    focus(url());
+    type(url(), "https://example.com/PIP-25");
+    leave(url());
+    expect(roomService.setTask).not.toHaveBeenCalled();
 
-    type("input[formControlName=name]", " PIP-25 ");
-    type("input[formControlName=url]", "https://example.com/PIP-25");
-    element<HTMLFormElement>(".task-form")!.dispatchEvent(new Event("submit"));
-    fixture.detectChanges();
+    focus(name());
+    type(name(), "PIP-25");
+    leave(name());
+    expect(roomService.setTask).toHaveBeenCalledOnceWith(ROOM_ID, {name: "PIP-25", url: "https://example.com/PIP-25"});
+    tick(TASK_SAVE_DELAY_MS);
+  }));
 
-    expect(roomService.setTask).toHaveBeenCalledOnceWith(ROOM_ID, {name: " PIP-25 ", url: "https://example.com/PIP-25"});
-    expect(element(".task-form")).not.toBeNull();
-    reply$.next({name: "PIP-25"});
-    fixture.detectChanges();
-    expect(element(".task-form")).toBeNull();
-  });
-
-  it("refuses a link that isn't a web link", () => {
-    element<HTMLButtonElement>(".task-add")!.click();
-    fixture.detectChanges();
-
-    type("input[formControlName=name]", "PIP-25");
-    type("input[formControlName=url]", "javascript:alert(1)");
+  it("refuses a link that isn't a web link", fakeAsync(() => {
+    focus(name());
+    type(name(), "PIP-25");
+    type(url(), "javascript:alert(1)");
+    leave(name());
+    tick(TASK_SAVE_DELAY_MS);
 
     expect(element(".task-error")!.textContent!.trim()).toBe("The link must start with http:// or https://");
-    expect(element<HTMLButtonElement>(".task-form button[type=submit]")!.disabled).toBeTrue();
-    element<HTMLFormElement>(".task-form")!.dispatchEvent(new Event("submit"));
     expect(roomService.setTask).not.toHaveBeenCalled();
-  });
+  }));
 
-  it("removes the task", () => {
+  it("brings back the room's task with Escape", fakeAsync(() => {
     setState({name: "PIP-25"});
-    element<HTMLButtonElement>(".task-edit")!.click();
+    focus(name());
+    type(name(), "PIP-26");
+    press(name(), "Escape");
+    leave(name());
+    tick(TASK_SAVE_DELAY_MS);
+
+    expect(name().value).toBe("PIP-25");
+    expect(roomService.setTask).not.toHaveBeenCalled();
+  }));
+
+  it("offers to clear a field only while it is being changed", () => {
+    setState({name: "PIP-25", url: "https://example.com/PIP-25"});
+    expect(element(".task-clear")).toBeNull();
+
+    focus(url());
+    expect(element(".task-open")).withContext("the cross takes its place").toBeNull();
+    const mousedown = new MouseEvent("mousedown", {cancelable: true});
+    element(".task-clear")!.dispatchEvent(mousedown);
+    expect(mousedown.defaultPrevented).withContext("the field keeps the cursor").toBeTrue();
+    element<HTMLButtonElement>(".task-clear")!.click();
     fixture.detectChanges();
 
-    element<HTMLButtonElement>(".btn-outline-danger")!.click();
-
-    expect(roomService.setTask).toHaveBeenCalledOnceWith(ROOM_ID, {name: ""});
+    expect(url().value).toBe("");
+    expect(roomService.setTask).toHaveBeenCalledOnceWith(ROOM_ID, {name: "PIP-25", url: ""});
+    expect(element(".task-clear")).toBeNull();
   });
 
-  it("shows the server's refusal in the form", () => {
-    element<HTMLButtonElement>(".task-add")!.click();
-    fixture.detectChanges();
-    type("input[formControlName=name]", "PIP-25");
-    element<HTMLFormElement>(".task-form")!.dispatchEvent(new Event("submit"));
+  it("takes someone else's change unless this person is changing that field", () => {
+    setState({name: "PIP-25"});
+    focus(name());
+    setState({name: "PIP-26"});
+    expect(name().value).withContext("not changed here yet").toBe("PIP-26");
+
+    type(name(), "PIP-27");
+    setState({name: "PIP-28", url: "https://example.com/PIP-28"});
+    expect(name().value).toBe("PIP-27");
+    expect(url().value).toBe("https://example.com/PIP-28");
+  });
+
+  it("shows the server's refusal", () => {
+    focus(name());
+    type(name(), "PIP-25");
+    press(name(), "Enter");
 
     reply$.error({destination: "/app/room/" + ROOM_ID + "/task", message: "revealed", code: ErrorCode.cardsRevealed});
     fixture.detectChanges();
 
-    expect(element("[role=alert]")!.textContent!.trim()).toBe("The cards are already revealed. This can be done in the next round");
+    expect(element("[role=alert]")!.textContent!.trim())
+      .toBe("The cards are already revealed. This can be done in the next round");
   });
 
-  it("closes the form with Escape and when the cards are revealed", () => {
-    element<HTMLButtonElement>(".task-add")!.click();
-    fixture.detectChanges();
-    element(".task-form")!.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
-    fixture.detectChanges();
-    expect(element(".task-form")).toBeNull();
+  it("drops an unsent change when the cards are revealed", fakeAsync(() => {
+    setState({name: "PIP-25"});
+    focus(name());
+    type(name(), "PIP-26");
+    setState({name: "PIP-25"}, true);
+    tick(TASK_SAVE_DELAY_MS);
 
-    element<HTMLButtonElement>(".task-add")!.click();
-    fixture.detectChanges();
-    setState(undefined, true);
-    expect(element(".task-form")).toBeNull();
-  });
+    expect(name().value).toBe("PIP-25");
+    expect(roomService.setTask).not.toHaveBeenCalled();
+  }));
 });

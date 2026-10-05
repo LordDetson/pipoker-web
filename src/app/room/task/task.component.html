@@ -1,36 +1,41 @@
-<form *ngIf="editing; else shown" class="task-form" [formGroup]="form" (ngSubmit)="save()" (keydown.escape)="cancel()">
-  <input #nameInput type="text" class="form-control form-control-sm" formControlName="name"
-         [attr.maxlength]="maxNameLength" [attr.aria-label]="'task.name' | translate"
-         [placeholder]="'task.namePlaceholder' | translate" autocomplete="off">
-  <input type="url" class="form-control form-control-sm" formControlName="url" [class.is-invalid]="form.controls.url.invalid"
-         [attr.maxlength]="maxUrlLength" [attr.aria-label]="'task.url' | translate"
-         [placeholder]="'task.urlPlaceholder' | translate" autocomplete="off">
-  <div class="task-actions">
-    <button type="submit" class="btn btn-sm btn-primary" [disabled]="form.invalid || saving">{{"task.save" | translate}}</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancel()">{{"task.cancel" | translate}}</button>
-    <button *ngIf="task$ | async" type="button" class="btn btn-sm btn-outline-danger" [disabled]="saving"
-            (click)="remove()">{{"task.remove" | translate}}</button>
-  </div>
-  <div *ngIf="form.controls.url.invalid" class="task-error text-danger">{{"task.urlInvalid" | translate}}</div>
-  <div *ngIf="error" class="task-error text-danger" role="alert">{{error | serverError}}</div>
-</form>
-
-<ng-template #shown>
-  <div *ngIf="task$ | async as task; else none" class="task">
-    <span class="task-label text-body-secondary">{{"task.label" | translate}}</span>
-    <a *ngIf="task.url; else plain" class="task-name" [href]="task.url" target="_blank" rel="noopener noreferrer"
-       [title]="task.name">{{task.name}}</a>
-    <ng-template #plain><span class="task-name" [title]="task.name">{{task.name}}</span></ng-template>
-    <button *ngIf="!(revealed$ | async)" type="button" class="task-edit" (click)="edit()"
-            [title]="'task.edit' | translate" [attr.aria-label]="'task.edit' | translate">
-      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M11 2.5l2.5 2.5L6 12.5H3.5V10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+<div class="task" [formGroup]="form">
+  <div class="task-field task-name-field" [class.task-empty]="form.disabled && !form.controls.name.value">
+    <input #name type="text" class="form-control task-name" formControlName="name" [title]="form.controls.name.value"
+           [attr.maxlength]="maxNameLength" [placeholder]="'task.name' | translate" [attr.aria-label]="'task.name' | translate"
+           autocomplete="off" enterkeyhint="done"
+           (focus)="focused = 'name'" (blur)="leave()" (keydown.enter)="save(); name.blur()"
+           (keydown.escape)="revert('name'); name.blur()">
+    <!-- mousedown would take the cursor out of the field before the click -->
+    <button *ngIf="focused === 'name' && form.controls.name.value" type="button" class="task-clear"
+            [title]="'task.clear' | translate" [attr.aria-label]="'task.clear' | translate"
+            (mousedown)="$event.preventDefault()" (click)="clear('name')">
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
     </button>
   </div>
-  <ng-template #none>
-    <button *ngIf="!(revealed$ | async)" type="button" class="btn btn-sm btn-outline-secondary task-add" (click)="edit()">
-      {{"task.add" | translate}}
+  <div class="task-field task-url-field" [class.task-empty]="form.disabled && !form.controls.url.value">
+    <input #url type="url" class="form-control task-url" formControlName="url" [title]="form.controls.url.value"
+           [class.is-invalid]="form.controls.url.invalid"
+           [attr.maxlength]="maxUrlLength" [placeholder]="'task.url' | translate" [attr.aria-label]="'task.url' | translate"
+           autocomplete="off" enterkeyhint="done"
+           (focus)="focused = 'url'" (blur)="leave()" (keydown.enter)="save(); url.blur()"
+           (keydown.escape)="revert('url'); url.blur()">
+    <button *ngIf="focused === 'url' && form.controls.url.value" type="button" class="task-clear"
+            [title]="'task.clear' | translate" [attr.aria-label]="'task.clear' | translate"
+            (mousedown)="$event.preventDefault()" (click)="clear('url')">
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
     </button>
-  </ng-template>
-</ng-template>
+    <a *ngIf="link && focused !== 'url'" class="task-open" [href]="link" target="_blank" rel="noopener noreferrer"
+       [title]="'task.open' | translate" [attr.aria-label]="'task.open' | translate">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M9 2.5h4.5V7M13.5 2.5L7 9M11.5 9.5v4h-9v-9h4" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
+  <div *ngIf="form.controls.url.invalid" class="task-error text-danger">{{"task.urlInvalid" | translate}}</div>
+  <div *ngIf="error" class="task-error text-danger" role="alert">{{error | serverError}}</div>
+</div>

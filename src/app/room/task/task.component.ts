@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
-import {filter, Observable, Subscription, take} from "rxjs";
+import {debounceTime, Subscription, take} from "rxjs";
 import * as RoomSelector from "../../store/room/room.selector";
 import {RoomService} from "../../services/room.service";
 import {TaskDto} from "../../models/room-dto.model";
@@ -9,10 +9,16 @@ import {TaskDto} from "../../models/room-dto.model";
 // The same limits pipoker-app checks for the task of a round
 export const MAX_TASK_NAME_LENGTH = 200;
 export const MAX_TASK_URL_LENGTH = 2000;
+// How long the fields wait after the last key before they send the task
+export const TASK_SAVE_DELAY_MS = 1000;
 // Only web links, so the page never opens a link that runs a script
 const WEB_LINK = /^https?:\/\/\S+$/i;
 
-// What the round estimates, above the table. Anyone in the room names it or changes it while the cards are hidden.
+type TaskField = "name" | "url";
+
+// The task the round estimates, in two fields above the table: its name and a link to it. Anyone in the room
+// changes them while the cards are hidden: the task is sent when the person stops typing, presses Enter or
+// leaves the field.
 @Component({
   selector: 'app-task',
   templateUrl: './task.component.html',
@@ -24,16 +30,6 @@ export class TaskComponent implements OnDestroy {
 
   readonly maxNameLength = MAX_TASK_NAME_LENGTH;
   readonly maxUrlLength = MAX_TASK_URL_LENGTH;
-  task$: Observable<TaskDto | undefined> = this.store.select(RoomSelector.taskSelector);
-  revealed$: Observable<boolean> = this.store.select(RoomSelector.showVotingResultSelector);
-
-  @ViewChild("nameInput")
-  set nameInput(input: ElementRef<HTMLInputElement> | undefined) {
-    // The field gets the cursor when the form opens
-    input?.nativeElement.focus();
-  }
-
-  // The server trims the name and the link: the link is checked as it will be stored
   readonly form = new FormGroup({
     name: new FormControl("", {nonNullable: true, validators: Validators.maxLength(MAX_TASK_NAME_LENGTH)}),
     url: new FormControl("", {
@@ -42,53 +38,77 @@ export class TaskComponent implements OnDestroy {
         control => !control.value.trim() || WEB_LINK.test(control.value.trim()) ? null : {webLink: true}]
     })
   });
-  editing = false;
-  saving = false;
+  // The field being changed, none when the cursor is elsewhere
+  focused?: TaskField;
   error?: unknown;
 
+  // The task the room has, as the server trims it
+  private known: Required<TaskDto> = {name: "", url: ""};
+  // The task sent and not yet heard back, so the same task is not sent twice
+  private sending?: string;
   private readonly subscriptions = new Subscription();
 
   constructor(
     private store: Store,
     private roomService: RoomService
   ) {
-    // Revealed cards close the form: the task of the round can't change anymore
-    this.subscriptions.add(this.revealed$.pipe(filter(revealed => revealed)).subscribe(() => this.cancel()));
+    this.subscriptions.add(this.store.select(RoomSelector.taskSelector).subscribe(task => {
+      const known = {name: task?.name ?? "", url: task?.url ?? ""};
+      // Someone else's change replaces a field only while this person isn't changing it
+      for (const field of ["name", "url"] as TaskField[]) {
+        const control = this.form.controls[field];
+        if (this.focused !== field || control.value.trim() === this.known[field]) {
+          control.setValue(known[field], {emitEvent: false});
+        }
+      }
+      this.known = known;
+    }));
+    // Revealed cards close the fields: the task of the round can't change anymore
+    this.subscriptions.add(this.store.select(RoomSelector.showVotingResultSelector).subscribe(revealed => {
+      if (revealed) {
+        this.form.setValue(this.known, {emitEvent: false});
+        this.form.disable({emitEvent: false});
+      } else {
+        this.form.enable({emitEvent: false});
+      }
+    }));
+    this.subscriptions.add(this.form.valueChanges.pipe(debounceTime(TASK_SAVE_DELAY_MS)).subscribe(() => this.save()));
   }
 
-  edit(): void {
-    this.task$.pipe(take(1)).subscribe(task => {
-      this.form.setValue({name: task?.name ?? "", url: task?.url ?? ""});
-      this.error = undefined;
-      this.editing = true;
-    });
+  get link(): string | undefined {
+    return this.known.url || undefined;
   }
 
-  cancel(): void {
-    this.editing = false;
-    this.saving = false;
+  leave(): void {
+    this.focused = undefined;
+    this.save();
   }
 
-  // A blank name clears the task
+  // Escape brings back what the room has in the field
+  revert(field: TaskField): void {
+    this.form.controls[field].setValue(this.known[field], {emitEvent: false});
+  }
+
+  clear(field: TaskField): void {
+    this.form.controls[field].setValue("", {emitEvent: false});
+    this.save();
+  }
+
+  // A blank name clears the task. A link waits for its name, otherwise the server would drop it.
   save(): void {
-    if (this.form.invalid || this.saving) {
+    const task = {name: this.form.controls.name.value.trim(), url: this.form.controls.url.value.trim()};
+    const key = JSON.stringify(task);
+    if (this.form.disabled || this.form.invalid || (!task.name && task.url)
+      || key === JSON.stringify(this.known) || key === this.sending) {
       return;
     }
-    this.send(this.form.getRawValue());
-  }
-
-  remove(): void {
-    this.send({name: ""});
-  }
-
-  private send(task: TaskDto): void {
-    this.saving = true;
+    this.sending = key;
     this.error = undefined;
     this.store.select(RoomSelector.idSelector).pipe(take(1)).subscribe(roomId =>
       this.roomService.setTask(roomId, task).subscribe({
-        next: () => this.cancel(),
+        next: () => this.sending = undefined,
         error: error => {
-          this.saving = false;
+          this.sending = undefined;
           this.error = error;
         }
       }));

@@ -7,43 +7,95 @@
   padding: 0.75rem 9rem 0;
 }
 
-/* On a phone the corners leave no room beside them, so the line goes under them and takes the whole width */
+/* On a phone the corners leave no room beside them, so the fields go under them, one under the other */
 @media (max-width: 575.98px) {
   :host {
-    min-height: calc(3rem + 2.375rem);
+    min-height: calc(3rem + 2 * 2.375rem + 0.25rem);
     padding: 3rem 1rem 0;
   }
 }
 
+/* The name and the link side by side on a wide screen, one under the other on a narrow one */
 .task {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  min-width: 0;
-  max-width: 40rem;
-  font-size: 1.125rem;
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 0.25rem 0.5rem;
+  width: 100%;
+  max-width: 48rem;
 }
 
-.task-label {
-  flex: none;
+@media (max-width: 767.98px) {
+  .task {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-/* A long name ends with an ellipsis, the whole of it is in the tooltip */
-.task-name {
-  min-width: 0;
+.task-field {
+  position: relative;
+}
+
+/* The fields read like text: they show their border only when the pointer is over them or one is being changed */
+.task .form-control {
+  padding-right: 2.25rem;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.task .form-control:hover:not(:disabled),
+.task .form-control:focus {
+  border-color: var(--bs-border-color);
+}
+
+.task .form-control:focus {
+  background-color: var(--bs-body-bg);
+}
+
+/* Without Bootstrap's icon, which would sit under the cross */
+.task .form-control.is-invalid {
+  padding-right: 2.25rem;
+  border-color: var(--bs-form-invalid-border-color);
+  background-image: none;
+}
+
+.task-name {
+  font-size: 1.125rem;
   font-weight: 500;
 }
 
-.task-edit {
-  flex: none;
+.task-url {
+  color: var(--bs-secondary-color);
+}
+
+/* After the reveal the task can't change, so it is plain text */
+.task .form-control:disabled {
+  background-color: transparent;
+}
+
+.task-name:disabled {
+  color: var(--bs-body-color);
+}
+
+.task-empty {
+  visibility: hidden;
+}
+
+.task-clear,
+.task-open {
+  position: absolute;
+  top: 50%;
+  right: 0.375rem;
+  transform: translateY(-50%);
+}
+
+.task-clear,
+.task-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.5rem;
+  height: 1.5rem;
   padding: 0;
   border: none;
   border-radius: var(--bs-border-radius);
@@ -51,36 +103,13 @@
   background: none;
 }
 
-.task-edit:hover {
+.task-clear:hover,
+.task-open:hover {
   color: var(--bs-body-color);
   background-color: var(--bs-tertiary-bg);
-}
-
-.task-add {
-  align-self: center;
-}
-
-/* The name and the link side by side on a wide screen, one under the other on a phone */
-.task-form {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) auto;
-  gap: 0.375rem;
-  width: 100%;
-  max-width: 48rem;
-}
-
-.task-actions {
-  display: flex;
-  gap: 0.375rem;
 }
 
 .task-error {
   grid-column: 1 / -1;
   font-size: 0.875rem;
-}
-
-@media (max-width: 767.98px) {
-  .task-form {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }

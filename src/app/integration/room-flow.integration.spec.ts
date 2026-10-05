@@ -272,29 +272,27 @@ describe("PiPoker room (integration)", () => {
     const roomId = await createRoom("Dmitry", "Sprint", "1h; 4h; 1d");
     server.join(roomId, participant("Alex"));
     await settle();
-    const task = () => page.querySelector(".task .task-name")?.textContent!.trim();
+    const name = () => page.querySelector<HTMLInputElement>("app-task .task-name")!;
     const estimate = () => {
       const buttons = Array.from(page.querySelectorAll("app-estimate .btn-group > button"));
       return buttons.length ? buttons.map(shown => shown.textContent!.trim()).join(" ") : undefined;
     };
 
-    await click(button("What are we estimating?"));
-    await type("app-task input[formControlName=name]", "PIP-25 Task name");
-    await type("app-task input[formControlName=url]", "https://example.com/PIP-25");
-    await click(button("Save"));
-    expect(task()).toBe("PIP-25 Task name");
+    await type("app-task .task-name", " PIP-25 Task name ");
+    expect(server.rooms.get(roomId)!.task).withContext("sent when leaving the field").toEqual({name: "PIP-25 Task name"});
+    await type("app-task .task-url", "https://example.com/PIP-25");
     expect(server.rooms.get(roomId)!.task).toEqual({name: "PIP-25 Task name", url: "https://example.com/PIP-25"});
 
     server.setTask(roomId, {name: "PIP-26"});
     await settle();
-    expect(task()).withContext("someone else changed it").toBe("PIP-26");
+    expect(name().value).withContext("someone else changed it").toBe("PIP-26");
 
     await click(deckCard("4h").querySelector(".card-body")!);
     server.vote(roomId, "Alex", "4h");
     await settle();
     expect(estimate()).withContext("nothing to accept before the cards are revealed").toBeUndefined();
     await click(button("Reveal Cards"));
-    expect(page.querySelector(".task-edit")).withContext("the task is fixed once the cards are revealed").toBeNull();
+    expect(name().disabled).withContext("the task is fixed once the cards are revealed").toBeTrue();
 
     await click(button("Accept 4h"));
     expect(estimate()).toBe("Estimate: 4h");
@@ -306,7 +304,8 @@ describe("PiPoker room (integration)", () => {
     expect(estimate()).withContext("someone else changed it").toBe("Estimate: 1d");
 
     await click(button("Start New Voting"));
-    expect(task()).withContext("the next round goes on to the next task").toBeUndefined();
+    expect(name().value).withContext("the next round goes on to the next task").toBe("");
+    expect(name().disabled).toBeFalse();
     expect(estimate()).toBeUndefined();
     await click(page.querySelector<HTMLElement>(".history-toggle")!);
     expect(page.querySelector(".history-panel .round-task")!.textContent!.trim()).toBe("PIP-26");
