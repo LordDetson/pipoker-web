@@ -120,6 +120,18 @@ describe("RoomComponent", () => {
       .withContext("the deck keeps its place, so the table does not change its size").toContain("invisible");
   });
 
+  it("gives a watcher's table the space of the deck they don't have, until the chart comes", () => {
+    store.setState(appState({}, {currentParticipant: participant("Dmitry", true)}));
+    create();
+
+    expect(fixture.nativeElement.querySelector(".hand")).toBeNull();
+
+    store.setState(appState({showVotingResult: true}, {currentParticipant: participant("Dmitry", true)}));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector(".hand > app-voting-result-chart")).not.toBeNull();
+  });
+
   it("takes the seat back after the page is reloaded", () => {
     SeatStorage.save(ROOM_ID, participant("Alex", true));
     store.setState(appState({status: RoomStatus.pending}, {currentParticipant: undefined, status: CurrentParticipantStatus.pending}));
