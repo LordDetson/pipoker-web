@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
 import {debounceTime, Subscription, take} from "rxjs";
@@ -16,9 +16,9 @@ const WEB_LINK = /^https?:\/\/\S+$/i;
 
 type TaskField = "name" | "url";
 
-// The task the round estimates, in two fields above the table: its name and a link to it. Anyone in the room
-// changes them while the cards are hidden: the task is sent when the person stops typing, presses Enter or
-// leaves the field.
+// The task the round estimates, above the table: its name in the middle and, behind the icon beside it, a link to
+// it. Anyone in the room changes them while the cards are hidden: the task is sent when the person stops typing,
+// presses Enter or leaves the field.
 @Component({
   selector: 'app-task',
   templateUrl: './task.component.html',
@@ -40,6 +40,8 @@ export class TaskComponent implements OnDestroy {
   });
   // The field being changed, none when the cursor is elsewhere
   focused?: TaskField;
+  // The field of the link shows under its icon only while someone changes the link
+  linkOpen = false;
   error?: unknown;
 
   // The task the room has, as the server trims it
@@ -75,11 +77,30 @@ export class TaskComponent implements OnDestroy {
     this.subscriptions.add(this.form.valueChanges.pipe(debounceTime(TASK_SAVE_DELAY_MS)).subscribe(() => this.save()));
   }
 
+  @ViewChild("url")
+  set urlInput(input: ElementRef<HTMLInputElement> | undefined) {
+    // The field of the link gets the cursor when it opens, so a link can be pasted at once
+    input?.nativeElement.focus();
+  }
+
   get link(): string | undefined {
     return this.known.url || undefined;
   }
 
+  // The icons to the right of the name: the link to change and the task to open
+  get icons(): number {
+    return (this.form.disabled ? 0 : 1) + (this.link ? 1 : 0);
+  }
+
+  openLink(): void {
+    this.linkOpen = true;
+  }
+
   leave(): void {
+    // A link that can't be sent stays open with its error
+    if (this.focused === "url" && this.form.controls.url.valid) {
+      this.linkOpen = false;
+    }
     this.focused = undefined;
     this.save();
   }

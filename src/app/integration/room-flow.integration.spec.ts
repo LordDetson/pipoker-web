@@ -280,6 +280,7 @@ describe("PiPoker room (integration)", () => {
 
     await type("app-task .task-name", " PIP-25 Task name ");
     expect(server.rooms.get(roomId)!.task).withContext("sent when leaving the field").toEqual({name: "PIP-25 Task name"});
+    await click(page.querySelector<HTMLElement>("app-task button.task-link")!);
     await type("app-task .task-url", "https://example.com/PIP-25");
     expect(server.rooms.get(roomId)!.task).toEqual({name: "PIP-25 Task name", url: "https://example.com/PIP-25"});
 

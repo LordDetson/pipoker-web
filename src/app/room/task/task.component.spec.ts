@@ -41,6 +41,7 @@ describe("TaskComponent", () => {
 
   const name = () => element<HTMLInputElement>(".task-name")!;
   const url = () => element<HTMLInputElement>(".task-url")!;
+  const component = () => fixture.componentInstance;
 
   function setState(task: TaskDto | undefined, showVotingResult: boolean = false): void {
     store.setState(appState({room: room({task}), showVotingResult}));
@@ -68,21 +69,34 @@ describe("TaskComponent", () => {
     fixture.detectChanges();
   }
 
-  it("shows the task of the round in fields everyone can change while the cards are hidden", () => {
+  function openLink(): void {
+    element<HTMLButtonElement>("button.task-link")!.click();
+    fixture.detectChanges();
+  }
+
+  it("shows the name of the task, and its link behind the icon beside it", () => {
     expect(name().placeholder).toBe("Task name");
-    expect(url().placeholder).toBe("Link to the task");
-    expect(element(".task-open")).toBeNull();
+    expect(element(".task-url")).toBeNull();
+    expect(element(".task-open")).withContext("nothing to open without a link").toBeNull();
 
     setState({name: "PIP-25", url: "https://example.com/PIP-25"});
     expect(name().value).toBe("PIP-25");
-    expect(url().value).toBe("https://example.com/PIP-25");
-    const open = element<HTMLAnchorElement>(".task-open")!;
+    const open = element<HTMLAnchorElement>("a.task-open")!;
     expect(open.href).toBe("https://example.com/PIP-25");
+    expect(open.target).toBe("_blank");
     expect(open.rel).toBe("noopener noreferrer");
+    openLink();
+    expect(url().value).toBe("https://example.com/PIP-25");
+    expect(document.activeElement).withContext("ready for a link to be pasted").toBe(url());
+    expect(url().placeholder).toBe("Link to the task");
+  });
 
-    setState({name: "PIP-25"}, true);
+  it("only opens the link once the cards are revealed", () => {
+    setState({name: "PIP-25", url: "https://example.com/PIP-25"}, true);
+
     expect(name().disabled).toBeTrue();
-    expect(url().disabled).toBeTrue();
+    expect(element("button.task-link")).toBeNull();
+    expect(element<HTMLAnchorElement>("a.task-open")!.href).toBe("https://example.com/PIP-25");
   });
 
   it("sends the task once the person stops typing", fakeAsync(() => {
@@ -99,17 +113,19 @@ describe("TaskComponent", () => {
 
   it("sends the link the same way, with the name the room has", fakeAsync(() => {
     setState({name: "PIP-25"});
+    openLink();
     focus(url());
     type(url(), "https://example.com/PIP-25");
     press(url(), "Enter");
     expect(roomService.setTask).toHaveBeenCalledOnceWith(ROOM_ID, {name: "PIP-25", url: "https://example.com/PIP-25"});
 
+    expect(element(".task-url")).withContext("the field closes").toBeNull();
     tick(TASK_SAVE_DELAY_MS);
-    leave(url());
     expect(roomService.setTask).withContext("sent once").toHaveBeenCalledTimes(1);
   }));
 
   it("keeps a link until it has a name", fakeAsync(() => {
+    openLink();
     focus(url());
     type(url(), "https://example.com/PIP-25");
     leave(url());
@@ -125,11 +141,16 @@ describe("TaskComponent", () => {
   it("refuses a link that isn't a web link", fakeAsync(() => {
     focus(name());
     type(name(), "PIP-25");
-    type(url(), "javascript:alert(1)");
     leave(name());
+    roomService.setTask.calls.reset();
+    openLink();
+    focus(url());
+    type(url(), "javascript:alert(1)");
+    leave(url());
     tick(TASK_SAVE_DELAY_MS);
 
-    expect(element(".task-error")!.textContent!.trim()).toBe("The link must start with http:// or https://");
+    expect(element(".task-error")!.textContent!.trim())
+      .withContext("the field stays open with the error").toBe("The link must start with http:// or https://");
     expect(roomService.setTask).not.toHaveBeenCalled();
   }));
 
@@ -149,8 +170,8 @@ describe("TaskComponent", () => {
     setState({name: "PIP-25", url: "https://example.com/PIP-25"});
     expect(element(".task-clear")).toBeNull();
 
+    openLink();
     focus(url());
-    expect(element(".task-open")).withContext("the cross takes its place").toBeNull();
     const mousedown = new MouseEvent("mousedown", {cancelable: true});
     element(".task-clear")!.dispatchEvent(mousedown);
     expect(mousedown.defaultPrevented).withContext("the field keeps the cursor").toBeTrue();
@@ -160,6 +181,9 @@ describe("TaskComponent", () => {
     expect(url().value).toBe("");
     expect(roomService.setTask).toHaveBeenCalledOnceWith(ROOM_ID, {name: "PIP-25", url: ""});
     expect(element(".task-clear")).toBeNull();
+
+    focus(name());
+    expect(element(".task-field .task-clear")).not.toBeNull();
   });
 
   it("takes someone else's change unless this person is changing that field", () => {
@@ -171,7 +195,7 @@ describe("TaskComponent", () => {
     type(name(), "PIP-27");
     setState({name: "PIP-28", url: "https://example.com/PIP-28"});
     expect(name().value).toBe("PIP-27");
-    expect(url().value).toBe("https://example.com/PIP-28");
+    expect(component().form.controls.url.value).toBe("https://example.com/PIP-28");
   });
 
   it("shows the server's refusal", () => {
