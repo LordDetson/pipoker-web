@@ -6,7 +6,8 @@ import {COMPACT_STEPS, HeaderComponent} from "./header.component";
 import {appState, room, roomState} from "../testing/test-data";
 import {environment} from "../../env/env";
 import {AppConstants} from "../common/app-constants";
-import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
+import {NgbDropdownModule, NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {BugReportComponent} from "../bug-report/bug-report.component";
 import {TranslatePipe} from "../i18n/translate.pipe";
 import {ThemeSwitcherComponent} from "./theme-switcher/theme-switcher.component";
 
@@ -14,16 +15,19 @@ describe("HeaderComponent", () => {
   let fixture: ComponentFixture<HeaderComponent>;
   let store: MockStore;
   let clipboard: jasmine.SpyObj<Clipboard>;
+  let modal: jasmine.SpyObj<NgbModal>;
 
   beforeEach(() => {
     localStorage.removeItem(AppConstants.language);
     clipboard = jasmine.createSpyObj<Clipboard>("Clipboard", ["copy"]);
+    modal = jasmine.createSpyObj<NgbModal>("NgbModal", ["open"]);
     TestBed.configureTestingModule({
       declarations: [HeaderComponent, ThemeSwitcherComponent],
       imports: [TranslatePipe, NgbDropdownModule],
       providers: [
         provideMockStore({initialState: appState({room: room({id: "room-1", name: "Planning"})})}),
-        {provide: Clipboard, useValue: clipboard}
+        {provide: Clipboard, useValue: clipboard},
+        {provide: NgbModal, useValue: modal}
       ],
       schemas: [NO_ERRORS_SCHEMA]
     });
@@ -53,6 +57,23 @@ describe("HeaderComponent", () => {
   });
 
   afterEach(() => localStorage.removeItem(AppConstants.language));
+
+  // The form's code is loaded on the first click
+  async function formOpened(): Promise<void> {
+    for (let wait = 0; wait < 100 && !modal.open.calls.any(); wait++) {
+      await new Promise(resolve => setTimeout(resolve, 20));
+    }
+    expect(modal.open).toHaveBeenCalledOnceWith(BugReportComponent, jasmine.objectContaining({ariaLabelledBy: "bugReportTitle"}));
+  }
+
+  it("opens the bug report form from its button", async () => {
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector("button.bug-report");
+    expect(button.title).toBe("Report a bug");
+
+    button.click();
+
+    await formOpened();
+  });
 
   it("says what PiPoker is under its name", () => {
     expect(fixture.nativeElement.querySelector(".tagline").textContent).toBe("Free Planning Poker for teams");
@@ -210,6 +231,18 @@ describe("HeaderComponent", () => {
       expect(Array.from(menu.querySelectorAll("[lang]")).map(item => item.textContent!.trim()))
         .toEqual(["Русский", "English"]);
       expect(menu.querySelector(".theme-switcher")).not.toBeNull();
+      expect(visible(".bug-report")).toBeFalse();
+      expect(menu.querySelector(".bug-report-item")?.textContent).toContain("Report a bug");
+    });
+
+    it("opens the bug report form from the menu", async () => {
+      showAt(360);
+      fixture.nativeElement.querySelector(".settings-dropdown [ngbDropdownToggle]").click();
+      fixture.detectChanges();
+
+      fixture.nativeElement.querySelector(".bug-report-item").click();
+
+      await formOpened();
     });
 
     it("opens the menu that a narrowing window brings", async () => {

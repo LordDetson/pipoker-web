@@ -10,21 +10,27 @@ import {CurrentParticipantStatus} from "../store/participant/current-participant
 import {appState, participant, ROOM_ID} from "../testing/test-data";
 import {SeatStorage} from "../common/seat-storage";
 import {TranslatePipe} from "../i18n/translate.pipe";
+import {I18nService} from "../i18n/i18n.service";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {BugReportComponent} from "../bug-report/bug-report.component";
 
 describe("RoomComponent", () => {
   let fixture: ComponentFixture<RoomComponent>;
   let store: MockStore;
+  let modal: jasmine.SpyObj<NgbModal>;
 
   afterEach(() => sessionStorage.clear());
 
   beforeEach(() => {
     sessionStorage.clear();
+    modal = jasmine.createSpyObj<NgbModal>("NgbModal", ["open"]);
     TestBed.configureTestingModule({
       declarations: [RoomComponent],
       imports: [TranslatePipe],
       providers: [
         provideMockStore({initialState: appState()}),
-        {provide: ActivatedRoute, useValue: {snapshot: {params: {id: ROOM_ID}}}}
+        {provide: ActivatedRoute, useValue: {snapshot: {params: {id: ROOM_ID}}}},
+        {provide: NgbModal, useValue: modal}
       ],
       schemas: [NO_ERRORS_SCHEMA]
     });
@@ -40,6 +46,22 @@ describe("RoomComponent", () => {
   function renderedChildren(): string[] {
     return Array.from<Element>(fixture.nativeElement.children).map(child => child.tagName.toLowerCase());
   }
+
+  it("offers to report a bug on the page of a room that is gone", async () => {
+    TestBed.inject(I18nService).language = "en";
+    store.setState(appState({status: RoomStatus.missing}));
+    create();
+    const link: HTMLButtonElement = fixture.nativeElement.querySelector(".report-bug");
+    expect(link.textContent).toContain("Report a bug");
+
+    link.click();
+
+    // The form's code is loaded on the first click
+    for (let wait = 0; wait < 100 && !modal.open.calls.any(); wait++) {
+      await new Promise(resolve => setTimeout(resolve, 20));
+    }
+    expect(modal.open).toHaveBeenCalledOnceWith(BugReportComponent, jasmine.any(Object));
+  });
 
   it("loads the room from the link when it is not loaded yet", () => {
     store.setState(appState({status: RoomStatus.pending}, {status: CurrentParticipantStatus.pending}));
