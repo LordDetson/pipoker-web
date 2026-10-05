@@ -28,7 +28,7 @@ describe("RoomEffect", () => {
   beforeEach(() => {
     actions$ = new ReplaySubject<Action>();
     roomService = jasmine.createSpyObj<RoomService>("RoomService",
-      ["create", "get", "addParticipant", "removeParticipant", "returnParticipant", "vote", "clearVotingResult", "showVotingResult"]);
+      ["create", "get", "addParticipant", "removeParticipant", "returnParticipant", "changeRole", "vote", "clearVotingResult", "showVotingResult"]);
     reconnected$ = new Subject<void>();
     webSocket = jasmine.createSpyObj<RoomWebSocketService>("RoomWebSocketService", ["connect"], {reconnected$});
     router = jasmine.createSpyObj<Router>("Router", ["navigate"]);
@@ -227,6 +227,23 @@ describe("RoomEffect", () => {
       actions$.next(RoomAction.removeParticipant({roomId: ROOM_ID, participant: participant("Alex")}));
 
       expect(collect(effects.removeParticipant$)).toEqual([RoomAction.removeParticipantFailure({error})]);
+    });
+  });
+
+  describe("changeRole$", () => {
+    it("asks the server to change the role of the person looking at the page", () => {
+      roomService.changeRole.and.returnValue(of(participant("Dmitry", true)));
+      actions$.next(RoomAction.changeRole({watcher: true}));
+
+      expect(collect(effects.changeRole$)).toEqual([RoomAction.doNothing()]);
+      expect(roomService.changeRole).toHaveBeenCalledWith(ROOM_ID, participant("Dmitry", true));
+    });
+
+    it("reports a failure", () => {
+      roomService.changeRole.and.returnValue(throwError(() => error));
+      actions$.next(RoomAction.changeRole({watcher: false}));
+
+      expect(collect(effects.changeRole$)).toEqual([RoomAction.changeRoleFailure({error})]);
     });
   });
 

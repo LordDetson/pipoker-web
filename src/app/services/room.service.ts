@@ -81,6 +81,16 @@ export class RoomService {
     );
   }
 
+  // Everyone in the room hears about the new role, this page too, so the answer is the participant as the room has them now
+  changeRole(id: string, participant: Participant): Observable<Participant> {
+    return this.exchange(RoomDestinations.changeRole(id), participant,
+      this.roomEvents(id, RoomEventType.participantRoleChanged).pipe(
+        map(event => event.participant!),
+        filter(changed => sameNickname(changed.nickname, participant.nickname))
+      )
+    );
+  }
+
   vote(id: string, participant: Participant, card: Card): Observable<Vote> {
     return this.exchange(RoomDestinations.addVote(id), {nickname: participant.nickname, card: card.value},
       this.roomEvents(id, RoomEventType.voteAdded).pipe(

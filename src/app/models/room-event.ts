@@ -5,6 +5,9 @@ export enum RoomEventType {
   participantAdded = "PARTICIPANT_ADDED",
   participantRemoved = "PARTICIPANT_REMOVED",
   participantReturned = "PARTICIPANT_RETURNED",
+  // Someone became a watcher or a voter. A voter who became a watcher before the reveal loses the vote,
+  // which comes as voteRemoved right before this event.
+  participantRoleChanged = "PARTICIPANT_ROLE_CHANGED",
   voteAdded = "VOTE_ADDED",
   voteRemoved = "VOTE_REMOVED",
   clearVotes = "CLEAR_VOTES",
