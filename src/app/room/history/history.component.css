@@ -62,10 +62,20 @@
   margin-bottom: 0.75rem;
 }
 
-/* Next to the cross, away from the title */
-.history-export {
-  margin-left: auto;
-  margin-right: 0.75rem;
+/* Under the title: the summary to copy and the files to download, side by side */
+.history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.summary-label {
+  display: inline-grid;
+}
+
+.summary-label > span {
+  grid-area: 1 / 1;
 }
 
 /* A cross large enough to hit with a finger */

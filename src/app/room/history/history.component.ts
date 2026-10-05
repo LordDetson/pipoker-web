@@ -1,10 +1,12 @@
 import {Component, HostListener, ChangeDetectionStrategy} from '@angular/core';
-import {firstValueFrom, Observable} from "rxjs";
+import {firstValueFrom, Observable, take} from "rxjs";
+import {Clipboard} from "@angular/cdk/clipboard";
 import {select, Store} from "@ngrx/store";
 import * as RoomSelector from "../../store/room/room.selector";
 import {HistoryRound} from "../../store/room/room.selector";
 import {I18nService} from "../../i18n/i18n.service";
 import {TranslationKey} from "../../i18n/translations";
+import {historyText} from "./history-text";
 // Only the type: the code itself is loaded on the first download
 import type {ExportFormat} from "./history-export";
 
@@ -20,6 +22,8 @@ export class HistoryComponent {
 
   rounds$: Observable<HistoryRound[]> = this.store.pipe(select(RoomSelector.historySelector));
   open = false;
+  // For a moment after the summary is copied, its button says so
+  summaryCopied = false;
   readonly formats: { format: ExportFormat; label: TranslationKey }[] = [
     {format: "xlsx", label: "history.export.xlsx"},
     {format: "csv", label: "history.export.csv"},
@@ -29,7 +33,8 @@ export class HistoryComponent {
 
   constructor(
     private store: Store,
-    private i18n: I18nService
+    private i18n: I18nService,
+    private clipboard: Clipboard
   ) {
   }
 
@@ -54,6 +59,15 @@ export class HistoryComponent {
       firstValueFrom(this.store.pipe(select(RoomSelector.nameSelector)))
     ]);
     saveFile(exportHistory(format, roomName, [...rounds].reverse(), this.i18n, new Date()));
+  }
+
+  // Copies right at the click: Safari lets a page write to the clipboard only while it handles the click
+  copySummary(rounds: HistoryRound[]): void {
+    this.store.pipe(select(RoomSelector.nameSelector), take(1)).subscribe(roomName => {
+      this.clipboard.copy(historyText(roomName, [...rounds].reverse(), this.i18n, new Date(), "\n"));
+      this.summaryCopied = true;
+      setTimeout(() => this.summaryCopied = false, 1500);
+    });
   }
 
   numberOf(index: number, round: HistoryRound): number {
