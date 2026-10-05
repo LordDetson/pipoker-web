@@ -1,7 +1,7 @@
 <div class="task" [formGroup]="form" [class.task-empty]="form.disabled && !form.controls.name.value"
      [style.--task-icons]="icons">
   <!-- The field is as wide as its name, so the icon of the link stays right beside it -->
-  <div class="task-field" [class.task-editing]="focused === 'name'" [attr.data-value]="form.controls.name.value || ('task.name' | translate)">
+  <div class="task-field" [attr.data-value]="form.controls.name.value || ('task.name' | translate)">
     <input #name type="text" class="form-control task-name" formControlName="name" [title]="form.controls.name.value"
            [attr.maxlength]="maxNameLength" [placeholder]="'task.name' | translate" [attr.aria-label]="'task.name' | translate"
            autocomplete="off" enterkeyhint="done"
