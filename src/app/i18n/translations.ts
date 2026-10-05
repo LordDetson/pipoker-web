@@ -29,16 +29,15 @@ const en = {
   "header.language": "Language",
   "header.theme": "Theme",
   "header.menu": "Menu",
-  "header.reportBug": "Report a bug",
-
-  "bugReport.title": "Report a bug",
+  "bugReport.button": "Report a problem",
+  "bugReport.title": "Report a problem",
   "bugReport.message": "What happened?",
   "bugReport.messagePlaceholder": "What you did and what went wrong",
   "bugReport.messageRequired": "Describe what happened",
   "bugReport.contact": "How to reach you (optional)",
-  "bugReport.contactPlaceholder": "Telegram, e-mail or phone, if you'd like an answer",
-  "bugReport.details": "The message also carries your browser, language, screen size, the page address and the time. "
-    + "Names in the room and votes are not sent.",
+  "bugReport.contactPlaceholder": "Telegram or e-mail, if you'd like an answer",
+  "bugReport.details": "The message also carries your browser, language, screen size, the page address, the time, "
+    + "how many people are in the room and the stage of the round. Names and votes are not sent.",
   "bugReport.send": "Send",
   "bugReport.cancel": "Cancel",
   "bugReport.close": "Close",
@@ -102,7 +101,6 @@ const en = {
   "room.closedText": "Nobody did anything in the room for a long time, so it was closed and everyone left it.",
   "room.missingTitle": "This invitation is no longer valid",
   "room.missingText": "The room no longer exists: everyone has left it.",
-  "room.reportBug": "The room shouldn't have closed? Report a bug",
   "room.createNew": "Create a new room",
 
   "timer.start": "Timer",
@@ -177,16 +175,15 @@ const ru: Record<TranslationKey, string> = {
   "header.language": "Язык",
   "header.theme": "Тема",
   "header.menu": "Меню",
-  "header.reportBug": "Сообщить об ошибке",
-
-  "bugReport.title": "Сообщить об ошибке",
+  "bugReport.button": "Сообщить о проблеме",
+  "bugReport.title": "Сообщить о проблеме",
   "bugReport.message": "Что случилось?",
   "bugReport.messagePlaceholder": "Что вы делали и что пошло не так",
   "bugReport.messageRequired": "Опишите, что случилось",
   "bugReport.contact": "Как с вами связаться (необязательно)",
-  "bugReport.contactPlaceholder": "Telegram, почта или телефон, если нужен ответ",
-  "bugReport.details": "Вместе с сообщением отправятся браузер, язык, размер экрана, адрес страницы и время. "
-    + "Имена в комнате и голоса не отправляются.",
+  "bugReport.contactPlaceholder": "Telegram или почта, если нужен ответ",
+  "bugReport.details": "Вместе с сообщением отправятся браузер, язык, размер экрана, адрес страницы, время, "
+    + "число участников в комнате и этап раунда. Имена и голоса не отправляются.",
   "bugReport.send": "Отправить",
   "bugReport.cancel": "Отмена",
   "bugReport.close": "Закрыть",
@@ -250,7 +247,6 @@ const ru: Record<TranslationKey, string> = {
   "room.closedText": "В комнате долго ничего не происходило, поэтому она закрыта и все участники её покинули.",
   "room.missingTitle": "Приглашение больше не действует",
   "room.missingText": "Этой комнаты больше нет: все участники её покинули.",
-  "room.reportBug": "Комната не должна была закрыться? Сообщите об ошибке",
   "room.createNew": "Создать новую комнату",
 
   "timer.start": "Таймер",

@@ -3,7 +3,7 @@ import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {BugReportComponent} from "./bug-report.component";
 import {BugReportService} from "./bug-report.service";
-import {appState, room} from "../testing/test-data";
+import {appState, participant, room, votes} from "../testing/test-data";
 import {I18nService} from "../i18n/i18n.service";
 
 describe("BugReportComponent", () => {
@@ -17,7 +17,11 @@ describe("BugReportComponent", () => {
     TestBed.configureTestingModule({
       imports: [BugReportComponent],
       providers: [
-        provideMockStore({initialState: appState({room: room({id: "room-1"})})}),
+        provideMockStore({initialState: appState({room: room({
+          id: "room-1",
+          participants: [participant("Dmitry"), participant("Alex"), participant("Kate", true)],
+          votingResult: {map: votes({Alex: "1h"})}
+        })})}),
         {provide: BugReportService, useValue: bugReports},
         {provide: NgbActiveModal, useValue: activeModal}
       ]
@@ -62,6 +66,10 @@ describe("BugReportComponent", () => {
       message: "The cards don't turn over",
       contact: "@alex",
       roomId: "room-1",
+      voters: 2,
+      watchers: 1,
+      voted: 1,
+      round: "voting",
       language: "en",
       page: location.href
     }));

@@ -10,10 +10,6 @@
     </ng-template>
     <!-- A new page load starts the next room with a clean state -->
     <a class="btn btn-primary mt-3" href="/">{{"room.createNew" | translate}}</a>
-    <!-- Someone who didn't expect the room to be gone can tell about it -->
-    <p class="mt-4 mb-0">
-      <button type="button" class="btn btn-link p-0 report-bug" (click)="reportBug()">{{"room.reportBug" | translate}}</button>
-    </p>
   </div>
 </div>
 <ng-template #present>

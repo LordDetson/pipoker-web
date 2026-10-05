@@ -1,5 +1,7 @@
 import {Injectable} from "@angular/core";
 import {environment} from "../../env/env";
+import {RoomState, RoomStatus} from "../store/room/room-state";
+import {HistoryRound} from "../store/room/room.selector";
 
 // What the server takes: what the person wrote and what the page adds by itself
 export interface BugReport {
@@ -7,6 +9,12 @@ export interface BugReport {
   contact: string;
   page: string;
   roomId?: string;
+  // Who is at the table and how far the round got, as counts: no names, no votes
+  voters?: number;
+  watchers?: number;
+  voted?: number;
+  round?: RoundStage;
+  estimate?: string;
   browser: string;
   language: string;
   browserLanguages: string;
@@ -15,6 +23,9 @@ export interface BugReport {
   time: string;
   timeZone: string;
 }
+
+// Voting: the cards are hidden. Revealed: the cards are on the table, the estimate may be accepted already.
+export type RoundStage = "voting" | "revealed";
 
 // Sent: the server passed the report on. Limited: the browser sent too many reports lately. Failed: anything else.
 export type BugReportResult = "sent" | "limited" | "failed";
@@ -39,6 +50,27 @@ export function describeBrowser(language: string, now: Date): Omit<BugReport, "m
     window: `${window.innerWidth}x${window.innerHeight}`,
     time: localTime(now),
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone.slice(0, 60)
+  };
+}
+
+// The room the page shows, when it shows one: how many people and how far the round got
+export function describeRoom(state: RoomState, revealedRound: HistoryRound | undefined):
+  Pick<BugReport, "roomId" | "voters" | "watchers" | "voted" | "round" | "estimate"> {
+  const room = state.room;
+  if (!room.id) {
+    return {};
+  }
+  if (state.status !== RoomStatus.success) {
+    return {roomId: room.id};
+  }
+  const watchers = room.participants.filter(participant => participant.watcher).length;
+  return {
+    roomId: room.id,
+    voters: room.participants.length - watchers,
+    watchers,
+    voted: room.votingResult.map.size,
+    round: state.showVotingResult ? "revealed" : "voting",
+    estimate: revealedRound?.estimate
   };
 }
 

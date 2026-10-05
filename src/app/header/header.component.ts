@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, Injector, NgZone, OnDestroy, ViewChild, ChangeDetectionStrategy} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, ViewChild, ChangeDetectionStrategy} from '@angular/core';
 import {select, Store} from "@ngrx/store";
 import {combineLatest, Subscription} from "rxjs";
 import {idSelector, nameSelector} from "../store/room/room.selector";
@@ -6,7 +6,6 @@ import {Clipboard} from '@angular/cdk/clipboard';
 import {environment} from "../../env/env";
 import {I18nService} from "../i18n/i18n.service";
 import {Language, LANGUAGES, LanguageOption} from "../i18n/translations";
-import {openBugReport} from "../bug-report/open-bug-report";
 
 // What the header gives up, in this order, while its content does not fit into one line of its fixed height.
 // Each step is a class on the header that keeps the steps before it.
@@ -51,7 +50,6 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
     private changeDetector: ChangeDetectorRef,
     private host: ElementRef<HTMLElement>,
     private ngZone: NgZone,
-    private injector: Injector,
     public i18n: I18nService
   ) {
     this.roomSubscription = combineLatest([
@@ -96,10 +94,6 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
   chooseLanguage(language: Language): void {
     this.i18n.choose(language);
     this.fit();
-  }
-
-  reportBug(): void {
-    openBugReport(this.injector);
   }
 
   copyInvitationLink(roomId: string): void {

@@ -1,5 +1,8 @@
 import {TestBed} from "@angular/core/testing";
-import {BugReport, BugReportService, describeBrowser, localTime} from "./bug-report.service";
+import {BugReport, BugReportService, describeBrowser, describeRoom, localTime} from "./bug-report.service";
+import {cards, participant, room, roomState, votes} from "../testing/test-data";
+import {RoomStatus} from "../store/room/room-state";
+import {HistoryRound} from "../store/room/room.selector";
 import {environment} from "../../env/env";
 
 describe("BugReportService", () => {
@@ -72,5 +75,35 @@ describe("describeBrowser", () => {
     expect(details.time).toMatch(/^2026-10-05 17:05:00 [+-]\d\d:\d\d$/);
     expect(details.timeZone).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
     expect(Object.keys(details)).toEqual(["page", "browser", "language", "browserLanguages", "screen", "window", "time", "timeZone"]);
+  });
+});
+
+describe("describeRoom", () => {
+  const people = [participant("Dmitry"), participant("Alex"), participant("Bob"), participant("Kate", true)];
+
+  it("counts the people and the votes while they vote", () => {
+    const state = roomState({room: room({participants: people, votingResult: {map: votes({Dmitry: "1h", Bob: "2h"})}})});
+
+    expect(describeRoom(state, undefined)).toEqual({
+      roomId: state.room.id, voters: 3, watchers: 1, voted: 2, round: "voting", estimate: undefined
+    });
+  });
+
+  it("tells that the cards are revealed and the estimate the team accepted", () => {
+    const state = roomState({
+      room: room({participants: people, deck: {cards: cards("1h", "2h")}, votingResult: {map: votes({Dmitry: "1h"})}}),
+      showVotingResult: true
+    });
+    const revealed = {number: 1, revealedAt: "2026-10-05T17:00:00Z", tally: [], votes: [], estimate: "2h"} as HistoryRound;
+
+    expect(describeRoom(state, revealed)).toEqual(jasmine.objectContaining({round: "revealed", voted: 1, estimate: "2h"}));
+  });
+
+  it("keeps only the id of a room that is gone", () => {
+    expect(describeRoom(roomState({status: RoomStatus.missing}), undefined)).toEqual({roomId: roomState().room.id});
+  });
+
+  it("sends nothing about a room outside one", () => {
+    expect(describeRoom(roomState({room: room({id: ""})}), undefined)).toEqual({});
   });
 });

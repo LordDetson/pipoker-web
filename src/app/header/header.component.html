@@ -28,15 +28,6 @@
         <span class="heart-icon" aria-hidden="true">&#9829;</span>
         <span class="button-label">{{"header.support" | translate}}</span>
       </a>
-      <button type="button" class="btn btn-outline-secondary common-transition d-flex align-items-center bug-report"
-              [attr.aria-label]="'header.reportBug' | translate" [title]="'header.reportBug' | translate"
-              (click)="reportBug()">
-      <svg class="bug-icon" width="24" height="24" viewBox="-2 -2 24 24" aria-hidden="true" fill="none" stroke="currentColor"
-           stroke-width="1.6" stroke-linecap="round">
-        <ellipse cx="10" cy="12" rx="4" ry="5"/>
-        <path d="M7.5 7.5a2.5 2.5 0 0 1 5 0M10 9v8M6 10.5H2.5M6 14l-3 1.5M6.5 8L4 5.5M14 10.5h3.5M14 14l3 1.5M13.5 8L16 5.5"/>
-      </svg>
-      </button>
       <div ngbDropdown placement="bottom-end" class="language-select">
         <button type="button" ngbDropdownToggle class="btn btn-outline-secondary common-transition d-flex align-items-center gap-2"
                 [attr.aria-label]="'header.language' | translate" [title]="'header.language' | translate">
@@ -85,15 +76,6 @@
         {{"header.theme" | translate}}
         <app-theme-switcher/>
       </div>
-      <div class="dropdown-divider"></div>
-      <button type="button" ngbDropdownItem class="d-flex align-items-center gap-2 bug-report-item" (click)="reportBug()">
-        <svg class="bug-icon" width="24" height="24" viewBox="-2 -2 24 24" aria-hidden="true" fill="none" stroke="currentColor"
-             stroke-width="1.6" stroke-linecap="round">
-          <ellipse cx="10" cy="12" rx="4" ry="5"/>
-          <path d="M7.5 7.5a2.5 2.5 0 0 1 5 0M10 9v8M6 10.5H2.5M6 14l-3 1.5M6.5 8L4 5.5M14 10.5h3.5M14 14l3 1.5M13.5 8L16 5.5"/>
-        </svg>
-        {{"header.reportBug" | translate}}
-      </button>
     </div>
   </div>
 </ng-template>

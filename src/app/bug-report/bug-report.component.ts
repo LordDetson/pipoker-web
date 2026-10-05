@@ -2,13 +2,13 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Injector} from "@
 import {NgIf} from "@angular/common";
 import {AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators} from "@angular/forms";
 import {NgbActiveModal, NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {firstValueFrom} from "rxjs";
+import {combineLatest, firstValueFrom} from "rxjs";
 import {select, Store} from "@ngrx/store";
-import {idSelector} from "../store/room/room.selector";
+import {revealedRoundSelector, roomFeatureSelector} from "../store/room/room.selector";
 import {I18nService} from "../i18n/i18n.service";
 import {TranslatePipe} from "../i18n/translate.pipe";
 import {TranslationKey} from "../i18n/translations";
-import {BugReportResult, BugReportService, describeBrowser} from "./bug-report.service";
+import {BugReportResult, BugReportService, describeBrowser, describeRoom} from "./bug-report.service";
 
 export const MESSAGE_MAX_LENGTH = 2000;
 export const CONTACT_MAX_LENGTH = 200;
@@ -58,12 +58,15 @@ export class BugReportComponent {
     }
     this.sending = true;
     this.error = undefined;
-    const roomId = await firstValueFrom(this.store.pipe(select(idSelector)));
+    const [roomState, revealedRound] = await firstValueFrom(combineLatest([
+      this.store.pipe(select(roomFeatureSelector)),
+      this.store.pipe(select(revealedRoundSelector))
+    ]));
     const {message, contact} = this.form.getRawValue();
     const result = await this.bugReports.send({
       message: message.trim(),
       contact: contact.trim(),
-      roomId: roomId || undefined,
+      ...describeRoom(roomState, revealedRound),
       ...describeBrowser(this.i18n.language, new Date())
     });
     this.sending = false;

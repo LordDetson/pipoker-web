@@ -14,3 +14,23 @@
 app-header {
   flex-shrink: 0;
 }
+
+/* Stays in the bottom right corner whatever the page scrolls to; dialogs open above it */
+.report-problem {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1040;
+}
+
+/* A phone has room for the bug alone */
+@media (max-width: 767.98px) {
+  .report-problem {
+    right: 0.5rem;
+    bottom: 0.5rem;
+  }
+
+  .report-problem .label {
+    display: none;
+  }
+}

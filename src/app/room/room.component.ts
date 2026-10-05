@@ -1,4 +1,4 @@
-import {Component, Injector, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {Room} from "../models/room.model";
 import {Observable, Subject, take, takeUntil} from "rxjs";
 import {select, Store} from "@ngrx/store";
@@ -10,7 +10,6 @@ import * as ParticipantAction from "../store/participant/participant.action";
 import * as ParticipantSelector from "../store/participant/participant.selector";
 import {SeatStorage} from "../common/seat-storage";
 import {loadDoughnutChart} from "./voting-result-chart/voting-result-chart.component";
-import {openBugReport} from "../bug-report/open-bug-report";
 
 @Component({
   selector: 'app-room',
@@ -32,8 +31,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   constructor(
     private store: Store<Room>,
-    private route: ActivatedRoute,
-    private injector: Injector
+    private route: ActivatedRoute
   ) {
   }
 
@@ -57,10 +55,6 @@ export class RoomComponent implements OnInit, OnDestroy {
     // The chart of the votes is loaded while people vote, so it is ready when the cards are revealed.
     // If loading fails now, the chart tries again when it is shown.
     loadDoughnutChart().catch(() => undefined);
-  }
-
-  reportBug(): void {
-    openBugReport(this.injector);
   }
 
   ngOnDestroy(): void {
