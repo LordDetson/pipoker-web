@@ -14,6 +14,11 @@ app-table {
   --corner-controls-height: 2.25rem;
 }
 
+/* A watcher's table goes down to the bottom of the room, with the same gap as at its sides */
+app-table:last-child {
+  padding-bottom: 0.75rem;
+}
+
 /* The status button stays in the very middle of the table, and the timer hangs above it,
    so the button doesn't move when the timer appears or goes */
 .table-controls {
