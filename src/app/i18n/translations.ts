@@ -117,6 +117,9 @@ const en = {
   "history.file.title": "PiPoker estimate history: {room}",
   "history.file.downloaded": "Downloaded {time}",
   "history.estimate": "Estimate: {card}",
+  // The button that copies the history as text, and what it says for a moment after the click
+  "history.summary": "Copy summary",
+  "history.summary.copied": "Copied",
   "task.name": "Task name",
   "task.url": "Link to the task",
   "task.urlInvalid": "The link must start with http:// or https://",
@@ -244,6 +247,8 @@ const ru: Record<TranslationKey, string> = {
   "history.file.title": "История оценок PiPoker: {room}",
   "history.file.downloaded": "Выгружено {time}",
   "history.estimate": "Оценка: {card}",
+  "history.summary": "Скопировать итоги",
+  "history.summary.copied": "Скопировано",
   "task.name": "Название задачи",
   "task.url": "Ссылка на задачу",
   "task.urlInvalid": "Ссылка должна начинаться с http:// или https://",
