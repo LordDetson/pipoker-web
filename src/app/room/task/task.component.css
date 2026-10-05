@@ -1,0 +1,161 @@
+/* A line above the table, between the role switch in the top left corner of the room and the history button in
+   the top right one. It keeps its height when there is nothing to show, so the table does not jump. */
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(0.75rem + 2.375rem);
+  padding: 0.75rem 9rem 0;
+}
+
+/* On a phone the corners leave no room beside them, so the line goes under them and takes the whole width */
+@media (max-width: 575.98px) {
+  :host {
+    min-height: calc(3rem + 2.375rem);
+    padding: 3rem 1rem 0;
+  }
+}
+
+/* The name in the middle, the icons of the link to its right. An empty place as wide as the icons on the left
+   keeps the name in the middle of the line. */
+.task {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 40rem;
+}
+
+.task::before {
+  content: "";
+  flex: none;
+  width: calc(var(--task-icons) * 2.25rem - 0.25rem);
+}
+
+/* A hidden copy of the name under the field gives the field its width */
+.task-field {
+  position: relative;
+  display: inline-grid;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.task-field::after,
+.task-name {
+  grid-area: 1 / 1;
+  padding: 0.375rem 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+/* Room for the cross while the name is being changed */
+.task-editing::after,
+.task-editing .task-name {
+  padding-right: 2rem;
+}
+
+.task-field::after {
+  content: attr(data-value);
+  overflow: hidden;
+  border: var(--bs-border-width) solid transparent;
+  white-space: pre;
+  visibility: hidden;
+}
+
+/* The name reads like a title: the field shows its border only when the pointer is over it or it is being changed */
+.task-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.task-name:hover:not(:disabled),
+.task-name:focus {
+  border-color: var(--bs-border-color);
+}
+
+.task-name:focus {
+  background-color: var(--bs-body-bg);
+}
+
+/* After the reveal the task can't change, so it is plain text */
+.task-name:disabled {
+  color: var(--bs-body-color);
+  background-color: transparent;
+}
+
+.task-empty {
+  visibility: hidden;
+}
+
+.task-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--bs-border-radius);
+  color: var(--bs-secondary-color);
+  background: none;
+}
+
+.task-icon:hover,
+.task-icon.active {
+  color: var(--bs-body-color);
+  background-color: var(--bs-tertiary-bg);
+}
+
+.task-open {
+  color: var(--bs-link-color);
+}
+
+.task-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  transform: translateY(-50%);
+}
+
+/* The field of the link opens under its icon, over the table */
+.task-link-field {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  z-index: 10;
+  width: min(24rem, 100%);
+  padding: 0.5rem;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-body-bg);
+  box-shadow: var(--bs-box-shadow);
+}
+
+.task-link-field .task-clear {
+  top: calc(0.5rem + (1.875rem + 2px) / 2);
+  right: 0.75rem;
+}
+
+/* Without Bootstrap's icon, which would sit under the cross */
+.task-url {
+  padding-right: 2rem;
+}
+
+.task-url.is-invalid {
+  padding-right: 2rem;
+  background-image: none;
+}
+
+.task-error {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}

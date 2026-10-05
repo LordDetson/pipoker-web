@@ -34,16 +34,32 @@
     <p *ngIf="!rounds.length" class="text-body-secondary m-0">{{"history.empty" | translate}}</p>
     <ol class="list-unstyled m-0">
       <li *ngFor="let round of rounds; trackBy: numberOf" class="round">
+        <!-- The task names the round; its number stays beside the time -->
         <div class="round-head">
-          <span class="fw-medium">{{"history.round" | translate:{number: round.number} }}</span>
-          <time class="text-body-secondary" [attr.datetime]="round.revealedAt">{{timeOf(round)}}</time>
+          <ng-container *ngIf="round.task as task; else numbered">
+            <a *ngIf="task.url; else plain" class="round-task fw-medium" [href]="task.url" target="_blank"
+               rel="noopener noreferrer">{{task.name}}</a>
+            <ng-template #plain><span class="round-task fw-medium">{{task.name}}</span></ng-template>
+          </ng-container>
+          <ng-template #numbered>
+            <span class="fw-medium">{{"history.round" | translate:{number: round.number} }}</span>
+          </ng-template>
+          <span class="round-when text-body-secondary">
+            <ng-container *ngIf="round.task">{{"history.round" | translate:{number: round.number} }} · </ng-container>
+            <time [attr.datetime]="round.revealedAt">{{timeOf(round)}}</time>
+          </span>
         </div>
         <div class="tally">
           <span *ngFor="let entry of round.tally" class="badge"
                 [ngClass]="entry.card === round.result ? 'leader' : 'text-bg-secondary'">{{entry.card}} × {{entry.count}}</span>
-          <span class="result">
-            {{round.result !== undefined ? ("history.result" | translate:{card: round.result}) : ("history.split" | translate)}}
+          <span *ngIf="round.estimate !== undefined; else counted" class="estimate">
+            {{"history.estimate" | translate:{card: round.estimate} }}
           </span>
+          <ng-template #counted>
+            <span class="result">
+              {{round.result !== undefined ? ("history.result" | translate:{card: round.result}) : ("history.split" | translate)}}
+            </span>
+          </ng-template>
         </div>
         <ul class="votes list-unstyled text-body-secondary">
           <li *ngFor="let vote of round.votes">

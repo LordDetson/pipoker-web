@@ -91,6 +91,7 @@ const SERVER_ERRORS: Record<ErrorCode, TranslationKey> = {
   [ErrorCode.watcherCannotVote]: "serverError.watcherCannotVote",
   [ErrorCode.cardNotInDeck]: "serverError.cardNotInDeck",
   [ErrorCode.cardsRevealed]: "serverError.cardsRevealed",
+  [ErrorCode.roundNotRevealed]: "serverError.roundNotRevealed",
   [ErrorCode.invalidData]: "serverError.invalidData",
   [ErrorCode.unexpected]: "serverError.unexpected"
 };

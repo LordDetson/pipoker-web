@@ -1,0 +1,12 @@
+/* Sits in the top left corner of the room, across from the history button */
+:host {
+  position: absolute;
+  top: 0.75rem;
+  left: 1rem;
+  z-index: 2;
+  /* As tall as the small history button, so both line up */
+  display: flex;
+  align-items: center;
+  min-height: calc(1.5em + 0.5rem + 2 * var(--bs-border-width));
+  font-size: 0.875rem;
+}

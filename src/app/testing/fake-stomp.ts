@@ -1,5 +1,5 @@
 import {Participant} from "../models/participant.model";
-import {RoomDto, RoundDto, TimerDto, VoteDto} from "../models/room-dto.model";
+import {EstimateDto, RoomDto, RoundDto, TaskDto, TimerDto, VoteDto} from "../models/room-dto.model";
 import {ErrorCode, ErrorEvent, RoomEvent, RoomEventType} from "../models/room-event";
 
 export interface SentFrame {
@@ -95,6 +95,7 @@ interface ServerRoom {
   votesShown?: boolean;
   timer?: { seconds: number, endsAt: number };
   history: RoundDto[];
+  task?: TaskDto;
 }
 
 // An in-memory imitation of the pipoker-app STOMP API, so tests can run the whole client against it.
@@ -125,6 +126,10 @@ export class FakePipokerServer {
     this.received(undefined, "/app/room/" + roomId + "/participants/remove", nickname);
   }
 
+  changeRole(roomId: string, nickname: string, watcher: boolean) {
+    this.received(undefined, "/app/room/" + roomId + "/participants/role", JSON.stringify({nickname, watcher}));
+  }
+
   vote(roomId: string, nickname: string, card: string) {
     this.received(undefined, "/app/room/" + roomId + "/votes/add", JSON.stringify({nickname, card}));
   }
@@ -143,6 +148,14 @@ export class FakePipokerServer {
 
   stopTimer(roomId: string) {
     this.received(undefined, "/app/room/" + roomId + "/timer/stop", roomId);
+  }
+
+  setTask(roomId: string, task: TaskDto) {
+    this.received(undefined, "/app/room/" + roomId + "/task", JSON.stringify(task));
+  }
+
+  acceptEstimate(roomId: string, estimate: EstimateDto) {
+    this.received(undefined, "/app/room/" + roomId + "/estimate", JSON.stringify(estimate));
   }
 
   // Like pipoker-app when nobody did anything in the room for long
@@ -238,6 +251,25 @@ export class FakePipokerServer {
         this.broadcast(room, RoomEventType.participantRemoved, {participant});
         break;
       }
+      case "participants/role": {
+        // Like pipoker-app: a voter who becomes a watcher before the reveal loses the vote, which the room hears first
+        const {nickname, watcher}: Participant = JSON.parse(body);
+        const index = room.participants.findIndex(existing => sameNickname(existing.nickname, nickname));
+        if (index < 0) {
+          this.error(client, destination, "Participant \"" + nickname + "\" is not found in the room \"" + roomId + "\"",
+            ErrorCode.participantNotFound);
+          return;
+        }
+        const participant = {...room.participants[index], watcher};
+        room.participants[index] = participant;
+        const vote = room.votes.find(existing => sameNickname(existing.nickname, nickname));
+        if (watcher && !room.votesShown && vote) {
+          room.votes = room.votes.filter(existing => existing !== vote);
+          this.broadcast(room, RoomEventType.voteRemoved, {vote});
+        }
+        this.broadcast(room, RoomEventType.participantRoleChanged, {participant});
+        break;
+      }
       case "votes/add": {
         const vote: VoteDto = JSON.parse(body);
         room.votes = room.votes.filter(existing => !sameNickname(existing.nickname, vote.nickname)).concat(vote);
@@ -245,16 +277,24 @@ export class FakePipokerServer {
         break;
       }
       case "votes/clear":
+        // Like pipoker-app, the next round goes on to the next task once the revealed one got its estimate
+        if (room.votesShown && room.history.at(-1)?.estimate !== undefined) {
+          room.task = undefined;
+        }
         room.votes = [];
         room.votesShown = false;
         room.timer = undefined;
-        this.broadcast(room, RoomEventType.clearVotes, {});
+        this.broadcast(room, RoomEventType.clearVotes, room.task ? {task: {...room.task}} : {});
         break;
       case "votes/show": {
         // Like pipoker-app, the first reveal of a round with votes records it in the history
         const round: RoundDto | undefined = room.votesShown || !room.votes.length
           ? undefined
-          : {revealedAt: new Date().toISOString(), votes: room.votes.map(vote => ({...vote}))};
+          : {
+            revealedAt: new Date().toISOString(),
+            votes: room.votes.map(vote => ({...vote})),
+            ...(room.task ? {task: {...room.task}} : {})
+          };
         if (round) {
           room.history = [...room.history, round];
         }
@@ -278,6 +318,29 @@ export class FakePipokerServer {
         room.timer = undefined;
         this.broadcast(room, RoomEventType.timerStopped, {});
         break;
+      case "task": {
+        if (room.votesShown) {
+          this.error(client, destination, "The cards are revealed, so the task can change in the next round",
+            ErrorCode.cardsRevealed);
+          return;
+        }
+        const {name, url}: TaskDto = JSON.parse(body);
+        room.task = name.trim() ? {name: name.trim(), ...(url?.trim() ? {url: url.trim()} : {})} : undefined;
+        this.broadcast(room, RoomEventType.taskChanged, room.task ? {task: {...room.task}} : {});
+        break;
+      }
+      case "estimate": {
+        const {revealedAt, card}: EstimateDto = JSON.parse(body);
+        const last = room.history.at(-1);
+        if (!room.votesShown || last?.revealedAt !== revealedAt) {
+          this.error(client, destination, "The round is not on the table", ErrorCode.roundNotRevealed);
+          return;
+        }
+        const round = {...last, estimate: card};
+        room.history = [...room.history.slice(0, -1), round];
+        this.broadcast(room, RoomEventType.estimateAccepted, {round: {...round}});
+        break;
+      }
       default:
         this.error(client, destination, "Unknown destination", ErrorCode.unexpected);
     }
@@ -308,7 +371,8 @@ function toDto(room: ServerRoom): RoomDto {
     ...(room.history.length ? {history: room.history.map(round => ({...round, votes: round.votes.map(vote => ({...vote}))}))} : {}),
     // Like pipoker-app, which leaves it out while the cards are hidden
     ...(room.votesShown ? {votesShown: true} : {}),
-    ...(room.timer ? {timer: toTimerDto(room.timer)} : {})
+    ...(room.timer ? {timer: toTimerDto(room.timer)} : {}),
+    ...(room.task ? {task: {...room.task}} : {})
   };
 }
 

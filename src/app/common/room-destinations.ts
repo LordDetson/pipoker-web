@@ -30,6 +30,10 @@ export class RoomDestinations {
     return RoomDestinations.room(roomId) + "/participants/return";
   }
 
+  public static changeRole(roomId: string): string {
+    return RoomDestinations.room(roomId) + "/participants/role";
+  }
+
   public static addVote(roomId: string): string {
     return RoomDestinations.room(roomId) + "/votes/add";
   }
@@ -48,5 +52,13 @@ export class RoomDestinations {
 
   public static stopTimer(roomId: string): string {
     return RoomDestinations.room(roomId) + "/timer/stop";
+  }
+
+  public static task(roomId: string): string {
+    return RoomDestinations.room(roomId) + "/task";
+  }
+
+  public static estimate(roomId: string): string {
+    return RoomDestinations.room(roomId) + "/estimate";
   }
 }

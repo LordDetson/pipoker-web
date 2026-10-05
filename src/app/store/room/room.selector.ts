@@ -5,7 +5,7 @@ import {roomStateNode} from "../intex";
 import {RoomState, RoomStatus} from "./room-state";
 import {VotingResult} from "../../models/voting-result.model";
 import {RoomTimer} from "../../models/room.model";
-import {VoteDto} from "../../models/room-dto.model";
+import {TaskDto, VoteDto} from "../../models/room-dto.model";
 
 export const roomFeatureSelector = createFeatureSelector<RoomState>(roomStateNode);
 
@@ -30,6 +30,9 @@ export const votingResultSelector = createSelector(
 export const showVotingResultSelector = createSelector(
   roomFeatureSelector,
   (state: RoomState): boolean => state.showVotingResult);
+export const taskSelector = createSelector(
+  roomFeatureSelector,
+  (state: RoomState): TaskDto | undefined => state.room.task);
 export const timerSelector = createSelector(
   roomFeatureSelector,
   (state: RoomState): RoomTimer | undefined => state.room.timer);
@@ -75,6 +78,10 @@ export interface HistoryRound {
   // The card most people picked, none when several cards share the most votes
   result?: string;
   votes: VoteDto[];
+  // What the round estimated, none when nobody named it
+  task?: TaskDto;
+  // The estimate the team accepted, none until someone accepts one
+  estimate?: string;
 }
 
 // The room's history, the latest round first
@@ -96,7 +103,16 @@ export const historySelector = createSelector(
         revealedAt: round.revealedAt,
         tally,
         result: leaders.length === 1 ? leaders[0].card : undefined,
-        votes: round.votes
+        votes: round.votes,
+        task: round.task,
+        estimate: round.estimate
       };
     }).reverse();
   });
+
+// The round whose cards are revealed now, which gets the estimate: the latest round of the history. A round
+// enters the history when its cards are revealed with votes, and the cards can't be revealed without them.
+export const revealedRoundSelector = createSelector(
+  showVotingResultSelector,
+  historySelector,
+  (revealed: boolean, history: HistoryRound[]): HistoryRound | undefined => revealed ? history[0] : undefined);

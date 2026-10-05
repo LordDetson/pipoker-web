@@ -74,8 +74,8 @@ describe("RoomComponent", () => {
   it("shows the table with the timer and the status button in the middle and the deck under it while voting", () => {
     create();
 
-    expect(renderedChildren()).toEqual(["app-history", "app-table", "div"]);
-    expect(fixture.nativeElement.querySelector("app-table > .table-controls > app-timer + app-buttons")).not.toBeNull();
+    expect(renderedChildren()).toEqual(["app-role-switch", "app-history", "app-task", "app-table", "div"]);
+    expect(fixture.nativeElement.querySelector("app-table > .table-controls > app-timer + app-estimate + app-buttons")).not.toBeNull();
     expect(fixture.nativeElement.querySelector(".hand > app-deck").classList).not.toContain("invisible");
     expect(fixture.nativeElement.querySelector("app-voting-result-chart")).toBeNull();
   });

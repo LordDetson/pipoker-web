@@ -142,6 +142,25 @@ describe("HistoryComponent", () => {
     expect(element(".history-export")).toBeNull();
   });
 
+  it("names a round by its task, keeps its number small and shows the accepted estimate", () => {
+    store.setState(appState({room: room({deck: {cards: cards("1h", "1d")}, history: [
+      {...history[0], task: {name: "PIP-25 Task name", url: "https://example.com/PIP-25"}, estimate: "1d"},
+      {...history[1], task: {name: "PIP-26"}}
+    ]})}));
+    fixture.detectChanges();
+    openPanel();
+
+    expect(texts(".round-head .round-task")).toEqual(["PIP-26", "PIP-25 Task name"]);
+    expect(texts(".round-when")[0]).toMatch(/^Round 2 · /);
+    const link = element(".round:last-child a.round-task") as HTMLAnchorElement;
+    expect(link.href).toBe("https://example.com/PIP-25");
+    expect(link.target).toBe("_blank");
+    expect(link.rel).toBe("noopener noreferrer");
+    expect(texts(".round:last-child .estimate")).toEqual(["Estimate: 1d"]);
+    expect(element(".round:last-child .result")).toBeNull();
+    expect(texts(".round:first-child .result")).toEqual(["Result: 1d"]);
+  });
+
   it("tells that the history is empty before the first round is revealed", () => {
     store.setState(appState());
     fixture.detectChanges();

@@ -96,7 +96,19 @@
 .round-head {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: 0.5rem;
+}
+
+/* A long task name wraps, the number and the time stay on one line */
+.round-task {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.round-when {
+  flex: none;
+  font-size: 0.875rem;
 }
 
 .tally {
@@ -121,6 +133,13 @@
 .result {
   margin-left: 0.25rem;
   font-size: 0.875rem;
+}
+
+/* The estimate the team accepted stands out from the counted votes */
+.estimate {
+  margin-left: 0.25rem;
+  font-weight: 600;
+  color: var(--bs-success-text-emphasis);
 }
 
 .votes {

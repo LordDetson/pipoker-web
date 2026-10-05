@@ -148,6 +148,24 @@ export class RoomEffect {
     )
   );
 
+  changeRole$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(RoomAction.changeRole),
+      withLatestFrom(
+        this.store.select(RoomSelector.idSelector),
+        this.store.select(ParticipantSelector.currentParticipantSelector)
+      ),
+      filter(([, , participant]) => !!participant),
+      // The role comes with the event the whole room gets, see RoomWebSocketService
+      mergeMap(([{watcher}, roomId, participant]) =>
+        this.roomService.changeRole(roomId, {nickname: participant.nickname, watcher}).pipe(
+          map(() => RoomAction.doNothing()),
+          catchError(error => of(RoomAction.changeRoleFailure({error})))
+        )
+      )
+    )
+  );
+
   selectCard$ = createEffect(() =>
     this.actions$.pipe(
       ofType(RoomAction.selectCard),
@@ -192,6 +210,15 @@ export class RoomEffect {
         ofType(RoomAction.stopTimer),
         withLatestFrom(this.store.select(RoomSelector.idSelector)),
         tap(([, roomId]) => this.roomService.stopTimer(roomId))
+      ),
+    {dispatch: false}
+  );
+
+  acceptEstimate$ = createEffect(() =>
+      this.actions$.pipe(
+        ofType(RoomAction.acceptEstimate),
+        withLatestFrom(this.store.select(RoomSelector.idSelector)),
+        tap(([{revealedAt, card}, roomId]) => this.roomService.acceptEstimate(roomId, {revealedAt, card}))
       ),
     {dispatch: false}
   );

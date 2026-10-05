@@ -23,10 +23,13 @@ import {TableCardComponent} from './room/table/table-card/table-card.component';
 import {VotingResultChartComponent} from './room/voting-result-chart/voting-result-chart.component';
 import {AboutComponent} from './about/about.component';
 import {TimerComponent} from './room/timer/timer.component';
+import {RoleSwitchComponent} from "./room/role-switch/role-switch.component";
 import {TranslatePipe} from './i18n/translate.pipe';
 import {ServerErrorPipe} from './i18n/server-error.pipe';
 import {storeDevtools} from "../env/store-devtools";
 import {HistoryComponent} from './room/history/history.component';
+import {TaskComponent} from './room/task/task.component';
+import {EstimateComponent} from './room/estimate/estimate.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +47,10 @@ import {HistoryComponent} from './room/history/history.component';
     VotingResultChartComponent,
     HistoryComponent,
     AboutComponent,
-    TimerComponent
+    TimerComponent,
+    TaskComponent,
+    EstimateComponent,
+    RoleSwitchComponent
   ],
   imports: [
     BrowserModule,

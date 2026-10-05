@@ -33,6 +33,9 @@ import {AboutComponent} from "../about/about.component";
 import {TimerComponent} from "../room/timer/timer.component";
 import {TimerSignal} from "../room/timer/timer-signal";
 import {HistoryComponent} from "../room/history/history.component";
+import {TaskComponent} from "../room/task/task.component";
+import {EstimateComponent} from "../room/estimate/estimate.component";
+import {RoleSwitchComponent} from "../room/role-switch/role-switch.component";
 
 // Runs the whole client (components, store, effects and services) against an in-memory imitation
 // of the pipoker-app STOMP API. Only the STOMP connection itself is replaced.
@@ -61,7 +64,10 @@ describe("PiPoker room (integration)", () => {
         VotingResultChartComponent,
         HistoryComponent,
         AboutComponent,
-        TimerComponent
+        TimerComponent,
+        TaskComponent,
+        EstimateComponent,
+        RoleSwitchComponent
       ],
       imports: [
         RouterTestingModule.withRoutes(routes),
@@ -260,6 +266,51 @@ describe("PiPoker room (integration)", () => {
       {title: "Round 2", tally: ["1d × 1"], votes: ["Dmitry 1d"]},
       {title: "Round 1", tally: ["4h × 1", "1d × 1"], votes: ["Dmitry 4h", "Alex 1d"]}
     ]);
+  });
+
+  it("names the task of the round and keeps it in the history with the estimate the team accepted", async () => {
+    const roomId = await createRoom("Dmitry", "Sprint", "1h; 4h; 1d");
+    server.join(roomId, participant("Alex"));
+    await settle();
+    const name = () => page.querySelector<HTMLInputElement>("app-task .task-name")!;
+    const estimate = () => {
+      const buttons = Array.from(page.querySelectorAll("app-estimate .btn-group > button"));
+      return buttons.length ? buttons.map(shown => shown.textContent!.trim()).join(" ") : undefined;
+    };
+
+    await type("app-task .task-name", " PIP-25 Task name ");
+    expect(server.rooms.get(roomId)!.task).withContext("sent when leaving the field").toEqual({name: "PIP-25 Task name"});
+    await click(page.querySelector<HTMLElement>("app-task button.task-link")!);
+    await type("app-task .task-url", "https://example.com/PIP-25");
+    expect(server.rooms.get(roomId)!.task).toEqual({name: "PIP-25 Task name", url: "https://example.com/PIP-25"});
+
+    server.setTask(roomId, {name: "PIP-26"});
+    await settle();
+    expect(name().value).withContext("someone else changed it").toBe("PIP-26");
+
+    await click(deckCard("4h").querySelector(".card-body")!);
+    server.vote(roomId, "Alex", "4h");
+    await settle();
+    expect(estimate()).withContext("nothing to accept before the cards are revealed").toBeUndefined();
+    await click(button("Reveal Cards"));
+    expect(name().disabled).withContext("the task is fixed once the cards are revealed").toBeTrue();
+
+    await click(button("Accept 4h"));
+    expect(estimate()).toBe("Estimate: 4h");
+    expect(server.rooms.get(roomId)!.history[0].estimate).toBe("4h");
+
+    const revealedAt = server.rooms.get(roomId)!.history[0].revealedAt;
+    server.acceptEstimate(roomId, {revealedAt, card: "1d"});
+    await settle();
+    expect(estimate()).withContext("someone else changed it").toBe("Estimate: 1d");
+
+    await click(button("Start New Voting"));
+    expect(name().value).withContext("the next round goes on to the next task").toBe("");
+    expect(name().disabled).toBeFalse();
+    expect(estimate()).toBeUndefined();
+    await click(page.querySelector<HTMLElement>(".history-toggle")!);
+    expect(page.querySelector(".history-panel .round-task")!.textContent!.trim()).toBe("PIP-26");
+    expect(page.querySelector(".history-panel .estimate")!.textContent!.trim()).toBe("Estimate: 1d");
   });
 
   it("shows the history of the room to someone who joins later", async () => {
@@ -468,6 +519,65 @@ describe("PiPoker room (integration)", () => {
     expect(watchers()).toEqual(["Dmitry"]);
     expect(page.querySelector(".watchers .eye-icon")).not.toBeNull();
     expect(deckCards()).toEqual([]);
+  });
+
+  it("becomes a watcher in the middle of a round and loses the vote, then votes again as a voter", async () => {
+    const roomId = await createRoom("Dmitry", "Sprint", "1h; 1d");
+    server.join(roomId, participant("Alex"));
+    await settle();
+    await click(deckCard("1d").querySelector(".card-body")!);
+    const watcherSwitch = page.querySelector<HTMLInputElement>("#watcherSwitch")!;
+    expect(watcherSwitch.checked).toBeFalse();
+
+    await click(watcherSwitch);
+
+    expect(watcherSwitch.checked).toBeTrue();
+    expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry", true), participant("Alex")]);
+    expect(server.rooms.get(roomId)!.votes).toEqual([]);
+    expect(tableCards().map(card => card.nickname)).toEqual(["Alex"]);
+    expect(watchers()).toEqual(["Dmitry"]);
+    expect(deckCards()).toEqual([]);
+    expect(SeatStorage.find(roomId)).withContext("a reload keeps the new role").toEqual(participant("Dmitry", true));
+    expect(localStorage.getItem(AppConstants.lastWatcher)).withContext("the next room offers it too").toBe("true");
+
+    await click(watcherSwitch);
+
+    expect(watcherSwitch.checked).toBeFalse();
+    expect(tableCards().map(card => card.nickname)).toEqual(["Dmitry", "Alex"]);
+    expect(deckCard("1d").classList).withContext("the vote went when Dmitry became a watcher").not.toContain("selected");
+    await click(deckCard("1h").querySelector(".card-body")!);
+    expect(server.rooms.get(roomId)!.votes).toEqual([{nickname: "Dmitry", card: "1h"}]);
+    expect(localStorage.getItem(AppConstants.lastWatcher)).toBe("false");
+  });
+
+  it("sees another participant become a watcher and take the hidden vote back", async () => {
+    const roomId = await createRoom("Dmitry", "Sprint", "1h; 1d");
+    server.join(roomId, participant("Alex"));
+    server.vote(roomId, "Alex", "1d");
+    await settle();
+    expect(button("Reveal Cards").disabled).toBeFalse();
+
+    server.changeRole(roomId, "Alex", true);
+    await settle();
+
+    expect(tableCards()).toEqual([{nickname: "Dmitry", voted: false, value: undefined}]);
+    expect(watchers()).toEqual(["Alex"]);
+    expect(button("Voting...").disabled).withContext("nobody has voted anymore").toBeTrue();
+  });
+
+  it("keeps a revealed vote with its round when its owner becomes a watcher", async () => {
+    const roomId = await createRoom("Dmitry", "Sprint", "1h; 1d");
+    server.join(roomId, participant("Alex"));
+    server.vote(roomId, "Alex", "1d");
+    await settle();
+    await click(deckCard("1h").querySelector(".card-body")!);
+    await click(button("Reveal Cards"));
+
+    await click(page.querySelector<HTMLElement>("#watcherSwitch")!);
+
+    expect(watchers()).toEqual(["Dmitry"]);
+    expect(server.rooms.get(roomId)!.votes.length).toBe(2);
+    expect(button("Start New Voting")).withContext("the revealed round stays as it was").toBeDefined();
   });
 
   it("takes the seat back after the page is reloaded", async () => {

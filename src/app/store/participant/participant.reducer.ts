@@ -2,6 +2,7 @@ import {CurrentParticipantState, CurrentParticipantStatus} from "./current-parti
 import {Action, createReducer, on} from "@ngrx/store";
 import * as ParticipantAction from "./participant.action";
 import * as RoomAction from "../room/room.action";
+import {sameNickname} from "../../models/participant.model";
 
 const initialState: CurrentParticipantState = {
   currentParticipant: undefined,
@@ -53,6 +54,18 @@ const _currentParticipantReducer = createReducer<CurrentParticipantState>(initia
     ...state,
     selectedCard: undefined,
     status: CurrentParticipantStatus.success,
+  })),
+  on(RoomAction.roleChanged, (state, {participant}) => ({
+    ...state,
+    currentParticipant: state.currentParticipant && sameNickname(state.currentParticipant.nickname, participant.nickname)
+      ? {...state.currentParticipant, watcher: participant.watcher}
+      : state.currentParticipant
+  })),
+  on(RoomAction.voteRemoved, (state, {nickname}) => ({
+    ...state,
+    selectedCard: state.currentParticipant && sameNickname(state.currentParticipant.nickname, nickname)
+      ? undefined
+      : state.selectedCard
   })),
   // Votes may have been made or cleared while the connection was gone
   on(RoomAction.refreshSuccess, (state, {room}) => ({

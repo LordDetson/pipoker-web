@@ -1,0 +1,5 @@
+<div class="form-check form-switch m-0" [title]="'room.watcherSwitchTitle' | translate">
+  <input class="form-check-input" type="checkbox" role="switch" id="watcherSwitch"
+         [checked]="watcher$ | async" (click)="toggle($event)">
+  <label class="form-check-label" for="watcherSwitch">{{"room.watcherSwitch" | translate}}</label>
+</div>

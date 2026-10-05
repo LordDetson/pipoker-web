@@ -114,5 +114,28 @@ describe("room selectors", () => {
     it("are empty before the first round is revealed", () => {
       expect(history(["1h"], [])).toEqual([]);
     });
+
+    it("keep the task and the accepted estimate of a round", () => {
+      const task = {name: "PIP-25"};
+      const [round] = RoomSelector.historySelector(appState({room: room({
+        history: [{revealedAt: "2026-10-05T12:00:00.000Z", votes: [{nickname: "Dmitry", card: "1h"}], task, estimate: "1d"}]
+      })}));
+
+      expect(round.task).toBe(task);
+      expect(round.estimate).toBe("1d");
+    });
+  });
+
+  it("tell the round on the table only while its cards are revealed", () => {
+    const history = [
+      {revealedAt: "2026-10-05T12:00:00.000Z", votes: [{nickname: "Dmitry", card: "1h"}]},
+      {revealedAt: "2026-10-05T12:05:00.000Z", votes: [{nickname: "Dmitry", card: "1d"}]}
+    ];
+
+    expect(RoomSelector.revealedRoundSelector(appState({room: room({history}), showVotingResult: true}))!.revealedAt)
+      .toBe("2026-10-05T12:05:00.000Z");
+    expect(RoomSelector.revealedRoundSelector(appState({room: room({history}), showVotingResult: false}))).toBeUndefined();
+    expect(RoomSelector.revealedRoundSelector(appState({showVotingResult: true}))).toBeUndefined();
+    expect(RoomSelector.taskSelector(appState({room: room({task: {name: "PIP-25"}})}))).toEqual({name: "PIP-25"});
   });
 });

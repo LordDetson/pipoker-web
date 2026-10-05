@@ -55,7 +55,8 @@ describe("roomReducer", () => {
       RoomAction.addParticipantFailure({error}),
       RoomAction.removeParticipantFailure({error}),
       RoomAction.cardSelectionFailure({error}),
-      RoomAction.startNewVotingFailure({error})
+      RoomAction.startNewVotingFailure({error}),
+      RoomAction.changeRoleFailure({error})
     ];
 
     failures.forEach(action => {
@@ -111,6 +112,24 @@ describe("roomReducer", () => {
     const state = roomReducer(before, RoomAction.removeParticipantSuccess({participant: participant("Alex")}));
 
     expect(state.room.participants).toEqual([participant("Dmitry")]);
+    expect(state.room.votingResult.map).toEqual(votes({Dmitry: "1h"}));
+    expect(before.room.votingResult.map.size).withContext("previous state is not mutated").toBe(2);
+  });
+
+  it("changes the role of a participant, who keeps their place among the others", () => {
+    const before = roomState({room: room({participants: [participant("Dmitry"), participant("Alex"), participant("Kate")]})});
+
+    const state = roomReducer(before, RoomAction.roleChanged({participant: participant(" alex ", true)}));
+
+    expect(state.room.participants).toEqual([participant("Dmitry"), participant("Alex", true), participant("Kate")]);
+    expect(before.room.participants[1].watcher).withContext("previous state is not mutated").toBeFalse();
+  });
+
+  it("removes a vote taken back", () => {
+    const before = roomState({room: room({votingResult: {map: votes({Dmitry: "1h", Alex: "1d"})}})});
+
+    const state = roomReducer(before, RoomAction.voteRemoved({nickname: "Alex"}));
+
     expect(state.room.votingResult.map).toEqual(votes({Dmitry: "1h"}));
     expect(before.room.votingResult.map.size).withContext("previous state is not mutated").toBe(2);
   });
@@ -173,7 +192,7 @@ describe("roomReducer", () => {
       showVotingResult: true
     });
 
-    const state = roomReducer(before, RoomAction.startNewVotingSuccess());
+    const state = roomReducer(before, RoomAction.startNewVotingSuccess({}));
 
     expect(state.room.votingResult.map.size).toBe(0);
     expect(state.showVotingResult).toBeFalse();
@@ -186,12 +205,32 @@ describe("roomReducer", () => {
     expect(roomReducer(before, RoomAction.doNothing())).toBe(before);
   });
 
+  it("follows the task of the round, and takes the one the server kept for the next round", () => {
+    const task = {name: "PIP-25", url: "https://example.com/PIP-25"};
+
+    const named = roomReducer(roomState(), RoomAction.taskChanged({task}));
+    expect(named.room.task).toBe(task);
+    expect(roomReducer(named, RoomAction.taskChanged({})).room.task).toBeUndefined();
+    expect(roomReducer(named, RoomAction.startNewVotingSuccess({task})).room.task).toBe(task);
+    expect(roomReducer(named, RoomAction.startNewVotingSuccess({})).room.task).toBeUndefined();
+  });
+
+  it("puts the accepted estimate on its round of the history", () => {
+    const first = {revealedAt: "2026-10-05T12:00:00.000Z", votes: [{nickname: "Dmitry", card: "1h"}]};
+    const second = {revealedAt: "2026-10-05T12:05:00.000Z", votes: [{nickname: "Dmitry", card: "1d"}]};
+    const accepted = {...second, estimate: "2h"};
+
+    const state = roomReducer(roomState({room: room({history: [first, second]})}), RoomAction.estimateAccepted({round: accepted}));
+
+    expect(state.room.history).toEqual([first, accepted]);
+  });
+
   it("keeps the timer until it is stopped or the next round starts", () => {
     const timer = {seconds: 120, endsAt: 1000};
 
     const started = roomReducer(roomState(), RoomAction.timerStarted({timer}));
     expect(started.room.timer).toBe(timer);
     expect(roomReducer(started, RoomAction.timerStopped()).room.timer).toBeUndefined();
-    expect(roomReducer(started, RoomAction.startNewVotingSuccess()).room.timer).toBeUndefined();
+    expect(roomReducer(started, RoomAction.startNewVotingSuccess({})).room.timer).toBeUndefined();
   });
 });

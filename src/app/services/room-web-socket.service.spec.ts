@@ -290,27 +290,47 @@ describe("RoomWebSocketService", () => {
       spyOn(Date, "now").and.returnValue(5000);
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.timerStarted, timer: {seconds: 60, remainingMillis: 59000}});
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.timerStopped});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.taskChanged, task: {name: "PIP-25"}});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.taskChanged});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.estimateAccepted, round: {...round, estimate: "1d"}});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.clearVotes, task: {name: "PIP-25"}});
 
       expect((store.dispatch as jasmine.Spy).calls.allArgs()).toEqual([
         [RoomAction.addParticipantSuccess({participant: participant("Alex", true)})],
         [RoomAction.cardSelectionSuccess({participant: participant("Alex"), card: {value: "1d"}})],
         [RoomAction.showVotingResultSuccess({round})],
         [RoomAction.showVotingResultSuccess({round: undefined})],
-        [RoomAction.startNewVotingSuccess()],
+        [RoomAction.startNewVotingSuccess({task: undefined})],
         [RoomAction.removeParticipantSuccess({participant: participant("Alex", true)})],
         [RoomAction.closed({roomId: ROOM_ID})],
         [RoomAction.removed({roomId: ROOM_ID})],
         [RoomAction.timerStarted({timer: {seconds: 60, endsAt: 64000}})],
-        [RoomAction.timerStopped()]
+        [RoomAction.timerStopped()],
+        [RoomAction.taskChanged({task: {name: "PIP-25"}})],
+        [RoomAction.taskChanged({task: undefined})],
+        [RoomAction.estimateAccepted({round: {...round, estimate: "1d"}})],
+        [RoomAction.startNewVotingSuccess({task: {name: "PIP-25"}})]
       ]);
     });
 
-    it("ignores the removal of an unknown participant and unsupported events", () => {
+    it("ignores the removal of an unknown participant or vote and unsupported events", () => {
       const client = connectedClient();
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.participantRemoved});
-      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.voteRemoved, vote: {nickname: "Alex", card: "1d"}});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.voteRemoved});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.participantReturned, participant: participant("Alex")});
 
       expect(store.dispatch).not.toHaveBeenCalled();
+    });
+
+    it("tells the store about a changed role and the vote it took back", () => {
+      const client = connectedClient();
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.voteRemoved, vote: {nickname: "Alex", card: "1d"}});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.participantRoleChanged, participant: participant("Alex", true)});
+
+      expect((store.dispatch as jasmine.Spy).calls.allArgs()).toEqual([
+        [RoomAction.voteRemoved({nickname: "Alex"})],
+        [RoomAction.roleChanged({participant: participant("Alex", true)})]
+      ]);
     });
 
     it("keeps watching errors while the room is open, so a check or a vote doesn't unsubscribe from them", () => {

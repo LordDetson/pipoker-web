@@ -4,7 +4,7 @@ import {Participant} from "../../models/participant.model";
 import {CreateRoomInfo} from "../../models/create-room.model";
 import {Card} from "../../models/card.model";
 import {Vote} from "../../models/vote";
-import {RoundDto} from "../../models/room-dto.model";
+import {RoundDto, TaskDto} from "../../models/room-dto.model";
 
 export enum RoomActionType {
   create = "[Room] create",
@@ -18,9 +18,13 @@ export enum RoomActionType {
   removeParticipant = "[Room] remove participant",
   removeParticipantSuccess = "[Room] remove participant success",
   removeParticipantFailure = "[Room] remove participant failure",
+  changeRole = "[Room] change role",
+  roleChanged = "[Room] role changed",
+  changeRoleFailure = "[Room] change role failure",
   selectCard = "[Room] select card",
   cardSelectionSuccess = "[Room] card selection success",
   cardSelectionFailure = "[Room] card selection failure",
+  voteRemoved = "[Room] vote removed",
   showVotingResult = "[Room] show voting result",
   showVotingResultSuccess = "[Room] show voting result success",
   startNewVoting = "[Room] start new voting",
@@ -30,6 +34,9 @@ export enum RoomActionType {
   timerStarted = "[Room] timer started",
   stopTimer = "[Room] stop timer",
   timerStopped = "[Room] timer stopped",
+  taskChanged = "[Room] task changed",
+  acceptEstimate = "[Room] accept estimate",
+  estimateAccepted = "[Room] estimate accepted",
   closed = "[Room] closed",
   removed = "[Room] removed",
   doNothing = "[Room] do nothing",
@@ -58,18 +65,31 @@ export const removeParticipantSuccess = createAction(RoomActionType.removePartic
   props<{ participant: Participant }>());
 export const removeParticipantFailure = createAction(RoomActionType.removeParticipantFailure,
   props<{ error: any }>());
+// The person looking at the page becomes a watcher or a voter
+export const changeRole = createAction(RoomActionType.changeRole,
+  props<{ watcher: boolean }>());
+// Someone in the room became a watcher or a voter, maybe the person looking at the page
+export const roleChanged = createAction(RoomActionType.roleChanged,
+  props<{ participant: Participant }>());
+export const changeRoleFailure = createAction(RoomActionType.changeRoleFailure,
+  props<{ error: any }>());
 export const selectCard = createAction(RoomActionType.selectCard,
   props<{ participant: Participant, card: Card }>());
 export const cardSelectionSuccess = createAction(RoomActionType.cardSelectionSuccess,
   props<{ participant: Participant, card: Card }>());
 export const cardSelectionFailure = createAction(RoomActionType.cardSelectionFailure,
   props<{ error: any }>());
+// Someone has no vote in this round anymore, for example because they became a watcher before the reveal
+export const voteRemoved = createAction(RoomActionType.voteRemoved,
+  props<{ nickname: string }>());
 export const showVotingResult = createAction(RoomActionType.showVotingResult);
 // The cards are revealed. The first reveal of a round with votes brings the round that entered the room's history.
 export const showVotingResultSuccess = createAction(RoomActionType.showVotingResultSuccess,
   props<{ round?: RoundDto }>());
 export const startNewVoting = createAction(RoomActionType.startNewVoting);
-export const startNewVotingSuccess = createAction(RoomActionType.startNewVotingSuccess);
+// A new round starts, with the task the server kept for it: the same one when the team votes on it again
+export const startNewVotingSuccess = createAction(RoomActionType.startNewVotingSuccess,
+  props<{ task?: TaskDto }>());
 export const startNewVotingFailure = createAction(RoomActionType.startNewVotingFailure,
   props<{ error: any }>());
 export const startTimer = createAction(RoomActionType.startTimer,
@@ -78,6 +98,13 @@ export const timerStarted = createAction(RoomActionType.timerStarted,
   props<{ timer: RoomTimer }>());
 export const stopTimer = createAction(RoomActionType.stopTimer);
 export const timerStopped = createAction(RoomActionType.timerStopped);
+export const taskChanged = createAction(RoomActionType.taskChanged,
+  props<{ task?: TaskDto }>());
+// The estimate of the revealed round: any card of the deck
+export const acceptEstimate = createAction(RoomActionType.acceptEstimate,
+  props<{ revealedAt: string, card: string }>());
+export const estimateAccepted = createAction(RoomActionType.estimateAccepted,
+  props<{ round: RoundDto }>());
 export const closed = createAction(RoomActionType.closed,
   props<{ roomId: string }>());
 // Everyone left the room while this page was open on it without a seat, for example on the join form

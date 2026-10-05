@@ -1,0 +1,21 @@
+<div *ngIf="round$ | async as round" class="btn-group" ngbDropdown placement="bottom top">
+  <ng-container *ngIf="round.estimate !== undefined; else offer">
+    <button type="button" ngbDropdownToggle class="btn btn-sm accepted" [title]="'estimate.change' | translate">
+      {{"estimate.accepted" | translate: {card: round.estimate} }}
+    </button>
+  </ng-container>
+  <ng-template #offer>
+    <!-- One click accepts the card most people picked; when the votes split, a card is chosen from the menu -->
+    <button *ngIf="round.result !== undefined" type="button" class="btn btn-sm accept" (click)="accept(round, round.result)">
+      {{"estimate.accept" | translate: {card: round.result} }}
+    </button>
+    <button type="button" ngbDropdownToggle class="btn btn-sm accept" [class.split]="round.result !== undefined"
+            [title]="'estimate.chooseTitle' | translate" [attr.aria-label]="'estimate.chooseTitle' | translate">
+      <ng-container *ngIf="round.result === undefined">{{"estimate.choose" | translate}}</ng-container>
+    </button>
+  </ng-template>
+  <div ngbDropdownMenu class="cards">
+    <button *ngFor="let card of cards$ | async" type="button" ngbDropdownItem class="card-choice"
+            [class.active]="card.value === round.estimate" (click)="accept(round, card.value)">{{card.value}}</button>
+  </div>
+</div>
