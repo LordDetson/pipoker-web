@@ -313,12 +313,24 @@ describe("RoomWebSocketService", () => {
       ]);
     });
 
-    it("ignores the removal of an unknown participant and unsupported events", () => {
+    it("ignores the removal of an unknown participant or vote and unsupported events", () => {
       const client = connectedClient();
       client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.participantRemoved});
-      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.voteRemoved, vote: {nickname: "Alex", card: "1d"}});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.voteRemoved});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.participantReturned, participant: participant("Alex")});
 
       expect(store.dispatch).not.toHaveBeenCalled();
+    });
+
+    it("tells the store about a changed role and the vote it took back", () => {
+      const client = connectedClient();
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.voteRemoved, vote: {nickname: "Alex", card: "1d"}});
+      client.deliver(roomTopic, {roomId: ROOM_ID, eventType: RoomEventType.participantRoleChanged, participant: participant("Alex", true)});
+
+      expect((store.dispatch as jasmine.Spy).calls.allArgs()).toEqual([
+        [RoomAction.voteRemoved({nickname: "Alex"})],
+        [RoomAction.roleChanged({participant: participant("Alex", true)})]
+      ]);
     });
 
     it("keeps watching errors while the room is open, so a check or a vote doesn't unsubscribe from them", () => {

@@ -23,6 +23,7 @@ import {TableCardComponent} from './room/table/table-card/table-card.component';
 import {VotingResultChartComponent} from './room/voting-result-chart/voting-result-chart.component';
 import {AboutComponent} from './about/about.component';
 import {TimerComponent} from './room/timer/timer.component';
+import {RoleSwitchComponent} from "./room/role-switch/role-switch.component";
 import {TranslatePipe} from './i18n/translate.pipe';
 import {ServerErrorPipe} from './i18n/server-error.pipe';
 import {storeDevtools} from "../env/store-devtools";
@@ -48,7 +49,8 @@ import {EstimateComponent} from './room/estimate/estimate.component';
     AboutComponent,
     TimerComponent,
     TaskComponent,
-    EstimateComponent
+    EstimateComponent,
+    RoleSwitchComponent
   ],
   imports: [
     BrowserModule,

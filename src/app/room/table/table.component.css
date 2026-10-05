@@ -4,6 +4,8 @@
   padding: 0.75rem 1rem 0;
 }
 
+/* The room may put its controls into the top corners: the list stays between them,
+   or goes under them where the screen is too narrow to have room between */
 .watchers {
   display: flex;
   flex-wrap: wrap;
@@ -11,10 +13,18 @@
   align-items: center;
   gap: 0.25rem 0.75rem;
   margin: 0 0 0.5rem;
+  padding-inline: var(--corner-controls-width, 0);
+}
+
+@media (max-width: 575.98px) {
+  .watchers {
+    padding-inline: 0;
+    margin-top: var(--corner-controls-height, 0);
+  }
 }
 
 .watcher {
-  max-width: 12rem;
+  max-width: min(12rem, 100%);
 }
 
 .eye-icon {

@@ -30,6 +30,10 @@ export class RoomDestinations {
     return RoomDestinations.room(roomId) + "/participants/return";
   }
 
+  public static changeRole(roomId: string): string {
+    return RoomDestinations.room(roomId) + "/participants/role";
+  }
+
   public static addVote(roomId: string): string {
     return RoomDestinations.room(roomId) + "/votes/add";
   }

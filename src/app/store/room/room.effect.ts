@@ -148,6 +148,24 @@ export class RoomEffect {
     )
   );
 
+  changeRole$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(RoomAction.changeRole),
+      withLatestFrom(
+        this.store.select(RoomSelector.idSelector),
+        this.store.select(ParticipantSelector.currentParticipantSelector)
+      ),
+      filter(([, , participant]) => !!participant),
+      // The role comes with the event the whole room gets, see RoomWebSocketService
+      mergeMap(([{watcher}, roomId, participant]) =>
+        this.roomService.changeRole(roomId, {nickname: participant.nickname, watcher}).pipe(
+          map(() => RoomAction.doNothing()),
+          catchError(error => of(RoomAction.changeRoleFailure({error})))
+        )
+      )
+    )
+  );
+
   selectCard$ = createEffect(() =>
     this.actions$.pipe(
       ofType(RoomAction.selectCard),

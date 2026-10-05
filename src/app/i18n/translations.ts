@@ -77,6 +77,8 @@ const en = {
 
   "room.returning": "Returning to the table",
   "room.watchers": "Watchers",
+  "room.watcherSwitch": "Watcher",
+  "room.watcherSwitchTitle": "Watch the vote without voting. Switch back to vote again.",
   "room.voting": "Voting...",
   "room.revealCards": "Reveal Cards",
   "room.startNewVoting": "Start New Voting",
@@ -192,6 +194,8 @@ const ru: Record<TranslationKey, string> = {
 
   "room.returning": "Возвращаем вас за стол",
   "room.watchers": "Наблюдатели",
+  "room.watcherSwitch": "Наблюдатель",
+  "room.watcherSwitchTitle": "Следить за голосованием, не голосуя. Выключите, чтобы снова голосовать.",
   "room.voting": "Голосование...",
   "room.revealCards": "Открыть карты",
   "room.startNewVoting": "Новое голосование",

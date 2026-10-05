@@ -203,6 +203,19 @@ describe("RoomService", () => {
     expect(error.message).toBe("exists");
   });
 
+  it("changes the role and resolves with the participant the room heard about", () => {
+    const participant: Participant = {nickname: "Alex", watcher: true};
+    let changed: Participant | undefined;
+    service.changeRole(roomId, participant).subscribe(result => changed = result);
+
+    expect(webSocket.sent).toEqual([{destination: "/app/room/" + roomId + "/participants/role", body: participant}]);
+
+    webSocket.emit("/topic/room." + roomId, {roomId, eventType: RoomEventType.participantRoleChanged, participant: {nickname: "Other", watcher: true}});
+    expect(changed).toBeUndefined();
+    webSocket.emit("/topic/room." + roomId, {roomId, eventType: RoomEventType.participantRoleChanged, participant});
+    expect(changed).toEqual(participant);
+  });
+
   it("votes with the card value", () => {
     const participant: Participant = {nickname: "Dmitry", watcher: false};
     let vote: Vote | undefined;

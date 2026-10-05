@@ -18,9 +18,13 @@ export enum RoomActionType {
   removeParticipant = "[Room] remove participant",
   removeParticipantSuccess = "[Room] remove participant success",
   removeParticipantFailure = "[Room] remove participant failure",
+  changeRole = "[Room] change role",
+  roleChanged = "[Room] role changed",
+  changeRoleFailure = "[Room] change role failure",
   selectCard = "[Room] select card",
   cardSelectionSuccess = "[Room] card selection success",
   cardSelectionFailure = "[Room] card selection failure",
+  voteRemoved = "[Room] vote removed",
   showVotingResult = "[Room] show voting result",
   showVotingResultSuccess = "[Room] show voting result success",
   startNewVoting = "[Room] start new voting",
@@ -61,12 +65,23 @@ export const removeParticipantSuccess = createAction(RoomActionType.removePartic
   props<{ participant: Participant }>());
 export const removeParticipantFailure = createAction(RoomActionType.removeParticipantFailure,
   props<{ error: any }>());
+// The person looking at the page becomes a watcher or a voter
+export const changeRole = createAction(RoomActionType.changeRole,
+  props<{ watcher: boolean }>());
+// Someone in the room became a watcher or a voter, maybe the person looking at the page
+export const roleChanged = createAction(RoomActionType.roleChanged,
+  props<{ participant: Participant }>());
+export const changeRoleFailure = createAction(RoomActionType.changeRoleFailure,
+  props<{ error: any }>());
 export const selectCard = createAction(RoomActionType.selectCard,
   props<{ participant: Participant, card: Card }>());
 export const cardSelectionSuccess = createAction(RoomActionType.cardSelectionSuccess,
   props<{ participant: Participant, card: Card }>());
 export const cardSelectionFailure = createAction(RoomActionType.cardSelectionFailure,
   props<{ error: any }>());
+// Someone has no vote in this round anymore, for example because they became a watcher before the reveal
+export const voteRemoved = createAction(RoomActionType.voteRemoved,
+  props<{ nickname: string }>());
 export const showVotingResult = createAction(RoomActionType.showVotingResult);
 // The cards are revealed. The first reveal of a round with votes brings the round that entered the room's history.
 export const showVotingResultSuccess = createAction(RoomActionType.showVotingResultSuccess,

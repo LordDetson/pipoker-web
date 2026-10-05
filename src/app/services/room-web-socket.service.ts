@@ -156,6 +156,14 @@ export class RoomWebSocketService implements OnDestroy {
           this.store.dispatch(RoomAction.removeParticipantSuccess({participant: event.participant}));
         }
         break;
+      case RoomEventType.participantRoleChanged:
+        this.store.dispatch(RoomAction.roleChanged({participant: event.participant!}));
+        break;
+      case RoomEventType.voteRemoved:
+        if (event.vote) {
+          this.store.dispatch(RoomAction.voteRemoved({nickname: event.vote.nickname}));
+        }
+        break;
       case RoomEventType.voteAdded:
         this.store.dispatch(RoomAction.cardSelectionSuccess({
           participant: {nickname: event.vote!.nickname, watcher: false},

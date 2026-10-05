@@ -1,21 +1,17 @@
-/* A line above the table. It keeps clear of the history button in the top right corner of the room,
-   and keeps its height when there is nothing to show, so the table does not jump. */
+/* A line above the table, between the role switch in the top left corner of the room and the history button in
+   the top right one. It keeps its height when there is nothing to show, so the table does not jump. */
 :host {
   display: flex;
   justify-content: center;
   min-height: calc(0.75rem + 2.375rem);
-  padding: 0.75rem 7.5rem 0;
+  padding: 0.75rem 9rem 0;
 }
 
-/* On a phone the line starts at the left edge, and the name gets the room of the label */
+/* On a phone the corners leave no room beside them, so the line goes under them and takes the whole width */
 @media (max-width: 575.98px) {
   :host {
-    justify-content: flex-start;
-    padding-left: 1rem;
-  }
-
-  .task-label {
-    display: none;
+    min-height: calc(3rem + 2.375rem);
+    padding: 3rem 1rem 0;
   }
 }
 
