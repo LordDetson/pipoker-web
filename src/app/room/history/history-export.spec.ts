@@ -10,7 +10,8 @@ describe("exportHistory", () => {
   const now = new Date(2026, 9, 5, 14, 30);
   const rounds: HistoryRound[] = [
     {
-      number: 1, revealedAt: new Date(2026, 9, 5, 14, 0, 12).toISOString(), result: "5",
+      number: 1, revealedAt: new Date(2026, 9, 5, 14, 0, 12).toISOString(), result: "5", estimate: "8",
+      task: {name: "PIP-25 Название задачи", url: "https://example.com/PIP-25"},
       tally: [{card: "5", count: 2}],
       votes: [{nickname: "Аня", card: "5"}, {nickname: "Dmitry", card: "5"}]
     },
@@ -42,12 +43,12 @@ describe("exportHistory", () => {
     const file = exportHistory("csv", "Спринт", rounds, i18n, now);
 
     expect(file.type).toBe("text/csv;charset=utf-8");
-    expect(text(file)).toBe("﻿" + [
-      "Раунд;Время;Итог;Участник;Карта",
-      "1;2026-10-05 14:00;5;Аня;5",
-      "1;2026-10-05 14:00;5;Dmitry;5",
-      `2;2026-10-05 14:07;Голоса разделились;"'=HYPERLINK(""x"")";½`,
-      `2;2026-10-05 14:07;Голоса разделились;"Smith; John";13`,
+    expect(text(file)).toBe("\uFEFF" + [
+      "Раунд;Задача;Ссылка на задачу;Время;Принятая оценка;Итог голосования;Участник;Карта",
+      "1;PIP-25 Название задачи;https://example.com/PIP-25;2026-10-05 14:00;8;5;Аня;5",
+      "1;PIP-25 Название задачи;https://example.com/PIP-25;2026-10-05 14:00;8;5;Dmitry;5",
+      `2;;;2026-10-05 14:07;;Голоса разделились;"'=HYPERLINK(""x"")";½`,
+      `2;;;2026-10-05 14:07;;Голоса разделились;"Smith; John";13`,
       ""
     ].join("\r\n"));
   });
@@ -56,8 +57,8 @@ describe("exportHistory", () => {
     i18n.language = "en";
 
     expect(text(exportHistory("csv", "Sprint", rounds, i18n, now)).split("\r\n").slice(0, 2)).toEqual([
-      "﻿Round,Time,Result,Participant,Card",
-      "1,2026-10-05 14:00,5,Аня,5"
+      "\uFEFFRound,Task,Task link,Time,Accepted estimate,Vote result,Participant,Card",
+      "1,PIP-25 Название задачи,https://example.com/PIP-25,2026-10-05 14:00,8,5,Аня,5"
     ]);
   });
 
@@ -66,8 +67,9 @@ describe("exportHistory", () => {
       "История оценок PiPoker: Спринт",
       "Выгружено 2026-10-05 14:30",
       "",
-      "Раунд 1 · 2026-10-05 14:00",
-      "Итог: 5",
+      "Раунд 1 · PIP-25 Название задачи · 2026-10-05 14:00",
+      "https://example.com/PIP-25",
+      "Оценка: 8",
       "  Аня: 5",
       "  Dmitry: 5",
       "",
@@ -79,14 +81,15 @@ describe("exportHistory", () => {
     ].join("\r\n"));
   });
 
-  it("writes XML with the times in UTC and no result for split votes", () => {
+  it("writes XML with the times in UTC and no task, estimate or result where the round has none", () => {
     const file = exportHistory("xml", "R&D <1>", rounds, i18n, now);
 
     expect(file.type).toBe("application/xml;charset=utf-8");
     expect(text(file)).toBe([
       `<?xml version="1.0" encoding="UTF-8"?>`,
       `<history room="R&amp;D &lt;1&gt;" downloadedAt="${now.toISOString()}">`,
-      `  <round number="1" revealedAt="${rounds[0].revealedAt}" result="5">`,
+      `  <round number="1" revealedAt="${rounds[0].revealedAt}" estimate="8" result="5">`,
+      `    <task name="PIP-25 Название задачи" url="https://example.com/PIP-25"/>`,
       `    <vote participant="Аня" card="5"/>`,
       `    <vote participant="Dmitry" card="5"/>`,
       `  </round>`,
@@ -144,14 +147,19 @@ describe("exportHistory", () => {
         .map(cell => ({ref: cell.getAttribute("r"), type: cell.getAttribute("t"), text: cell.textContent}));
 
       expect(rows.length).toBe(5);
-      expect(cells(rows[0]).map(cell => cell.text)).toEqual(["Раунд", "Время", "Итог", "Участник", "Карта"]);
+      expect(cells(rows[0]).map(cell => cell.text)).toEqual(["Раунд", "Задача", "Ссылка на задачу", "Время",
+        "Принятая оценка", "Итог голосования", "Участник", "Карта"]);
       const first = cells(rows[1]);
-      expect(first.map(cell => cell.ref)).toEqual(["A2", "B2", "C2", "D2", "E2"]);
+      expect(first.map(cell => cell.ref)).toEqual(["A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2"]);
       expect(first[0]).toEqual({ref: "A2", type: null, text: "1"});
+      expect(first[1]).toEqual({ref: "B2", type: "inlineStr", text: "PIP-25 Название задачи"});
       // 5 October 2026 14:00:12 counted in days from 30 December 1899
-      expect(Number(first[1].text)).toBeCloseTo(46300 + (14 * 3600 + 12) / 86400, 6);
-      expect(first[4]).toEqual({ref: "E2", type: null, text: "5"});
-      expect(cells(rows[3])[4]).toEqual({ref: "E4", type: "inlineStr", text: "½"});
+      expect(Number(first[3].text)).toBeCloseTo(46300 + (14 * 3600 + 12) / 86400, 6);
+      expect(first[4]).toEqual({ref: "E2", type: null, text: "8"});
+      expect(first[7]).toEqual({ref: "H2", type: null, text: "5"});
+      // A round with no task and no accepted estimate leaves those cells out
+      expect(cells(rows[3]).map(cell => cell.ref)).toEqual(["A4", "D4", "F4", "G4", "H4"]);
+      expect(cells(rows[3])[4]).toEqual({ref: "H4", type: "inlineStr", text: "½"});
       expect(cells(rows[3])[3].text).toBe("=HYPERLINK(\"x\")");
     });
   });

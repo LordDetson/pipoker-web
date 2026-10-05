@@ -28,7 +28,10 @@ interface Column {
 function columns(i18n: I18nService): Column[] {
   return [
     {header: i18n.translate("history.column.round"), value: round => round.number, width: 8},
+    {header: i18n.translate("history.column.task"), value: round => round.task?.name ?? "", width: 30},
+    {header: i18n.translate("history.column.taskUrl"), value: round => round.task?.url ?? "", width: 30},
     {header: i18n.translate("history.column.time"), value: round => new Date(round.revealedAt), width: 18},
+    {header: i18n.translate("history.column.estimate"), value: round => round.estimate ?? "", width: 12, numbers: true},
     {header: i18n.translate("history.column.result"), value: round => resultOf(round, i18n), width: 20, numbers: true},
     {header: i18n.translate("history.column.participant"), value: (round, vote) => vote.nickname, width: 24},
     {header: i18n.translate("history.column.card"), value: (round, vote) => vote.card, width: 10, numbers: true}
@@ -101,7 +104,7 @@ function text(cell: Cell): string {
 function csv(table: Column[], rounds: HistoryRound[], i18n: I18nService): string {
   const separator = i18n.language === "ru" ? ";" : ",";
   const line = (cells: Cell[]) => cells.map(cell => csvField(cell, separator)).join(separator);
-  return "﻿" + [table.map(column => column.header), ...rowsOf(rounds, table)].map(line).join("\r\n") + "\r\n";
+  return "\uFEFF" + [table.map(column => column.header), ...rowsOf(rounds, table)].map(line).join("\r\n") + "\r\n";
 }
 
 function csvField(cell: Cell, separator: string): string {
@@ -123,14 +126,19 @@ function txt(roomName: string, rounds: HistoryRound[], i18n: I18nService, now: D
   for (const round of rounds) {
     lines.push(
       "",
-      `${i18n.translate("history.round", {number: round.number})} · ${localTime(new Date(round.revealedAt))}`,
-      round.result !== undefined ? i18n.translate("history.result", {card: round.result}) : i18n.translate("history.split"),
+      [i18n.translate("history.round", {number: round.number}), round.task?.name, localTime(new Date(round.revealedAt))]
+        .filter(part => part).join(" · "),
+      ...round.task?.url ? [round.task.url] : [],
+      // The accepted estimate takes the place of the vote result, as in the panel
+      round.estimate !== undefined ? i18n.translate("history.estimate", {card: round.estimate})
+        : round.result !== undefined ? i18n.translate("history.result", {card: round.result}) : i18n.translate("history.split"),
       ...round.votes.map(vote => `  ${vote.nickname}: ${vote.card}`));
   }
   return lines.join("\r\n") + "\r\n";
 }
 
-// XML: the rounds as the server keeps them, for other programs. Times stay in UTC, as in the server's data.
+// XML: the rounds as the server keeps them, for other programs. Times stay in UTC, as in the server's data. A round
+// carries estimate when the team accepted one and result when one card got the most votes.
 
 function xml(roomName: string, rounds: HistoryRound[], now: Date): string {
   const lines = [
@@ -138,8 +146,13 @@ function xml(roomName: string, rounds: HistoryRound[], now: Date): string {
     `<history room="${escapeXml(roomName)}" downloadedAt="${now.toISOString()}">`
   ];
   for (const round of rounds) {
+    const estimate = round.estimate !== undefined ? ` estimate="${escapeXml(round.estimate)}"` : "";
     const result = round.result !== undefined ? ` result="${escapeXml(round.result)}"` : "";
-    lines.push(`  <round number="${round.number}" revealedAt="${escapeXml(round.revealedAt)}"${result}>`,
+    const task = round.task
+      ? [`    <task name="${escapeXml(round.task.name)}"${round.task.url ? ` url="${escapeXml(round.task.url)}"` : ""}/>`]
+      : [];
+    lines.push(`  <round number="${round.number}" revealedAt="${escapeXml(round.revealedAt)}"${estimate}${result}>`,
+      ...task,
       ...round.votes.map(vote => `    <vote participant="${escapeXml(vote.nickname)}" card="${escapeXml(vote.card)}"/>`),
       `  </round>`);
   }
@@ -236,6 +249,9 @@ function cellName(column: number, row: number, absolute = false): string {
 }
 
 function xlsxCell(cell: Cell, name: string, bold: boolean, numbers?: boolean): string {
+  if (cell === "") {
+    return "";
+  }
   if (cell instanceof Date) {
     return `<c r="${name}" s="${DATE_TIME}"><v>${excelDate(cell)}</v></c>`;
   }
