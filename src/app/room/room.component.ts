@@ -24,6 +24,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   roomStatus$: Observable<string> = this.store.pipe(select(RoomSelector.statusSelector));
   joined$: Observable<boolean> = this.store.pipe(select(ParticipantSelector.joinedSelector));
   returning$: Observable<boolean> = this.store.pipe(select(ParticipantSelector.returningSelector));
+  watcher$: Observable<boolean> = this.store.pipe(select(ParticipantSelector.currentWatcherSelector));
   showVotingResult$: Observable<boolean> = this.store.pipe(select(RoomSelector.showVotingResultSelector));
   gone$: Observable<RoomStatus.closed | RoomStatus.missing | undefined> = this.store.pipe(select(RoomSelector.goneSelector));
   readonly RoomStatus = RoomStatus;

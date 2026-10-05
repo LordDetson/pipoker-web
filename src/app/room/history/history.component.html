@@ -10,7 +10,31 @@
   <aside id="roomHistory" class="history-panel" [class.open]="open" aria-labelledby="roomHistoryTitle">
     <div class="history-head">
       <h2 id="roomHistoryTitle" class="h5 m-0">{{"history.title" | translate}}</h2>
-      <div *ngIf="rounds.length" ngbDropdown class="history-export" placement="bottom-end bottom-start">
+      <button type="button" class="history-close" [title]="'history.close' | translate"
+              [attr.aria-label]="'history.close' | translate" (click)="close()">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M3 3l14 14M17 3L3 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <!-- The text and the files are made of the revealed rounds, so they come with the first one -->
+    <div *ngIf="rounds.length" class="history-actions">
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="copySummary(rounds)">
+        <!-- Two sheets, then a tick for a moment once the text is on the clipboard -->
+        <svg class="me-1" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <path *ngIf="!summaryCopied" d="M5.5 5.5h8v8h-8zM10.5 2.5h-8v8" fill="none" stroke="currentColor"
+                stroke-width="1.5" stroke-linejoin="round"/>
+          <path *ngIf="summaryCopied" d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <!-- Both labels take the same place, so the button keeps its width and the download button stays put -->
+        <span class="summary-label">
+          <span [class.invisible]="summaryCopied">{{"history.summary" | translate}}</span>
+          <span [class.invisible]="!summaryCopied" aria-hidden="true">{{"history.summary.copied" | translate}}</span>
+        </span>
+        <span class="visually-hidden" aria-live="polite">{{summaryCopied ? ("history.summary.copied" | translate) : ""}}</span>
+      </button>
+      <div ngbDropdown class="history-export" placement="bottom-end bottom-start">
         <button type="button" ngbDropdownToggle class="btn btn-sm btn-outline-secondary">
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M8 2v8M4.5 6.5L8 10l3.5-3.5M2.5 13.5h11" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -24,12 +48,6 @@
           </button>
         </div>
       </div>
-      <button type="button" class="history-close" [title]="'history.close' | translate"
-              [attr.aria-label]="'history.close' | translate" (click)="close()">
-        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-          <path d="M3 3l14 14M17 3L3 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
     </div>
     <p *ngIf="!rounds.length" class="text-body-secondary m-0">{{"history.empty" | translate}}</p>
     <ol class="list-unstyled m-0">

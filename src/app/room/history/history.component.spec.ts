@@ -1,4 +1,4 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {ComponentFixture, fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {firstValueFrom} from "rxjs";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {HistoryComponent} from "./history.component";
@@ -6,10 +6,12 @@ import {appState, cards, room} from "../../testing/test-data";
 import {TranslatePipe} from "../../i18n/translate.pipe";
 import {I18nService} from "../../i18n/i18n.service";
 import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
+import {Clipboard} from "@angular/cdk/clipboard";
 
 describe("HistoryComponent", () => {
   let fixture: ComponentFixture<HistoryComponent>;
   let store: MockStore;
+  let clipboard: jasmine.SpyObj<Clipboard>;
 
   const history = [
     {revealedAt: "2026-10-04T17:00:00.000Z", votes: [{nickname: "Alex", card: "1h"}, {nickname: "Dmitry", card: "1d"}]},
@@ -17,10 +19,12 @@ describe("HistoryComponent", () => {
   ];
 
   beforeEach(() => {
+    clipboard = jasmine.createSpyObj<Clipboard>("Clipboard", ["copy"]);
     TestBed.configureTestingModule({
       declarations: [HistoryComponent],
       imports: [TranslatePipe, NgbDropdownModule],
-      providers: [provideMockStore({initialState: appState({room: room({name: "Sprint 12", deck: {cards: cards("1h", "1d")}, history})})})]
+      providers: [provideMockStore({initialState: appState({room: room({name: "Sprint 12", deck: {cards: cards("1h", "1d")}, history})})}),
+        {provide: Clipboard, useValue: clipboard}]
     });
     TestBed.inject(I18nService).language = "en";
     store = TestBed.inject(MockStore);
@@ -134,12 +138,33 @@ describe("HistoryComponent", () => {
     expect(lines.slice(1, 5).map(line => line.split(",")[0])).toEqual(["1", "1", "2", "2"]);
   });
 
-  it("offers no download before the first round is revealed", () => {
+  it("copies the history as the text file has it and says so for a moment", fakeAsync(() => {
+    openPanel();
+    const button = element(".history-actions > button")!;
+    expect(texts(".history-actions > button .summary-label > :not(.invisible)")).toEqual(["Copy summary"]);
+
+    button.click();
+    fixture.detectChanges();
+
+    // The same text as the downloaded .txt file, with the line breaks of the clipboard
+    expect(clipboard.copy).toHaveBeenCalledOnceWith(jasmine.stringMatching(new RegExp([
+      "^PiPoker estimate history: Sprint 12", "Downloaded \\d{4}-\\d\\d-\\d\\d \\d\\d:\\d\\d", "",
+      "Round 1 · [\\d: -]+", "Votes split", "  Alex: 1h", "  Dmitry: 1d", "",
+      "Round 2 · [\\d: -]+", "Result: 1d", "  Alex: 1d", "  Dmitry: 1d", "$"
+    ].join("\n"))));
+    expect(texts(".history-actions > button .summary-label > :not(.invisible)")).toEqual(["Copied"]);
+    expect(texts(".history-actions > button [aria-live]")).toEqual(["Copied"]);
+    tick(1500);
+    fixture.detectChanges();
+    expect(texts(".history-actions > button .summary-label > :not(.invisible)")).toEqual(["Copy summary"]);
+  }));
+
+  it("offers no summary and no download before the first round is revealed", () => {
     store.setState(appState());
     fixture.detectChanges();
     openPanel();
 
-    expect(element(".history-export")).toBeNull();
+    expect(element(".history-actions")).toBeNull();
   });
 
   it("names a round by its task, keeps its number small and shows the accepted estimate", () => {

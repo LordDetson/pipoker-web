@@ -1,5 +1,7 @@
 import {HistoryRound} from "../../store/room/room.selector";
 import {I18nService} from "../../i18n/i18n.service";
+import {localTime} from "./local-time";
+import {historyText} from "./history-text";
 
 // Builds the files the history panel offers to download. The page loads this code only when a file is asked for,
 // so it adds nothing to the first load of the site.
@@ -60,7 +62,7 @@ export function exportHistory(format: ExportFormat, roomName: string, rounds: Hi
     case "csv":
       return {name: name + ".csv", type: "text/csv;charset=utf-8", content: csv(columns(i18n), rounds, i18n)};
     case "txt":
-      return {name: name + ".txt", type: "text/plain;charset=utf-8", content: txt(roomName, rounds, i18n, now)};
+      return {name: name + ".txt", type: "text/plain;charset=utf-8", content: historyText(roomName, rounds, i18n, now, "\r\n")};
     case "xml":
       return {name: name + ".xml", type: "application/xml;charset=utf-8", content: xml(roomName, rounds, now)};
   }
@@ -87,12 +89,6 @@ function fileName(roomName: string, i18n: I18nService, now: Date): string {
   return i18n.translate("history.fileName", {room: room || "PiPoker", time});
 }
 
-// Like 2026-10-05 14:30 in the browser's time zone: reads the same in every language and sorts as text
-function localTime(date: Date): string {
-  const two = (value: number) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())} ${two(date.getHours())}:${two(date.getMinutes())}`;
-}
-
 function text(cell: Cell): string {
   return cell instanceof Date ? localTime(cell) : String(cell);
 }
@@ -114,27 +110,6 @@ function csvField(cell: Cell, separator: string): string {
     value = "'" + value;
   }
   return value.includes(separator) || /["\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-}
-
-// Text: the same as the history panel, to read or paste into a chat
-
-function txt(roomName: string, rounds: HistoryRound[], i18n: I18nService, now: Date): string {
-  const lines = [
-    i18n.translate("history.file.title", {room: roomName}),
-    i18n.translate("history.file.downloaded", {time: localTime(now)})
-  ];
-  for (const round of rounds) {
-    lines.push(
-      "",
-      [i18n.translate("history.round", {number: round.number}), round.task?.name, localTime(new Date(round.revealedAt))]
-        .filter(part => part).join(" · "),
-      ...round.task?.url ? [round.task.url] : [],
-      // The accepted estimate takes the place of the vote result, as in the panel
-      round.estimate !== undefined ? i18n.translate("history.estimate", {card: round.estimate})
-        : round.result !== undefined ? i18n.translate("history.result", {card: round.result}) : i18n.translate("history.split"),
-      ...round.votes.map(vote => `  ${vote.nickname}: ${vote.card}`));
-  }
-  return lines.join("\r\n") + "\r\n";
 }
 
 // XML: the rounds as the server keeps them, for other programs. Times stay in UTC, as in the server's data. A round
