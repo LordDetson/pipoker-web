@@ -216,15 +216,14 @@ describe("PiPoker room (integration)", () => {
     await click(deckCard("4h").querySelector(".card-body")!);
     expect(deckCard("4h").classList).toContain("selected");
     expect(server.rooms.get(roomId)!.votes).toEqual([{nickname: "Dmitry", card: "4h"}]);
-
-    server.vote(roomId, "Alex", "1d");
-    await settle();
     expect(tableCards()).toEqual([
       {nickname: "Dmitry", voted: true, value: undefined},
-      {nickname: "Alex", voted: true, value: undefined}
+      {nickname: "Alex", voted: false, value: undefined}
     ]);
 
-    await click(button("Reveal Cards"));
+    // The last vote reveals the cards
+    server.vote(roomId, "Alex", "1d");
+    await settle();
     expect(page.querySelector("app-voting-result-chart canvas")).not.toBeNull();
     expect(page.querySelector("app-deck")!.classList).withContext("the chart is shown in place of the deck").toContain("invisible");
     expect(tableCards()).toEqual([
@@ -241,6 +240,25 @@ describe("PiPoker room (integration)", () => {
     expect(button("Voting...").disabled).toBeTrue();
   });
 
+  it("reveals the cards by themselves once everyone at the table has voted", async () => {
+    const roomId = await createRoom("Dmitry", "Sprint", "1h; 4h; 1d");
+    server.join(roomId, participant("Alex"));
+    server.join(roomId, participant("Olga", true));
+    await settle();
+
+    await click(deckCard("4h").querySelector(".card-body")!);
+    expect(page.querySelector("app-voting-result-chart")).withContext("Alex hasn't voted yet").toBeNull();
+
+    server.vote(roomId, "Alex", "1d");
+    await settle();
+    expect(page.querySelector("app-voting-result-chart canvas")).withContext("the watcher isn't waited for").not.toBeNull();
+    expect(tableCards()).toEqual([
+      {nickname: "Dmitry", voted: true, value: "4h"},
+      {nickname: "Alex", voted: true, value: "1d"}
+    ]);
+    expect(server.rooms.get(roomId)!.history.length).toBe(1);
+  });
+
   it("keeps every revealed round in the history everyone in the room sees", async () => {
     const roomId = await createRoom("Dmitry", "Sprint", "1h; 4h; 1d");
     server.join(roomId, participant("Alex"));
@@ -255,7 +273,6 @@ describe("PiPoker room (integration)", () => {
     await click(deckCard("4h").querySelector(".card-body")!);
     server.vote(roomId, "Alex", "1d");
     await settle();
-    await click(button("Reveal Cards"));
     await click(button("Start New Voting"));
     await click(deckCard("1d").querySelector(".card-body")!);
     server.showVotes(roomId);
@@ -289,9 +306,8 @@ describe("PiPoker room (integration)", () => {
     expect(name().value).withContext("someone else changed it").toBe("PIP-26");
 
     await click(deckCard("4h").querySelector(".card-body")!);
-    server.vote(roomId, "Alex", "4h");
-    await settle();
     expect(estimate()).withContext("nothing to accept before the cards are revealed").toBeUndefined();
+    // Without waiting for Alex
     await click(button("Reveal Cards"));
     expect(name().disabled).withContext("the task is fixed once the cards are revealed").toBeTrue();
 
@@ -571,7 +587,7 @@ describe("PiPoker room (integration)", () => {
     server.vote(roomId, "Alex", "1d");
     await settle();
     await click(deckCard("1h").querySelector(".card-body")!);
-    await click(button("Reveal Cards"));
+    expect(button("Start New Voting")).withContext("the last vote revealed the cards").toBeDefined();
 
     await click(page.querySelector<HTMLElement>("#watcherSwitch")!);
 
