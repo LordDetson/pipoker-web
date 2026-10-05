@@ -15,19 +15,30 @@ app-header {
   flex-shrink: 0;
 }
 
-/* Stays in the bottom right corner whatever the page scrolls to; dialogs open above it */
+/* Stays in the bottom right corner whatever the page scrolls to; dialogs open above it. The pages end above
+   the strip it takes, so it never covers anything, such as the last card of the deck. */
+:host {
+  --report-problem-height: 2rem;
+  --report-problem-margin: 0.75rem;
+  padding-bottom: calc(var(--report-problem-height) + 2 * var(--report-problem-margin));
+}
+
 .report-problem {
   position: fixed;
   right: 1rem;
-  bottom: 1rem;
+  bottom: var(--report-problem-margin);
+  height: var(--report-problem-height);
   z-index: 1040;
 }
 
 /* A phone has room for the bug alone */
 @media (max-width: 767.98px) {
+  :host {
+    --report-problem-margin: 0.5rem;
+  }
+
   .report-problem {
     right: 0.5rem;
-    bottom: 0.5rem;
   }
 
   .report-problem .label {
