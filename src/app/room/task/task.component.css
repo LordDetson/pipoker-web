@@ -45,15 +45,10 @@
 .task-field::after,
 .task-name {
   grid-area: 1 / 1;
-  padding: 0.375rem 0.75rem;
+  /* The same room on both sides for the cross, so the name stays in place when the cross appears */
+  padding: 0.375rem 1.75rem;
   font-size: 1.125rem;
   font-weight: 500;
-}
-
-/* Room for the cross while the name is being changed */
-.task-editing::after,
-.task-editing .task-name {
-  padding-right: 2rem;
 }
 
 .task-field::after {
