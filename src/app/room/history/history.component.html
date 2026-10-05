@@ -10,6 +10,20 @@
   <aside id="roomHistory" class="history-panel" [class.open]="open" aria-labelledby="roomHistoryTitle">
     <div class="history-head">
       <h2 id="roomHistoryTitle" class="h5 m-0">{{"history.title" | translate}}</h2>
+      <div *ngIf="rounds.length" ngbDropdown class="history-export" placement="bottom-end bottom-start">
+        <button type="button" ngbDropdownToggle class="btn btn-sm btn-outline-secondary">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 2v8M4.5 6.5L8 10l3.5-3.5M2.5 13.5h11" fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{"history.export" | translate}}
+        </button>
+        <div ngbDropdownMenu>
+          <button *ngFor="let item of formats" type="button" ngbDropdownItem (click)="download(item.format, rounds)">
+            {{item.label | translate}}
+          </button>
+        </div>
+      </div>
       <button type="button" class="history-close" [title]="'history.close' | translate"
               [attr.aria-label]="'history.close' | translate" (click)="close()">
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">

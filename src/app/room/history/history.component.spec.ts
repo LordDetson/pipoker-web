@@ -1,9 +1,11 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {firstValueFrom} from "rxjs";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {HistoryComponent} from "./history.component";
 import {appState, cards, room} from "../../testing/test-data";
 import {TranslatePipe} from "../../i18n/translate.pipe";
 import {I18nService} from "../../i18n/i18n.service";
+import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 
 describe("HistoryComponent", () => {
   let fixture: ComponentFixture<HistoryComponent>;
@@ -17,8 +19,8 @@ describe("HistoryComponent", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [HistoryComponent],
-      imports: [TranslatePipe],
-      providers: [provideMockStore({initialState: appState({room: room({deck: {cards: cards("1h", "1d")}, history})})})]
+      imports: [TranslatePipe, NgbDropdownModule],
+      providers: [provideMockStore({initialState: appState({room: room({name: "Sprint 12", deck: {cards: cards("1h", "1d")}, history})})})]
     });
     TestBed.inject(I18nService).language = "en";
     store = TestBed.inject(MockStore);
@@ -102,6 +104,42 @@ describe("HistoryComponent", () => {
 
     expect(panel.classList).toContain("open");
     expect(getComputedStyle(panel).visibility).toBe("visible");
+  });
+
+  it("offers the history as Excel, CSV, text and XML files", () => {
+    openPanel();
+    element(".history-export [ngbDropdownToggle]")!.click();
+    fixture.detectChanges();
+
+    expect(texts(".history-export [ngbDropdownItem]")).toEqual(["Excel (.xlsx)", "CSV (.csv)", "Text (.txt)", "XML (.xml)"]);
+  });
+
+  it("downloads the rounds oldest first in a file named after the room", async () => {
+    const files: { name: string; blob: Blob }[] = [];
+    let blob: Blob | undefined;
+    spyOn(URL, "createObjectURL").and.callFake(object => {
+      blob = object as Blob;
+      return "blob:history";
+    });
+    spyOn(HTMLAnchorElement.prototype, "click").and.callFake(function (this: HTMLAnchorElement) {
+      files.push({name: this.download, blob: blob!});
+    });
+
+    await fixture.componentInstance.download("csv", await firstValueFrom(fixture.componentInstance.rounds$));
+
+    expect(files.length).toBe(1);
+    expect(files[0].name).toMatch(/^Sprint 12 history \d{4}-\d\d-\d\d \d\d-\d\d\.csv$/);
+    expect(files[0].blob.type).toBe("text/csv;charset=utf-8");
+    const lines = (await files[0].blob.text()).split("\r\n");
+    expect(lines.slice(1, 5).map(line => line.split(",")[0])).toEqual(["1", "1", "2", "2"]);
+  });
+
+  it("offers no download before the first round is revealed", () => {
+    store.setState(appState());
+    fixture.detectChanges();
+    openPanel();
+
+    expect(element(".history-export")).toBeNull();
   });
 
   it("tells that the history is empty before the first round is revealed", () => {
