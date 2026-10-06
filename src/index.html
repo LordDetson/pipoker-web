@@ -13,6 +13,9 @@
   <link rel="canonical" href="https://pipoker.app/">
   <link rel="icon" type="image/x-icon" href="assets/pipoker-logo.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <!-- Lets Chrome and Edge install the site as an app in its own window. No service worker: the app needs the server
+       anyway, and nothing cached could hold an old release back -->
+  <link rel="manifest" href="manifest.webmanifest">
 
   <!-- The preview shown for a shared link in Telegram, VK, Slack and other messengers -->
   <meta property="og:type" content="website">

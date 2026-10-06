@@ -1,0 +1,32 @@
+{
+  "id": "/",
+  "name": "PiPoker",
+  "short_name": "PiPoker",
+  "description": "Бесплатный Planning Poker онлайн для scrum-команд: создайте комнату, отправьте ссылку и оценивайте задачи вместе.",
+  "lang": "ru",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#212529",
+  "theme_color": "#212529",
+  "icons": [
+    {
+      "src": "assets/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/app-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
