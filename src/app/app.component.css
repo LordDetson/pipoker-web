@@ -15,12 +15,11 @@ app-header {
   flex-shrink: 0;
 }
 
-/* Stays in the bottom right corner whatever the page scrolls to; dialogs open above it. The pages end above
-   the strip it takes, so it never covers anything, such as the last card of the deck. */
+/* Stays in the bottom right corner over whatever the page shows there, so the pages keep all their height and
+   no empty strip runs under them; dialogs open above it */
 :host {
   --feedback-button-height: 2rem;
   --feedback-button-margin: 0.75rem;
-  padding-bottom: calc(var(--feedback-button-height) + 2 * var(--feedback-button-margin));
 }
 
 .feedback-button {
