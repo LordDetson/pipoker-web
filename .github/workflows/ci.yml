@@ -66,7 +66,7 @@ jobs:
           curl -sf http://localhost:8080/yandex_c90ecc8c52f19341.html | grep -q 'Verification: c90ecc8c52f19341'
           curl -sf http://localhost:8080/google9a20c15ce7c2be97.html | grep -q 'google-site-verification: google9a20c15ce7c2be97.html'
           # Every file index.html links by its full address must exist; a missing one would be answered with the app page
-          for path in $(curl -sf http://localhost:8080/ | grep -o 'https://pipoker.duckdns.org/[^"]\+' | sed 's#^https://pipoker.duckdns.org##' | sort -u); do
+          for path in $(curl -sf http://localhost:8080/ | grep -o 'https://pipoker.app/[^"]\+' | sed 's#^https://pipoker.app##' | sort -u); do
             served=$(content_type "$path")
             [ -n "$served" ] && [ "$served" != text/html ] || { echo "$path is not served"; exit 1; }
           done
