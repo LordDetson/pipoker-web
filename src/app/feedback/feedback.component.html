@@ -1,0 +1,51 @@
+<div class="modal-header">
+  <h2 id="feedbackTitle" class="modal-title h5">{{"feedback.title" | translate}}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'feedback.close' | translate"
+          (click)="activeModal.dismiss()"></button>
+</div>
+<ng-container *ngIf="!sent; else thanks">
+  <form [formGroup]="form" (submit)="send()">
+    <div class="modal-body">
+      <div class="d-flex gap-2 mb-3" role="radiogroup" [attr.aria-label]="'feedback.kind' | translate">
+        <ng-container *ngFor="let option of kinds">
+          <input type="radio" class="btn-check" formControlName="kind" name="kind" [value]="option.kind"
+                 [id]="'feedbackKind-' + option.kind">
+          <label class="btn btn-outline-primary flex-fill" [for]="'feedbackKind-' + option.kind">{{option.label | translate}}</label>
+        </ng-container>
+      </div>
+      <div class="mb-3">
+        <label for="feedbackMessage" class="form-label">{{chosenKind.message | translate}}</label>
+        <textarea id="feedbackMessage" class="form-control" rows="5" formControlName="message" ngbAutofocus
+                  [maxlength]="messageMaxLength" [placeholder]="chosenKind.placeholder | translate"
+                  [class.is-invalid]="triedToSend && form.controls.message.invalid"></textarea>
+        <div class="invalid-feedback">{{"feedback.messageRequired" | translate}}</div>
+      </div>
+      <div class="mb-3">
+        <label for="feedbackContact" class="form-label">{{"feedback.contact" | translate}}</label>
+        <input id="feedbackContact" type="text" class="form-control" formControlName="contact"
+               [maxlength]="contactMaxLength" [placeholder]="'feedback.contactPlaceholder' | translate">
+      </div>
+      <p class="form-text m-0">{{"feedback.details" | translate}}</p>
+      <div *ngIf="error" class="alert alert-danger mt-3 mb-0" role="alert">{{error | translate}}</div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+        {{"feedback.cancel" | translate}}
+      </button>
+      <button type="submit" class="btn btn-primary d-flex align-items-center gap-2" [disabled]="sending">
+        <span *ngIf="sending" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        {{"feedback.send" | translate}}
+      </button>
+    </div>
+  </form>
+</ng-container>
+<ng-template #thanks>
+  <div class="modal-body">
+    <p class="m-0" role="status">{{"feedback.sent" | translate}}</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" ngbAutofocus (click)="activeModal.close()">
+      {{"feedback.close" | translate}}
+    </button>
+  </div>
+</ng-template>

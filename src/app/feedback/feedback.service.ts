@@ -3,8 +3,9 @@ import {environment} from "../../env/env";
 import {RoomState, RoomStatus} from "../store/room/room-state";
 import {HistoryRound} from "../store/room/room.selector";
 
-// What the server takes: what the person wrote and what the page adds by itself
-export interface BugReport {
+// What the server takes: what the person chose and wrote, and what the page adds by itself
+export interface Feedback {
+  kind: FeedbackKind;
   message: string;
   contact: string;
   page: string;
@@ -24,11 +25,14 @@ export interface BugReport {
   timeZone: string;
 }
 
+// What the person tells about: something that doesn't work, something PiPoker could do, or what they think of it
+export type FeedbackKind = "problem" | "idea" | "review";
+
 // Voting: the cards are hidden. Revealed: the cards are on the table, the estimate may be accepted already.
 export type RoundStage = "voting" | "revealed";
 
-// Sent: the server passed the report on. Limited: the browser sent too many reports lately. Failed: anything else.
-export type BugReportResult = "sent" | "limited" | "failed";
+// Sent: the server passed the feedback on. Limited: the browser sent too many messages lately. Failed: anything else.
+export type FeedbackResult = "sent" | "limited" | "failed";
 
 // Like "2026-10-05 17:05:00 +03:00": the person's local time, which they will mention if they write back
 export function localTime(date: Date): string {
@@ -40,7 +44,7 @@ export function localTime(date: Date): string {
 }
 
 // The page, the browser and the time, cut to the server's limits. Nothing about the room's people or votes.
-export function describeBrowser(language: string, now: Date): Omit<BugReport, "message" | "contact" | "roomId"> {
+export function describeBrowser(language: string, now: Date): Omit<Feedback, "kind" | "message" | "contact" | "roomId"> {
   return {
     page: location.href.slice(0, 500),
     browser: navigator.userAgent.slice(0, 500),
@@ -55,7 +59,7 @@ export function describeBrowser(language: string, now: Date): Omit<BugReport, "m
 
 // The room the page shows, when it shows one: how many people and how far the round got
 export function describeRoom(state: RoomState, revealedRound: HistoryRound | undefined):
-  Pick<BugReport, "roomId" | "voters" | "watchers" | "voted" | "round" | "estimate"> {
+  Pick<Feedback, "roomId" | "voters" | "watchers" | "voted" | "round" | "estimate"> {
   const room = state.room;
   if (!room.id) {
     return {};
@@ -75,15 +79,15 @@ export function describeRoom(state: RoomState, revealedRound: HistoryRound | und
 }
 
 @Injectable({providedIn: "root"})
-export class BugReportService {
+export class FeedbackService {
 
-  // Plain HTTP rather than the room's connection, so that a report gets through when the page can't connect
-  async send(report: BugReport): Promise<BugReportResult> {
+  // Plain HTTP rather than the room's connection, so that feedback gets through when the page can't connect
+  async send(feedback: Feedback): Promise<FeedbackResult> {
     try {
-      const response = await fetch(environment.apiUrl + "/bug-reports", {
+      const response = await fetch(environment.apiUrl + "/feedback", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(report)
+        body: JSON.stringify(feedback)
       });
       if (response.ok) {
         return "sent";

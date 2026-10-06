@@ -1,52 +1,52 @@
 import {TestBed} from "@angular/core/testing";
-import {BugReport, BugReportService, describeBrowser, describeRoom, localTime} from "./bug-report.service";
+import {Feedback, FeedbackService, describeBrowser, describeRoom, localTime} from "./feedback.service";
 import {cards, participant, room, roomState, votes} from "../testing/test-data";
 import {RoomStatus} from "../store/room/room-state";
 import {HistoryRound} from "../store/room/room.selector";
 import {environment} from "../../env/env";
 
-describe("BugReportService", () => {
-  let service: BugReportService;
+describe("FeedbackService", () => {
+  let service: FeedbackService;
   let fetchSpy: jasmine.Spy<typeof fetch>;
 
-  const report: BugReport = {
-    message: "The cards don't turn over", contact: "@alex", page: "http://localhost/", browser: "Firefox",
+  const feedback: Feedback = {
+    kind: "problem", message: "The cards don't turn over", contact: "@alex", page: "http://localhost/", browser: "Firefox",
     language: "en", browserLanguages: "en", screen: "1920x1080", window: "1366x768",
     time: "2026-10-05 17:05:00 +03:00", timeZone: "Europe/Minsk"
   };
 
   beforeEach(() => {
-    service = TestBed.inject(BugReportService);
+    service = TestBed.inject(FeedbackService);
     fetchSpy = spyOn(window, "fetch");
   });
 
-  it("posts the report to the server", async () => {
+  it("posts the feedback to the server", async () => {
     fetchSpy.and.resolveTo(new Response(null, {status: 204}));
 
-    expect(await service.send(report)).toBe("sent");
-    expect(fetchSpy).toHaveBeenCalledOnceWith(environment.apiUrl + "/bug-reports", {
+    expect(await service.send(feedback)).toBe("sent");
+    expect(fetchSpy).toHaveBeenCalledOnceWith(environment.apiUrl + "/feedback", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(report)
+      body: JSON.stringify(feedback)
     });
   });
 
-  it("tells when the browser sent too many reports", async () => {
+  it("tells when the browser sent too many messages", async () => {
     fetchSpy.and.resolveTo(new Response(null, {status: 429}));
 
-    expect(await service.send(report)).toBe("limited");
+    expect(await service.send(feedback)).toBe("limited");
   });
 
-  it("tells when the server didn't pass the report on", async () => {
+  it("tells when the server didn't pass the feedback on", async () => {
     fetchSpy.and.resolveTo(new Response(null, {status: 503}));
 
-    expect(await service.send(report)).toBe("failed");
+    expect(await service.send(feedback)).toBe("failed");
   });
 
   it("tells when the server can't be reached", async () => {
     fetchSpy.and.rejectWith(new TypeError("Failed to fetch"));
 
-    expect(await service.send(report)).toBe("failed");
+    expect(await service.send(feedback)).toBe("failed");
   });
 });
 
