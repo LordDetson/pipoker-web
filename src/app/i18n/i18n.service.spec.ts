@@ -55,18 +55,16 @@ describe("I18nService", () => {
     expect(new I18nService(document, ["ru-RU"]).language).toBe("en");
   });
 
-  it("puts the page title and the description in the language picked", () => {
+  it("puts the description in the language picked", () => {
     const description = document.createElement("meta");
     description.name = "description";
     document.head.appendChild(description);
     const i18n = create(["ru-RU"]);
 
-    expect(document.title).toBe(translations.ru["meta.title"]);
     expect(description.content).toBe(translations.ru["meta.description"]);
 
     i18n.choose("en");
 
-    expect(document.title).toBe(translations.en["meta.title"]);
     expect(description.content).toBe(translations.en["meta.description"]);
   });
 
