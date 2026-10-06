@@ -4,7 +4,7 @@ import {AppComponent} from "./app.component";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {TranslatePipe} from "./i18n/translate.pipe";
 import {I18nService} from "./i18n/i18n.service";
-import {BugReportComponent} from "./bug-report/bug-report.component";
+import {FeedbackComponent} from "./feedback/feedback.component";
 
 describe("AppComponent", () => {
   let modal: jasmine.SpyObj<NgbModal>;
@@ -28,13 +28,13 @@ describe("AppComponent", () => {
     expect(Array.from(element.children).map(child => child.tagName.toLowerCase())).toEqual(["app-header", "router-outlet", "button"]);
   });
 
-  it("keeps the problem report button in the corner of every page", async () => {
+  it("keeps the feedback button in the corner of every page", async () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
-    const button: HTMLButtonElement = fixture.nativeElement.querySelector("button.report-problem");
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector("button.feedback-button");
 
     expect(getComputedStyle(button).position).toBe("fixed");
-    expect(button.textContent).toContain("Report a problem");
+    expect(button.textContent).toContain("Feedback");
 
     button.click();
 
@@ -42,6 +42,6 @@ describe("AppComponent", () => {
     for (let wait = 0; wait < 100 && !modal.open.calls.any(); wait++) {
       await new Promise(resolve => setTimeout(resolve, 20));
     }
-    expect(modal.open).toHaveBeenCalledOnceWith(BugReportComponent, jasmine.objectContaining({ariaLabelledBy: "bugReportTitle"}));
+    expect(modal.open).toHaveBeenCalledOnceWith(FeedbackComponent, jasmine.objectContaining({ariaLabelledBy: "feedbackTitle"}));
   });
 });

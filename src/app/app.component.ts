@@ -1,5 +1,5 @@
 import {Component, ChangeDetectionStrategy, Injector} from '@angular/core';
-import {openBugReport} from "./bug-report/open-bug-report";
+import {openFeedback} from "./feedback/open-feedback";
 
 @Component({
   selector: 'app-root',
@@ -13,7 +13,7 @@ export class AppComponent {
   constructor(private injector: Injector) {
   }
 
-  reportProblem(): void {
-    openBugReport(this.injector);
+  showFeedback(): void {
+    openFeedback(this.injector);
   }
 }
