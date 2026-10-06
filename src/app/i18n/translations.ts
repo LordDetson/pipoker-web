@@ -63,6 +63,10 @@ const en = {
   "form.watcher": "Join as watcher",
   "form.createRoom": "Create Room",
   "form.joinRoom": "Join Room",
+  "form.invitation": "Have an invitation?",
+  "form.invitationPlaceholder": "Paste the invitation link",
+  "form.invitationInvalid": "This is not a PiPoker invitation link",
+  "form.join": "Join",
 
   "deck.presets": "Ready decks",
   "deck.mine": "My decks",
@@ -216,6 +220,10 @@ const ru: Record<TranslationKey, string> = {
   "form.watcher": "Войти как наблюдатель",
   "form.createRoom": "Создать комнату",
   "form.joinRoom": "Войти в комнату",
+  "form.invitation": "Есть приглашение?",
+  "form.invitationPlaceholder": "Вставьте ссылку-приглашение",
+  "form.invitationInvalid": "Это не ссылка-приглашение PiPoker",
+  "form.join": "Войти",
 
   "deck.presets": "Готовые колоды",
   "deck.mine": "Мои колоды",

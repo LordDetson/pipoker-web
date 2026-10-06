@@ -12,6 +12,7 @@ import {ServerErrorPipe} from "../i18n/server-error.pipe";
 import {AboutComponent} from "../about/about.component";
 import {ErrorCode} from "../models/room-event";
 import {MyDecks, PRESET_DECKS} from "../common/decks";
+import {Router} from "@angular/router";
 
 describe("CreateRoomComponent", () => {
   let fixture: ComponentFixture<CreateRoomComponent>;
@@ -237,5 +238,60 @@ describe("CreateRoomComponent", () => {
     form.controls.nickname.setValue("Later");
 
     expect(localStorage.getItem(AppConstants.lastNickname)).toBeNull();
+  });
+
+  describe("joining by an invitation link", () => {
+    const roomId = "3f2b8c1e-5d4a-4e6f-9b7c-0a1d2e3f4a5b";
+    let router: Router;
+
+    beforeEach(() => {
+      router = TestBed.inject(Router);
+      spyOn(router, "navigate");
+      create();
+    });
+
+    function join(): void {
+      button("joinByInvitationButton")!.click();
+      fixture.detectChanges();
+    }
+
+    it("opens the room of a pasted link", () => {
+      type("invitationInput", "  https://pipoker.app/room/" + roomId + "  ");
+      join();
+
+      expect(router.navigate).toHaveBeenCalledOnceWith(["room", roomId]);
+    });
+
+    it("accepts a link to another address of the site and a bare room id", () => {
+      type("invitationInput", "https://qa.pipoker.app/room/" + roomId.toUpperCase());
+      join();
+      type("invitationInput", roomId);
+      join();
+
+      expect(router.navigate).toHaveBeenCalledTimes(2);
+      expect(router.navigate).toHaveBeenCalledWith(["room", roomId]);
+    });
+
+    it("waits for a link before it can join", () => {
+      expect(button("joinByInvitationButton")!.disabled).toBeTrue();
+      expect(input("invitationInput").classList).not.toContain("is-invalid");
+    });
+
+    it("explains that text without a room id is not an invitation", () => {
+      type("invitationInput", "https://pipoker.app/");
+
+      expect(input("invitationInput").classList).toContain("is-invalid");
+      expect(fixture.nativeElement.querySelector("#invitationInput ~ .invalid-feedback").textContent)
+        .toBe("This is not a PiPoker invitation link");
+      expect(button("joinByInvitationButton")!.disabled).toBeTrue();
+      expect(router.navigate).not.toHaveBeenCalled();
+    });
+
+    it("joins when Enter is pressed in the field", () => {
+      type("invitationInput", "https://pipoker.app/room/" + roomId);
+      input("invitationInput").form!.dispatchEvent(new Event("submit"));
+
+      expect(router.navigate).toHaveBeenCalledOnceWith(["room", roomId]);
+    });
   });
 });

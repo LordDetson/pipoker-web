@@ -61,6 +61,12 @@ jobs:
           check /sitemap.xml text/xml
           check /assets/og-image.png image/png
           check /assets/apple-touch-icon.png image/png
+          # Chrome installs the site as an app only with a manifest and icons that load
+          check /manifest.webmanifest application/manifest+json
+          for icon in $(curl -sf http://localhost:8080/manifest.webmanifest | grep -o '"src": *"[^"]*"' | cut -d'"' -f4); do
+            check "/$icon" image/png
+          done
+          curl -sf http://localhost:8080/ | grep -q '<link rel="manifest" href="manifest.webmanifest">'
           curl -sf http://localhost:8080/robots.txt | grep -qx 'Disallow: /room/'
           # Yandex Webmaster and Google Search Console confirm the site is ours by these files
           curl -sf http://localhost:8080/yandex_c90ecc8c52f19341.html | grep -q 'Verification: c90ecc8c52f19341'

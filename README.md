@@ -16,6 +16,11 @@ This repository is the web client, built with Angular, NgRx and Bootstrap. It ta
 
 **Estimate history:** the results of the last rounds in a side panel.
 
+**Install as an app:** Chrome and Edge offer to install PiPoker from the address bar, and it then opens in its own
+window from the desktop or the home screen (`src/manifest.webmanifest`). The app works online only, there is no
+service worker, so every start loads the current release. The app window has no address bar, so the start page
+takes a pasted invitation link and opens its room.
+
 **Russian and English:** the language follows the browser and can be switched in the header.
 
 ## Development
