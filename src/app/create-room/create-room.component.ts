@@ -1,5 +1,6 @@
 import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
-import {FormControl, FormGroup} from "@angular/forms";
+import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {Router} from "@angular/router";
 import {AppConstants} from "../common/app-constants";
 import {RoomService} from "../services/room.service";
 import {Store} from "@ngrx/store";
@@ -11,6 +12,7 @@ import * as RoomSelector from "../store/room/room.selector";
 import {I18nService} from "../i18n/i18n.service";
 import {TranslationKey} from "../i18n/translations";
 import {MyDecks, NamedDeck, PRESET_DECKS, sameCards} from "../common/decks";
+import {invitationValidator, roomIdFromInvitation} from "../common/invitation-link";
 
 interface CreateRoomFormGroup {
   nickname: FormControl<string>;
@@ -37,11 +39,19 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
   selectedDeck: string = "";
   // The name a new deck will be saved under
   deckName: string = "";
+  // An invitation link pasted here opens its room. The installed app has no address bar to paste it into
+  readonly invitationForm = new FormGroup({
+    link: new FormControl<string>("", {
+      nonNullable: true,
+      validators: [Validators.required, invitationValidator]
+    })
+  });
 
   constructor(
     private roomService: RoomService,
     private store: Store,
-    private i18n: I18nService
+    private i18n: I18nService,
+    private router: Router
   ) {
   }
 
@@ -141,6 +151,13 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
           watcher: this.createRoomForm.value.watcher!
         }
       }));
+    }
+  }
+
+  joinByInvitation(): void {
+    const roomId = roomIdFromInvitation(this.invitationForm.controls.link.value);
+    if (this.invitationForm.valid && roomId) {
+      this.router.navigate(["room", roomId]);
     }
   }
 }
