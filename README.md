@@ -1,6 +1,6 @@
 # PiPoker Web App
 
-**Try it: [pipoker.duckdns.org](https://pipoker.duckdns.org)** — free online Planning Poker, no sign-up.
+**Try it: [pipoker.app](https://pipoker.app)** — free online Planning Poker, no sign-up.
 
 PiPoker is free online Planning Poker: a team opens a room, everyone picks a card, and the votes are revealed at once.
 This repository is the web client, built with Angular, NgRx and Bootstrap. It talks to the backend,
