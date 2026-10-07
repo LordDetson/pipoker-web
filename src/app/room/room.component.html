@@ -35,11 +35,11 @@
         <app-buttons/>
       </div>
     </app-table>
-    <!-- The chart takes the place of the deck, which keeps its size so the table does not jump when the cards are revealed.
-         A watcher has no deck, so their table takes the whole height until the chart comes. -->
+    <!-- The result takes the place of the deck, which keeps its size so the table does not jump when the cards are revealed.
+         A watcher has no deck, so their table takes the whole height until the result comes. -->
     <div *ngIf="!(watcher$ | async) || (showVotingResult$ | async)" class="hand">
       <app-deck [class.invisible]="showVotingResult$ | async"/>
-      <app-voting-result-chart *ngIf="showVotingResult$ | async"/>
+      <app-voting-result *ngIf="showVotingResult$ | async"/>
     </div>
   </ng-template>
 </ng-template>

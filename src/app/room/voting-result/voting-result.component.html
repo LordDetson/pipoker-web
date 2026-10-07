@@ -1,0 +1,27 @@
+<ng-container *ngIf="result$ | async as result">
+  <p class="headline">
+    <ng-container *ngIf="result.leaders.length === 1; else split">
+      <span class="leading-card">{{result.leaders[0]}}</span>
+      <span class="detail" *ngIf="result.most === result.total; else majority">{{"result.unanimous" | translate}}</span>
+      <ng-template #majority>
+        <span class="detail">
+          {{"result.majority" | translate: {count: result.most, total: result.total, agreement: result.agreement} }}
+        </span>
+      </ng-template>
+    </ng-container>
+    <ng-template #split>
+      <span class="detail">{{"result.split" | translate: {count: result.most, cards: result.leaders.join(", ")} }}</span>
+    </ng-template>
+  </p>
+  <!-- Every part is as wide as the share of its votes. The card and its votes are written in the part as far as they
+       fit, and are always read out and shown on hover. -->
+  <ul class="strip" [attr.aria-label]="'result.title' | translate">
+    <li *ngFor="let entry of result.tally; trackBy: cardOf" class="part" [class.leader]="entry.count === result.most"
+        [style.flex-grow]="entry.count" [title]="entry.card + ': ' + entry.count">
+      <span class="label">{{entry.card}}<b class="count">{{entry.count}}</b></span>
+    </li>
+  </ul>
+  <p *ngIf="result.tally.length > 1" class="spread">
+    {{"result.spread" | translate: {from: result.tally[0].card, to: result.tally[result.tally.length - 1].card} }}
+  </p>
+</ng-container>

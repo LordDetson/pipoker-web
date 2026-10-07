@@ -20,7 +20,7 @@ import {TableComponent} from './room/table/table.component';
 import {DeckComponent} from './room/deck/deck.component';
 import {DeckCardComponent} from './room/deck/deck-card/deck-card.component';
 import {TableCardComponent} from './room/table/table-card/table-card.component';
-import {VotingResultChartComponent} from './room/voting-result-chart/voting-result-chart.component';
+import {VotingResultComponent} from './room/voting-result/voting-result.component';
 import {AboutComponent} from './about/about.component';
 import {TimerComponent} from './room/timer/timer.component';
 import {RoleSwitchComponent} from "./room/role-switch/role-switch.component";
@@ -44,7 +44,7 @@ import {EstimateComponent} from './room/estimate/estimate.component';
     DeckComponent,
     DeckCardComponent,
     TableCardComponent,
-    VotingResultChartComponent,
+    VotingResultComponent,
     HistoryComponent,
     AboutComponent,
     TimerComponent,

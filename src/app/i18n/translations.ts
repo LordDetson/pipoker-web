@@ -157,6 +157,12 @@ const en = {
   "estimate.accepted": "Estimate: {card}",
   "estimate.change": "Change the estimate",
 
+  "result.title": "Votes for each card",
+  "result.unanimous": "everyone picked it",
+  "result.majority": "picked by {count} of {total} · agreement {agreement}%",
+  "result.split": "Votes split · {count} each for {cards}",
+  "result.spread": "Spread {from} – {to}",
+
   "about.title": "What is PiPoker?",
   "about.description": "PiPoker is a free online Planning Poker for agile teams. Estimate tasks together: "
     + "everyone picks a card in secret, then all cards are revealed at once, so nobody is swayed by the others.",
@@ -311,6 +317,12 @@ const ru: Record<TranslationKey, string> = {
   "estimate.chooseTitle": "Выбрать другую карту как оценку",
   "estimate.accepted": "Оценка: {card}",
   "estimate.change": "Изменить оценку",
+
+  "result.title": "Голоса за каждую карту",
+  "result.unanimous": "выбрали все",
+  "result.majority": "выбрали {count} из {total} · согласие {agreement}%",
+  "result.split": "Голоса разделились · по {count} за {cards}",
+  "result.spread": "Разброс {from} – {to}",
 
   "about.title": "Что такое PiPoker?",
   "about.description": "PiPoker — бесплатный онлайн Planning Poker для команд. Оценивайте задачи вместе: "

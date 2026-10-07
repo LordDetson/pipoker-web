@@ -30,8 +30,8 @@
   gap: var(--deck-gap);
 }
 
-// Hidden at once when the chart takes the deck's place: visibility is inherited, and the cards' common-transition
-// would keep them showing through the chart until the transition ends
+// Hidden at once when the result takes the deck's place: visibility is inherited, and the cards' common-transition
+// would keep them showing through the result until the transition ends
 :host(.invisible) app-deck-card {
   transition: none;
 }

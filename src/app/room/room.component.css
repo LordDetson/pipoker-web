@@ -36,9 +36,9 @@ app-table:last-child {
   width: max-content;
 }
 
-/* The deck and the chart share one cell, which gets as narrow as the page: the deck measures its own width
-   to lay itself out in rows, so the cell must not keep the width of its current rows. The chart gets at least
-   the height it had under the table before. */
+/* The deck and the result share one cell, which gets as narrow as the page: the deck measures its own width
+   to lay itself out in rows, so the cell must not keep the width of its current rows. The result gets at least
+   this height when the deck is shorter or, for a watcher, missing. */
 .hand {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

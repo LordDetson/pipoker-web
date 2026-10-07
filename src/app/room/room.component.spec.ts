@@ -77,7 +77,7 @@ describe("RoomComponent", () => {
     expect(renderedChildren()).toEqual(["app-role-switch", "app-history", "app-task", "app-table", "div"]);
     expect(fixture.nativeElement.querySelector("app-table > .table-controls > app-timer + app-estimate + app-buttons")).not.toBeNull();
     expect(fixture.nativeElement.querySelector(".hand > app-deck").classList).not.toContain("invisible");
-    expect(fixture.nativeElement.querySelector("app-voting-result-chart")).toBeNull();
+    expect(fixture.nativeElement.querySelector("app-voting-result")).toBeNull();
   });
 
   it("keeps the status button in place whether the timer is shown or not", () => {
@@ -111,16 +111,16 @@ describe("RoomComponent", () => {
     expect(document.elementFromPoint(middle.left + middle.width / 2, middle.top + middle.height / 2)).toBe(menu);
   });
 
-  it("shows the chart in place of the deck once the votes are revealed", () => {
+  it("shows the result in place of the deck once the votes are revealed", () => {
     store.setState(appState({showVotingResult: true}));
     create();
 
-    expect(fixture.nativeElement.querySelector(".hand > app-voting-result-chart")).not.toBeNull();
+    expect(fixture.nativeElement.querySelector(".hand > app-voting-result")).not.toBeNull();
     expect(fixture.nativeElement.querySelector(".hand > app-deck").classList)
       .withContext("the deck keeps its place, so the table does not change its size").toContain("invisible");
   });
 
-  it("gives a watcher's table the space of the deck they don't have, until the chart comes", () => {
+  it("gives a watcher's table the space of the deck they don't have, until the result comes", () => {
     store.setState(appState({}, {currentParticipant: participant("Dmitry", true)}));
     create();
 
@@ -129,7 +129,7 @@ describe("RoomComponent", () => {
     store.setState(appState({showVotingResult: true}, {currentParticipant: participant("Dmitry", true)}));
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector(".hand > app-voting-result-chart")).not.toBeNull();
+    expect(fixture.nativeElement.querySelector(".hand > app-voting-result")).not.toBeNull();
   });
 
   it("takes the seat back after the page is reloaded", () => {

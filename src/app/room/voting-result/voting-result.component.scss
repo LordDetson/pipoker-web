@@ -1,0 +1,101 @@
+// Takes the place of the deck under the table without changing its height, see .hand in RoomComponent
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+
+p {
+  margin: 0;
+  text-align: center;
+}
+
+.headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  column-gap: 0.75rem;
+}
+
+.leading-card {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.detail {
+  color: var(--bs-secondary-color);
+}
+
+.strip {
+  display: flex;
+  gap: 2px;
+  width: min(100%, 640px);
+  height: 2.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.part {
+  flex-basis: 0;
+  min-width: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--bs-emphasis-color-rgb), 0.15);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  // The label is cut down in a part too narrow for it, see below
+  container-type: inline-size;
+  transform-origin: left;
+  animation: grow 0.8s ease-out;
+}
+
+.count {
+  margin-left: 0.3em;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.leader {
+  background-color: var(--bs-blue);
+  color: white;
+}
+
+// A narrow part drops the count first, then the card
+@container (max-width: 3.5rem) {
+  .count {
+    display: none;
+  }
+}
+
+@container (max-width: 1.75rem) {
+  .label {
+    visibility: hidden;
+  }
+}
+
+.spread {
+  font-size: 0.85rem;
+  color: var(--bs-secondary-color);
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .part {
+    animation: none;
+  }
+}
