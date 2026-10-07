@@ -48,6 +48,11 @@ export class RoomWebSocketService implements OnDestroy {
   private roomSubscription: Subscription | undefined;
   // One subscription to the broker per destination, shared by everyone who watches it
   private readonly watched = new Map<string, Observable<any>>();
+  // Receipts of broker subscriptions the broker hasn't confirmed yet. RabbitMQ sets a subscription up a moment after
+  // it gets SUBSCRIBE, and a message published to the destination meanwhile doesn't reach it. The server publishes
+  // the answer to a request to everyone in the room, so a request sent right after subscribing could lose its answer.
+  private readonly unconfirmed$ = new BehaviorSubject<ReadonlySet<string>>(new Set());
+  private nextReceipt = 0;
   private failedAttempts = 0;
   private reconnectTimer: any;
   private readonly onOnline = () => this.reconnectNow();
@@ -95,9 +100,11 @@ export class RoomWebSocketService implements OnDestroy {
     if (!watched) {
       watched = this.connected$.pipe(
         switchMap(connected => !connected ? EMPTY : new Observable<T>(subscriber => {
+          const receipt = "subscribed-" + this.nextReceipt++;
+          this.unconfirmed$.next(new Set(this.unconfirmed$.value).add(receipt));
           const subscription = this.stompClient.subscribe(destination, (message: any) => {
             this.zone.run(() => subscriber.next(JSON.parse(message.body)));
-          });
+          }, {receipt});
           return () => {
             if (this.connected$.value) {
               subscription.unsubscribe();
@@ -114,10 +121,12 @@ export class RoomWebSocketService implements OnDestroy {
   // Subscriptions to application destinations (/app/...) are answered once by the server
   // and are not known to the message broker, so they are dropped locally without UNSUBSCRIBE.
   // An answer still awaited when the connection is lost is lost with it, so the request is made again on the new one.
+  // Like a message sent, the request waits for the broker to set up the subscriptions made before, as its errors come there.
   request<T>(destination: string): Observable<T> {
     this.openConnection();
     return this.connected$.pipe(
-      switchMap(connected => !connected ? EMPTY : new Observable<T>(subscriber => {
+      switchMap(connected => !connected ? EMPTY : this.subscriptionsSetUp()),
+      switchMap(() => new Observable<T>(subscriber => {
         const stompClient = this.stompClient;
         const subscription = stompClient.subscribe(destination, (message: any) => {
           delete stompClient.subscriptions[subscription.id];
@@ -132,10 +141,11 @@ export class RoomWebSocketService implements OnDestroy {
     );
   }
 
+  // Waits until the broker has set up every subscription made before, so the answer reaches the one waiting for it
   send(destination: string, body: any) {
     this.openConnection();
     this.connected$.pipe(
-      filter(connected => connected),
+      switchMap(connected => !connected ? EMPTY : this.subscriptionsSetUp()),
       take(1)
     ).subscribe(() => {
       if (typeof body === "string") {
@@ -221,6 +231,9 @@ export class RoomWebSocketService implements OnDestroy {
     stompClient.heartbeat.outgoing = HEARTBEAT;
     stompClient.heartbeat.incoming = HEARTBEAT;
     this.stompClient = stompClient;
+    // Receipts asked for on a lost connection never come, and its subscriptions are made again on the new one
+    this.unconfirmed$.next(new Set());
+    stompClient.onreceipt = (frame: any) => this.zone.run(() => this.confirm(frame.headers["receipt-id"]));
     stompClient.connect({}, () => {
       const reconnected = this.connectedBefore;
       this.connectedBefore = true;
@@ -252,6 +265,21 @@ export class RoomWebSocketService implements OnDestroy {
     if (!event.persisted && !this.pageClosedSaid && this.stompClient !== null && this.connected$.value) {
       this.stompClient.send(RoomDestinations.pageClosed, {}, "");
       this.pageClosedSaid = true;
+    }
+  }
+
+  // Emits once the broker has confirmed every subscription made so far
+  private subscriptionsSetUp(): Observable<unknown> {
+    return this.unconfirmed$.pipe(
+      filter(unconfirmed => unconfirmed.size === 0),
+      take(1)
+    );
+  }
+
+  private confirm(receipt: string) {
+    const unconfirmed = new Set(this.unconfirmed$.value);
+    if (unconfirmed.delete(receipt)) {
+      this.unconfirmed$.next(unconfirmed);
     }
   }
 
