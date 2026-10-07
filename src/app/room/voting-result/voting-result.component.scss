@@ -32,54 +32,83 @@ p {
   color: var(--bs-secondary-color);
 }
 
-.strip {
+.piles {
   display: flex;
-  gap: 2px;
-  width: min(100%, 640px);
-  height: 2.25rem;
+  flex-wrap: wrap;
+  // Piles grow upwards, so the counts stay in one line
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.5rem min(14px, 1.5vw);
+  width: 100%;
   margin: 0;
   padding: 0;
   list-style: none;
-  border-radius: 0.5rem;
-  overflow: hidden;
 }
 
-.part {
-  flex-basis: 0;
-  min-width: 4px;
+// The card, a pile of it and its count. The sizes follow the width of the pile, which shrinks on a narrow screen.
+.pile {
+  --card-width: min(40px, 70cqi);
+  --layer-offset: min(4px, 7cqi);
+  flex: 0 1 60px;
+  min-width: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background-color: rgba(var(--bs-emphasis-color-rgb), 0.15);
-  font-size: 0.85rem;
-  white-space: nowrap;
-  // The label is cut down in a part too narrow for it, see below
+  gap: 2px;
   container-type: inline-size;
-  transform-origin: left;
-  animation: grow 0.8s ease-out;
 }
 
-.count {
-  margin-left: 0.3em;
-  font-weight: 600;
-  opacity: 0.7;
-}
-
-.leader {
-  background-color: var(--bs-blue);
-  color: white;
-}
-
-// A narrow part drops the count first, then the card
-@container (max-width: 3.5rem) {
-  .count {
-    display: none;
+// A phone has more height than width under the table: a lot of different cards take two rows of larger piles
+@media (max-width: 575.98px) {
+  .pile {
+    flex-basis: 40px;
   }
 }
 
-@container (max-width: 1.75rem) {
-  .label {
-    visibility: hidden;
+.stack {
+  position: relative;
+  width: calc(var(--card-width) + (var(--layers) - 1) * var(--layer-offset));
+  height: calc(var(--card-width) * 1.35 + (var(--layers) - 1) * var(--layer-offset));
+}
+
+// Looks like the revealed cards on the table; every next card lies a bit up and to the right
+.pile-card {
+  position: absolute;
+  left: calc(var(--layer) * var(--layer-offset));
+  bottom: calc(var(--layer) * var(--layer-offset));
+  width: var(--card-width);
+  aspect-ratio: 1 / 1.35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: #f8f9fa;
+  color: #212529;
+  font-weight: 600;
+  // Long values and narrow piles get a smaller font to fit on the card
+  font-size: min(0.95rem, 52px / var(--value-length), 91cqi / var(--value-length));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  animation: deal 0.4s ease-out backwards;
+  animation-delay: calc(var(--layer) * 0.08s);
+}
+
+.count {
+  font-size: min(0.9rem, 40cqi);
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+}
+
+.leader {
+  .pile-card {
+    border-color: rgba(255, 255, 255, 0.9);
+    background-color: var(--bs-blue);
+    color: white;
+  }
+
+  .count {
+    color: var(--bs-emphasis-color);
   }
 }
 
@@ -88,14 +117,15 @@ p {
   color: var(--bs-secondary-color);
 }
 
-@keyframes grow {
+@keyframes deal {
   from {
-    transform: scaleX(0);
+    opacity: 0;
+    transform: translateY(-0.75rem);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .part {
+  .pile-card {
     animation: none;
   }
 }

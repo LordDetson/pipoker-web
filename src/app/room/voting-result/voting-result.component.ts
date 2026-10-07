@@ -4,6 +4,8 @@ import {Observable, map} from "rxjs";
 import * as RoomSelector from "../../store/room/room.selector";
 import {HistoryRound, Tally} from "../../store/room/room.selector";
 
+const MAX_LAYERS = 4;
+
 export interface VotingResultView {
   // How many picked each card, in the order of the deck
   tally: Tally[];
@@ -28,8 +30,8 @@ export function votingResultView(round: HistoryRound): VotingResultView {
   };
 }
 
-// The votes of the revealed round in place of the deck: the leading card and how much the team agrees, a strip
-// split between the picked cards in the order of the deck by their votes, and how far the votes spread.
+// The votes of the revealed round in place of the deck: the leading card and how much the team agrees, a pile of
+// cards for every picked card in the order of the deck, and how far the votes spread.
 @Component({
   selector: 'app-voting-result',
   templateUrl: './voting-result.component.html',
@@ -49,5 +51,10 @@ export class VotingResultComponent {
 
   cardOf(index: number, entry: Tally): string {
     return entry.card;
+  }
+
+  // A pile shows a card for each vote, up to a few: the count under it says the rest
+  layers(count: number): number[] {
+    return Array.from({length: Math.min(count, MAX_LAYERS)}, (_, index) => index);
   }
 }

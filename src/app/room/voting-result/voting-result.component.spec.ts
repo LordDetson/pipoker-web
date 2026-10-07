@@ -40,27 +40,28 @@ describe("VotingResultComponent", () => {
     return fixture.nativeElement.querySelector(selector)?.textContent.replace(/\s+/g, " ").trim();
   }
 
-  function parts(): {label: string, grow: string, leader: boolean}[] {
-    return Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll(".part")).map(part => ({
-      label: part.title,
-      grow: part.style.flexGrow,
-      leader: part.classList.contains("leader")
+  function piles(): {label: string, cards: number, count: string, leader: boolean}[] {
+    return Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll(".pile")).map(pile => ({
+      label: pile.title,
+      cards: pile.querySelectorAll(".pile-card").length,
+      count: pile.querySelector(".count")!.textContent!.trim(),
+      leader: pile.classList.contains("leader")
     }));
   }
 
   it("shows nothing until the cards are revealed", () => {
-    expect(fixture.nativeElement.querySelector(".strip")).toBeNull();
+    expect(fixture.nativeElement.querySelector(".piles")).toBeNull();
   });
 
-  it("names the leading card and splits the strip between the picked cards in the order of the deck", () => {
+  it("names the leading card and piles the picked cards in the order of the deck", () => {
     reveal("1d", "1h", "1d", "2h", "1d", "1h");
 
     expect(text(".leading-card")).toBe("1d");
     expect(text(".detail")).toBe("picked by 3 of 6 · agreement 50%");
-    expect(parts()).toEqual([
-      {label: "1h: 2", grow: "2", leader: false},
-      {label: "2h: 1", grow: "1", leader: false},
-      {label: "1d: 3", grow: "3", leader: true}
+    expect(piles()).toEqual([
+      {label: "1h: 2", cards: 2, count: "×2", leader: false},
+      {label: "2h: 1", cards: 1, count: "×1", leader: false},
+      {label: "1d: 3", cards: 3, count: "×3", leader: true}
     ]);
     expect(text(".spread")).toBe("Spread 1h – 1d");
   });
@@ -70,7 +71,7 @@ describe("VotingResultComponent", () => {
 
     expect(text(".leading-card")).toBe("4h");
     expect(text(".detail")).toBe("everyone picked it");
-    expect(parts()).toEqual([{label: "4h: 3", grow: "3", leader: true}]);
+    expect(piles()).toEqual([{label: "4h: 3", cards: 3, count: "×3", leader: true}]);
     expect(text(".spread")).withContext("there is no spread").toBeUndefined();
   });
 
@@ -79,7 +80,13 @@ describe("VotingResultComponent", () => {
 
     expect(text(".leading-card")).toBeUndefined();
     expect(text(".headline")).toBe("Votes split · 2 each for 1h, 1d");
-    expect(parts().filter(part => part.leader).map(part => part.label)).toEqual(["1h: 2", "1d: 2"]);
+    expect(piles().filter(pile => pile.leader).map(pile => pile.label)).toEqual(["1h: 2", "1d: 2"]);
+  });
+
+  it("piles up to four cards and counts the rest", () => {
+    reveal("2h", "2h", "2h", "2h", "2h", "2h", "1h");
+
+    expect(piles()[1]).toEqual({label: "2h: 6", cards: 4, count: "×6", leader: true});
   });
 
   it("speaks Russian", () => {

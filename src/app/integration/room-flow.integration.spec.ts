@@ -251,7 +251,7 @@ describe("PiPoker room (integration)", () => {
 
     server.vote(roomId, "Alex", "1d");
     await settle();
-    expect(page.querySelector("app-voting-result .strip")).withContext("the watcher isn't waited for").not.toBeNull();
+    expect(page.querySelector("app-voting-result .piles")).withContext("the watcher isn't waited for").not.toBeNull();
     expect(tableCards()).toEqual([
       {nickname: "Dmitry", voted: true, value: "4h"},
       {nickname: "Alex", voted: true, value: "1d"}
