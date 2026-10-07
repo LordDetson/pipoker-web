@@ -158,4 +158,43 @@ describe("AddParticipantComponent", () => {
 
     expect(store.dispatch).not.toHaveBeenCalled();
   });
+
+  describe("opened from the start page", () => {
+    function createJoiningRightAway(): void {
+      fixture = TestBed.createComponent(AddParticipantComponent);
+      fixture.componentInstance.joinRightAway = true;
+      fixture.detectChanges();
+    }
+
+    it("joins at once with the remembered nickname and role", () => {
+      localStorage.setItem(AppConstants.lastNickname, "Alex");
+      localStorage.setItem(AppConstants.lastWatcher, "true");
+      createJoiningRightAway();
+
+      expect(store.dispatch).toHaveBeenCalledOnceWith(
+        RoomAction.addParticipant({roomId: ROOM_ID, participant: participant("Alex", true)}));
+    });
+
+    it("shows why a remembered nickname that is taken in the room cannot join", () => {
+      localStorage.setItem(AppConstants.lastNickname, "Dmitry");
+      createJoiningRightAway();
+
+      expect(store.dispatch).not.toHaveBeenCalled();
+      expect(nicknameInput().classList).toContain("is-invalid");
+    });
+
+    it("waits for a nickname when none is remembered", () => {
+      createJoiningRightAway();
+
+      expect(store.dispatch).not.toHaveBeenCalled();
+      expect(joinButton().disabled).toBeTrue();
+    });
+  });
+
+  it("waits for Join when opened by the invitation link itself", () => {
+    localStorage.setItem(AppConstants.lastNickname, "Alex");
+    create();
+
+    expect(store.dispatch).not.toHaveBeenCalled();
+  });
 });

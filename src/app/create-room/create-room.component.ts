@@ -12,7 +12,7 @@ import * as RoomSelector from "../store/room/room.selector";
 import {I18nService} from "../i18n/i18n.service";
 import {TranslationKey} from "../i18n/translations";
 import {MyDecks, NamedDeck, PRESET_DECKS, sameCards} from "../common/decks";
-import {invitationValidator, roomIdFromInvitation} from "../common/invitation-link";
+import {invitationValidator, JOIN_RIGHT_AWAY, roomIdFromInvitation} from "../common/invitation-link";
 
 interface CreateRoomFormGroup {
   nickname: FormControl<string>;
@@ -157,7 +157,7 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
   joinByInvitation(): void {
     const roomId = roomIdFromInvitation(this.invitationForm.controls.link.value);
     if (this.invitationForm.valid && roomId) {
-      this.router.navigate(["room", roomId]);
+      this.router.navigate(["room", roomId], {state: {[JOIN_RIGHT_AWAY]: true}});
     }
   }
 }

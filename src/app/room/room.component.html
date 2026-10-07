@@ -20,7 +20,7 @@
   </div>
   <ng-template #seat>
     <ng-container *ngIf="!(joined$ | async); else room">
-      <app-add-participant/>
+      <app-add-participant [joinRightAway]="joinRightAway"/>
     </ng-container>
   </ng-template>
   <ng-template #room>

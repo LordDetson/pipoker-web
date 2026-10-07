@@ -259,7 +259,7 @@ describe("CreateRoomComponent", () => {
       type("invitationInput", "  https://pipoker.app/room/" + roomId + "  ");
       join();
 
-      expect(router.navigate).toHaveBeenCalledOnceWith(["room", roomId]);
+      expect(router.navigate).toHaveBeenCalledOnceWith(["room", roomId], {state: {joinRightAway: true}});
     });
 
     it("accepts a link to another address of the site and a bare room id", () => {
@@ -269,7 +269,7 @@ describe("CreateRoomComponent", () => {
       join();
 
       expect(router.navigate).toHaveBeenCalledTimes(2);
-      expect(router.navigate).toHaveBeenCalledWith(["room", roomId]);
+      expect(router.navigate).toHaveBeenCalledWith(["room", roomId], {state: {joinRightAway: true}});
     });
 
     it("waits for a link before it can join", () => {
@@ -291,7 +291,7 @@ describe("CreateRoomComponent", () => {
       type("invitationInput", "https://pipoker.app/room/" + roomId);
       input("invitationInput").form!.dispatchEvent(new Event("submit"));
 
-      expect(router.navigate).toHaveBeenCalledOnceWith(["room", roomId]);
+      expect(router.navigate).toHaveBeenCalledOnceWith(["room", roomId], {state: {joinRightAway: true}});
     });
   });
 });
