@@ -1,15 +1,16 @@
 import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {Room} from "../models/room.model";
-import {Observable, Subject, take, takeUntil} from "rxjs";
+import {filter, Observable, Subject, take, takeUntil} from "rxjs";
 import {select, Store} from "@ngrx/store";
 import * as RoomSelector from "../store/room/room.selector";
 import * as RoomAction from "../store/room/room.action";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {RoomStatus} from "../store/room/room-state";
 import * as ParticipantAction from "../store/participant/participant.action";
 import * as ParticipantSelector from "../store/participant/participant.selector";
 import {SeatStorage} from "../common/seat-storage";
 import {loadDoughnutChart} from "./voting-result-chart/voting-result-chart.component";
+import {JOIN_RIGHT_AWAY} from "../common/invitation-link";
 
 @Component({
   selector: 'app-room',
@@ -28,11 +29,17 @@ export class RoomComponent implements OnInit, OnDestroy {
   gone$: Observable<RoomStatus.closed | RoomStatus.missing | undefined> = this.store.pipe(select(RoomSelector.goneSelector));
   readonly RoomStatus = RoomStatus;
   ngDestroyed$ = new Subject<void>();
+  // Set when the room was opened from the start page with a nickname already typed there. Only the join form shown
+  // before the person first gets a seat uses it: one shown again after a long connection loss waits as usual
+  joinRightAway: boolean;
 
   constructor(
     private store: Store<Room>,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    router: Router
   ) {
+    // The room is created while the router opens it, so the navigation that brought the person here is still current
+    this.joinRightAway = router.currentNavigation()?.extras.state?.[JOIN_RIGHT_AWAY] === true;
   }
 
   ngOnInit(): void {
@@ -52,6 +59,8 @@ export class RoomComponent implements OnInit, OnDestroy {
         this.store.dispatch(ParticipantAction.returnToSeat({roomId, participant: seat}));
       }
     });
+    this.joined$.pipe(filter(joined => joined), take(1), takeUntil(this.ngDestroyed$))
+      .subscribe(() => this.joinRightAway = false);
     // The chart of the votes is loaded while people vote, so it is ready when the cards are revealed.
     // If loading fails now, the chart tries again when it is shown.
     loadDoughnutChart().catch(() => undefined);

@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy, Input} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {RoomService} from "../../services/room.service";
 import {AbstractControl, AsyncValidatorFn, FormControl, FormGroup, ValidationErrors} from "@angular/forms";
@@ -18,6 +18,9 @@ import {I18nService} from "../../i18n/i18n.service";
   changeDetection: ChangeDetectionStrategy.Eager
 })
 export class AddParticipantComponent implements OnInit, OnDestroy {
+
+  // Joins with the remembered nickname at once, without waiting for the person to press Join
+  @Input() joinRightAway = false;
 
   joinToRoomForm: FormGroup;
   roomId: string;
@@ -49,6 +52,14 @@ export class AddParticipantComponent implements OnInit, OnDestroy {
       .subscribe(value => localStorage.setItem(AppConstants.lastNickname, value));
     this.joinToRoomForm.get("watcher")?.valueChanges.pipe(takeUntil(this.ngDestroyed$))
       .subscribe(value => localStorage.setItem(AppConstants.lastWatcher, value.toString()));
+    // The server answers a nickname taken in the room with an error, so there is no need to wait for the check here.
+    // An empty or taken nickname stays in the form with its error, for the person to fix.
+    if (this.joinRightAway) {
+      this.joinToRoomForm.markAllAsTouched();
+      if (!this.joinToRoomForm.controls["nickname"].invalid) {
+        this.dispatchJoin();
+      }
+    }
   }
 
   ngOnDestroy(): void {
@@ -73,12 +84,16 @@ export class AddParticipantComponent implements OnInit, OnDestroy {
 
   private join(): void {
     if (this.joinToRoomForm.valid) {
-      const participant: Participant = {
-        nickname: this.joinToRoomForm.value.nickname.trim(),
-        watcher: this.joinToRoomForm.value.watcher
-      }
-      this.store.dispatch(RoomAction.addParticipant({roomId: this.roomId, participant}));
+      this.dispatchJoin();
     }
+  }
+
+  private dispatchJoin(): void {
+    const participant: Participant = {
+      nickname: this.joinToRoomForm.value.nickname.trim(),
+      watcher: this.joinToRoomForm.value.watcher
+    }
+    this.store.dispatch(RoomAction.addParticipant({roomId: this.roomId, participant}));
   }
 }
 

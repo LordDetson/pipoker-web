@@ -452,6 +452,48 @@ describe("PiPoker room (integration)", () => {
     expect(button("Reveal Cards")).toBeDefined();
   });
 
+  it("seats a person who pasted the invitation link on the start page under the nickname typed there", async () => {
+    const roomId = server.addRoom("Planning", ["S", "M", "L"], [participant("Dmitry")]);
+    await open("/");
+    await type("#nicknameInput", "Alex");
+
+    await type("#invitationInput", "https://pipoker.app/room/" + roomId);
+    await click(button("Join"));
+
+    expect(path()).toBe("/room/" + roomId);
+    expect(button("Join Room")).toBeUndefined();
+    expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry"), participant("Alex")]);
+    expect(tableCards().map(card => card.nickname)).toEqual(["Alex", "Dmitry"]);
+  });
+
+  it("asks for another nickname when the one typed on the start page is taken in the invited room", async () => {
+    const roomId = server.addRoom("Planning", ["S", "M", "L"], [participant("Dmitry")]);
+    await open("/");
+    await type("#nicknameInput", "dmitry");
+
+    await type("#invitationInput", roomId);
+    await click(button("Join"));
+
+    expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry")]);
+    expect(page.querySelector("#nicknameInput")!.classList).toContain("is-invalid");
+    expect(button("Join Room").disabled).toBeTrue();
+
+    await type("#nicknameInput", "Alex");
+    await click(button("Join Room"));
+    expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry"), participant("Alex")]);
+  });
+
+  it("asks for the nickname when none was typed on the start page", async () => {
+    const roomId = server.addRoom("Planning", ["S", "M", "L"], [participant("Dmitry")]);
+    await open("/");
+
+    await type("#invitationInput", roomId);
+    await click(button("Join"));
+
+    expect(button("Join Room")).toBeDefined();
+    expect(server.rooms.get(roomId)!.participants).toEqual([participant("Dmitry")]);
+  });
+
   it("says that an invitation to a room that no longer exists is not valid", async () => {
     await open("/room/gone");
 

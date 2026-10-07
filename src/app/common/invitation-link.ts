@@ -8,6 +8,10 @@ export function roomIdFromInvitation(text: string): string | null {
   return text.match(ROOM_ID)?.[0].toLowerCase() ?? null;
 }
 
+// Navigation state of a room opened from the start page, where the person has already typed their nickname,
+// so the room seats them at once instead of asking for the nickname again
+export const JOIN_RIGHT_AWAY = "joinRightAway";
+
 export function invitationValidator(control: AbstractControl<string>): ValidationErrors | null {
   const text = control.value.trim();
   return text === "" || roomIdFromInvitation(text) ? null : {invitation: true};

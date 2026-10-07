@@ -112,7 +112,8 @@ export class FakePipokerServer {
   };
 
   addRoom(name: string, cards: string[], participants: Participant[] = [], votes: VoteDto[] = []): string {
-    const id = "room-" + this.nextRoomId++;
+    // A UUID like the ones pipoker-app gives rooms, so an invitation link to the room is recognised
+    const id = "00000000-0000-4000-8000-" + String(this.nextRoomId++).padStart(12, "0");
     this.rooms.set(id, {id, name, cards, participants, votes, history: []});
     return id;
   }
