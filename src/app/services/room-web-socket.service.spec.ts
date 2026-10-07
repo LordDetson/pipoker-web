@@ -32,6 +32,10 @@ describe("RoomWebSocketService", () => {
     spyOn(store, "dispatch");
   });
 
+  function confirmAll(client: FakeStompClient) {
+    Object.keys(client.receipts).forEach(id => client.confirm(id));
+  }
+
   function connectedClient(): FakeStompClient {
     const client = clients[clients.length - 1];
     client.completeConnect();
@@ -228,6 +232,19 @@ describe("RoomWebSocketService", () => {
       expect(second.unsubscribed).toEqual([]);
     }));
 
+    it("waits until the broker has set up the subscriptions made before, as the errors of the request come there", () => {
+      service.watch("/topic/test").subscribe();
+      service.request("/app/room/" + ROOM_ID).subscribe();
+      const client = clients[0];
+      client.confirmAtOnce = false;
+      client.completeConnect();
+      expect(client.isSubscribed("/app/room/" + ROOM_ID)).withContext("before the receipt").toBeFalse();
+
+      confirmAll(client);
+
+      expect(client.isSubscribed("/app/room/" + ROOM_ID)).toBeTrue();
+    });
+
     it("drops the subscription when the caller gives up", () => {
       const subscription = service.request("/app/room/" + ROOM_ID).subscribe();
       const client = connectedClient();
@@ -260,6 +277,34 @@ describe("RoomWebSocketService", () => {
 
       expect(client.sent).toEqual([{destination: "/app/room/" + ROOM_ID + "/participants/remove", headers: {}, body: "Dmitry"}]);
     });
+
+    it("waits until the broker has set up the subscriptions made before, so the answer reaches the one waiting for it", () => {
+      service.watch("/topic/room").subscribe();
+      service.send("/app/room/" + ROOM_ID + "/participants/add", {nickname: "Dmitry", watcher: false});
+      const client = clients[0];
+      client.confirmAtOnce = false;
+      client.completeConnect();
+      expect(client.receipts).toEqual({"sub-0": jasmine.any(String)});
+      expect(client.sent).withContext("before the receipt").toEqual([]);
+
+      confirmAll(client);
+
+      expect(client.sent.map(frame => frame.destination)).toEqual(["/app/room/" + ROOM_ID + "/participants/add"]);
+    });
+
+    it("does not wait for receipts asked for on a lost connection", fakeAsync(() => {
+      service.watch("/topic/room").subscribe();
+      const first = clients[0];
+      first.confirmAtOnce = false;
+      first.completeConnect();
+      first.lose();
+      service.send("/app/test", "body");
+      tick(1000);
+
+      const second = connectedClient();
+
+      expect(second.sent.length).toBe(1);
+    }));
 
     it("sends only once even if the connection is restored later", fakeAsync(() => {
       service.send("/app/test", "body");

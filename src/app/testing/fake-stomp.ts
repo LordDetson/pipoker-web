@@ -13,6 +13,13 @@ export interface SentFrame {
 export class FakeStompClient {
   subscriptions: { [id: string]: (message: { body: string }) => void } = {};
   destinations: { [id: string]: string } = {};
+  // Receipts asked for with SUBSCRIBE and not given yet, by subscription id
+  receipts: { [id: string]: string } = {};
+  // Gives a receipt as soon as it is asked for. Without a server tests usually don't care when the broker confirms.
+  confirmAtOnce: boolean;
+  onreceipt?: (frame: { headers: { [name: string]: string } }) => void;
+  // Subscriptions the broker has set up. Without a server every subscription works at once.
+  private readonly active = new Set<string>();
   sent: SentFrame[] = [];
   heartbeat = {outgoing: 10000, incoming: 10000};
   unsubscribed: string[] = [];
@@ -23,6 +30,7 @@ export class FakeStompClient {
   private nextId = 0;
 
   constructor(private server?: FakePipokerServer) {
+    this.confirmAtOnce = server === undefined;
   }
 
   connect(headers: any, onConnect: () => void, onError: (error: any) => void) {
@@ -47,10 +55,19 @@ export class FakeStompClient {
     this.failConnect();
   }
 
-  subscribe(destination: string, callback: (message: { body: string }) => void) {
+  subscribe(destination: string, callback: (message: { body: string }) => void, headers: any = {}) {
     const id = "sub-" + this.nextId++;
     this.subscriptions[id] = callback;
     this.destinations[id] = destination;
+    if (headers.receipt !== undefined) {
+      this.receipts[id] = headers.receipt;
+    }
+    if (!this.server) {
+      this.active.add(id);
+    }
+    if (this.confirmAtOnce) {
+      this.confirm(id);
+    }
     this.server?.subscribed(this, id, destination);
     return {
       id,
@@ -70,10 +87,24 @@ export class FakeStompClient {
     this.disconnected = true;
   }
 
-  // Delivers a message to every live subscription to the destination.
+  // The broker has set the subscription up: messages reach it from now on
+  activate(subscriptionId: string) {
+    this.active.add(subscriptionId);
+  }
+
+  // Sends the RECEIPT asked for with the subscription, if any
+  confirm(subscriptionId: string) {
+    const receipt = this.receipts[subscriptionId];
+    if (receipt !== undefined) {
+      delete this.receipts[subscriptionId];
+      this.onreceipt?.({headers: {"receipt-id": receipt}});
+    }
+  }
+
+  // Delivers a message to every live subscription to the destination the broker has set up.
   deliver(destination: string, payload: any) {
     Object.keys(this.subscriptions)
-      .filter(id => this.destinations[id] === destination)
+      .filter(id => this.destinations[id] === destination && this.active.has(id))
       .forEach(id => this.deliverTo(id, payload));
   }
 
@@ -187,6 +218,15 @@ export class FakePipokerServer {
   }
 
   subscribed(client: FakeStompClient, subscriptionId: string, destination: string) {
+    if (!destination.startsWith("/app/")) {
+      // Like RabbitMQ, the broker sets the subscription up a moment later, after an answer sent meanwhile is published
+      later(() => later(() => {
+        client.activate(subscriptionId);
+        client.confirm(subscriptionId);
+      }));
+      return;
+    }
+    client.activate(subscriptionId);
     const roomId = /^\/app\/room\/([^/]+)$/.exec(destination)?.[1];
     if (roomId === undefined) {
       return;
