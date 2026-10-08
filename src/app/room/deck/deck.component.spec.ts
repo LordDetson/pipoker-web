@@ -79,15 +79,15 @@ describe("DeckComponent", () => {
     const host: HTMLElement = fixture.nativeElement;
     host.style.display = "block";
     deckCards().forEach(card => card.style.display = "block");
+    const middle = host.getBoundingClientRect().left + host.getBoundingClientRect().width / 2;
+    const places = deckCards().map(card => card.getBoundingClientRect());
 
     fixture.componentRef.setInput("gathering", true);
     fixture.detectChanges();
 
     expect(host.classList).toContain("gathering");
-    const middle = host.getBoundingClientRect().left + host.getBoundingClientRect().width / 2;
-    deckCards().forEach(card => {
-      const place = card.getBoundingClientRect();
-      expect(place.left + place.width / 2 + parseFloat(card.style.getPropertyValue("--gather-x")))
+    deckCards().forEach((card, index) => {
+      expect(places[index].left + places[index].width / 2 + parseFloat(card.style.getPropertyValue("--gather-x")))
         .toBeCloseTo(middle, 0);
     });
 

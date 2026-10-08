@@ -17,6 +17,12 @@ export enum RevealStage {
   result = "result"
 }
 
+export interface Reveal {
+  stage: RevealStage;
+  // How long the revealed cards take to turn over, all of them
+  seconds: number;
+}
+
 @Component({
   selector: 'app-room',
   templateUrl: './room.component.html',
@@ -31,19 +37,23 @@ export class RoomComponent implements OnInit, OnDestroy {
   returning$: Observable<boolean> = this.store.pipe(select(ParticipantSelector.returningSelector));
   watcher$: Observable<boolean> = this.store.pipe(select(ParticipantSelector.currentWatcherSelector));
   showVotingResult$: Observable<boolean> = this.store.pipe(select(RoomSelector.showVotingResultSelector));
-  // While the revealed cards turn over, the deck gathers into a pile; the result takes its place once the last card
-  // has turned. Cards that are already revealed when the person gets to the table are shown turned, so the result
-  // comes at once.
-  revealStage$: Observable<RevealStage> = this.joined$.pipe(
+  // While the revealed cards turn over, the deck gathers into a pile, which then sinks and fades away; the result
+  // takes its place once the last card has turned. Cards that are already revealed when the person gets to the
+  // table are shown turned, so the result comes at once.
+  reveal$: Observable<Reveal> = this.joined$.pipe(
     filter(joined => joined),
     take(1),
     switchMap(() => this.showVotingResult$.pipe(distinctUntilChanged())),
-    switchMap((shown, index) => !shown ? of(RevealStage.voting)
-      : index === 0 ? of(RevealStage.result)
-      : this.store.pipe(select(RoomSelector.flipDelaysSelector), take(1), switchMap(delays => concat(
-        of(RevealStage.gathering),
-        timer(1000 * (Math.max(0, ...delays.values()) + this.flipSeconds())).pipe(map(() => RevealStage.result))
-      ))))
+    switchMap((shown, index) => !shown ? of({stage: RevealStage.voting, seconds: 0})
+      : index === 0 ? of({stage: RevealStage.result, seconds: 0})
+      : this.store.pipe(select(RoomSelector.flipDelaysSelector), take(1), switchMap(delays => {
+        // The last card starts turning after the longest delay
+        const seconds = Math.max(0, ...delays.values()) + this.flipSeconds();
+        return concat(
+          of({stage: RevealStage.gathering, seconds}),
+          timer(1000 * seconds).pipe(map(() => ({stage: RevealStage.result, seconds})))
+        );
+      })))
   );
   readonly RevealStage = RevealStage;
   gone$: Observable<RoomStatus.closed | RoomStatus.missing | undefined> = this.store.pipe(select(RoomSelector.goneSelector));

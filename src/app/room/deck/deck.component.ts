@@ -23,8 +23,9 @@ export class DeckComponent implements OnInit {
     this.cardsPerRow$.pipe(distinctUntilChanged())
   ]).pipe(map(([cards, cardsPerRow]) => splitIntoRows(cards, cardsPerRow)));
 
-  // Set while the revealed cards turn over: every card of the deck moves to the middle of the deck, the cards lie
-  // in a pile there, and the result then takes the deck's place. The deck is dealt back out for the next round.
+  // Set while the revealed cards turn over: every card of the deck moves to the middle of the deck, and the pile
+  // then sinks and fades away by the time the last card has turned, see --reveal-duration. The result then takes the
+  // deck's place, and the deck is dealt back out for the next round.
   @HostBinding("class.gathering")
   gatheringCards = false;
 
