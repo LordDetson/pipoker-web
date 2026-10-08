@@ -63,7 +63,7 @@
   transform: translate(0px, -2px);
 }
 
-/* Boosty's brand orange, as the button leads to the PiPoker page on Boosty */
+/* A warm orange that stands out in both themes, kept from when the button led to Boosty */
 .support-link {
   --bs-btn-color: #fff;
   --bs-btn-bg: #f15f2c;
