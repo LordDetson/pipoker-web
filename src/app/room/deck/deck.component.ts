@@ -1,4 +1,4 @@
-import {Component, ElementRef, HostListener, OnInit, ChangeDetectionStrategy} from '@angular/core';
+import {Component, ElementRef, HostBinding, HostListener, Input, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {combineLatest, distinctUntilChanged, map, Observable, ReplaySubject} from "rxjs";
 import {Card} from "../../models/card.model";
 import {select, Store} from "@ngrx/store";
@@ -23,10 +23,38 @@ export class DeckComponent implements OnInit {
     this.cardsPerRow$.pipe(distinctUntilChanged())
   ]).pipe(map(([cards, cardsPerRow]) => splitIntoRows(cards, cardsPerRow)));
 
+  // Set while the revealed cards turn over: every card of the deck moves to the middle of the deck, and the pile
+  // then sinks and fades away by the time the last card has turned, see --reveal-duration. The result then takes the
+  // deck's place, and the deck is dealt back out for the next round.
+  @HostBinding("class.gathering")
+  gatheringCards = false;
+
+  @Input()
+  set gathering(gathering: boolean) {
+    if (gathering && !this.gatheringCards) {
+      this.aimAtMiddle();
+    }
+    this.gatheringCards = gathering;
+  }
+
   constructor(
     private store: Store,
     private host: ElementRef<HTMLElement>
   ) {
+  }
+
+  // Tells every card how far it is from the middle of the deck and how much it turns in the pile
+  private aimAtMiddle(): void {
+    const deck = this.host.nativeElement.getBoundingClientRect();
+    const middleX = deck.left + deck.width / 2;
+    const middleY = deck.top + deck.height / 2;
+    this.host.nativeElement.querySelectorAll<HTMLElement>("app-deck-card").forEach((card, index) => {
+      const place = card.getBoundingClientRect();
+      card.style.setProperty("--gather-x", middleX - (place.left + place.width / 2) + "px");
+      card.style.setProperty("--gather-y", middleY - (place.top + place.height / 2) + "px");
+      card.style.setProperty("--gather-turn", (index * 7 % 5 - 2) * 4 + "deg");
+      card.style.setProperty("--gather-order", String(index));
+    });
   }
 
   // The deck is already on the page here, so it is laid out in rows before it is shown for the first time

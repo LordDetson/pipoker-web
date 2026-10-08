@@ -109,6 +109,12 @@ describe("PiPoker room (integration)", () => {
     }
   }
 
+  // The revealed cards turn over one after another, and the result comes once the last one has turned
+  async function waitForCardsToTurn(): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 2400));
+    await settle();
+  }
+
   async function open(url: string): Promise<void> {
     await fixture.ngZone!.run(() => TestBed.inject(Router).navigateByUrl(url));
     await settle();
@@ -224,6 +230,8 @@ describe("PiPoker room (integration)", () => {
     // The last vote reveals the cards
     server.vote(roomId, "Alex", "1d");
     await settle();
+    expect(page.querySelector("app-deck")!.classList).withContext("the deck gathers while the cards turn").toContain("gathering");
+    await waitForCardsToTurn();
     expect(page.querySelector("app-voting-result .headline")!.textContent!.trim()).toBe("Votes split · 1 each for 4h, 1d");
     expect(page.querySelector("app-deck")!.classList).withContext("the result is shown in place of the deck").toContain("invisible");
     expect(tableCards()).toEqual([
@@ -250,7 +258,7 @@ describe("PiPoker room (integration)", () => {
     expect(page.querySelector("app-voting-result")).withContext("Alex hasn't voted yet").toBeNull();
 
     server.vote(roomId, "Alex", "1d");
-    await settle();
+    await waitForCardsToTurn();
     expect(page.querySelector("app-voting-result .piles")).withContext("the watcher isn't waited for").not.toBeNull();
     expect(tableCards()).toEqual([
       {nickname: "Dmitry", voted: true, value: "4h"},

@@ -1,4 +1,4 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {ComponentFixture, TestBed, fakeAsync, tick} from "@angular/core/testing";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
@@ -7,7 +7,7 @@ import * as RoomAction from "../store/room/room.action";
 import * as ParticipantAction from "../store/participant/participant.action";
 import {RoomStatus} from "../store/room/room-state";
 import {CurrentParticipantStatus} from "../store/participant/current-participant-state";
-import {appState, participant, ROOM_ID} from "../testing/test-data";
+import {appState, cards, participant, room, ROOM_ID, votes} from "../testing/test-data";
 import {SeatStorage} from "../common/seat-storage";
 import {TranslatePipe} from "../i18n/translate.pipe";
 
@@ -111,7 +111,7 @@ describe("RoomComponent", () => {
     expect(document.elementFromPoint(middle.left + middle.width / 2, middle.top + middle.height / 2)).toBe(menu);
   });
 
-  it("shows the result in place of the deck once the votes are revealed", () => {
+  it("shows the result in place of the deck at once when the cards were revealed before the person came", () => {
     store.setState(appState({showVotingResult: true}));
     create();
 
@@ -120,16 +120,70 @@ describe("RoomComponent", () => {
       .withContext("the deck keeps its place, so the table does not change its size").toContain("invisible");
   });
 
-  it("gives a watcher's table the space of the deck they don't have, until the result comes", () => {
-    store.setState(appState({}, {currentParticipant: participant("Dmitry", true)}));
-    create();
+  describe("while the revealed cards turn over", () => {
+    // Alex's 1d turns 0.3 s after Dmitry's 1h, and a card takes 0.8 s to turn: the last one has turned after 1.1 s
+    const voted = room({deck: {cards: cards("1h", "2h", "1d")}, votingResult: {map: votes({Dmitry: "1h", Alex: "1d"})}});
 
-    expect(fixture.nativeElement.querySelector(".hand")).toBeNull();
+    beforeEach(() => document.documentElement.style.setProperty("--common-transition-duration", "0.8s"));
 
-    store.setState(appState({showVotingResult: true}, {currentParticipant: participant("Dmitry", true)}));
-    fixture.detectChanges();
+    afterEach(() => document.documentElement.style.removeProperty("--common-transition-duration"));
 
-    expect(fixture.nativeElement.querySelector(".hand > app-voting-result")).not.toBeNull();
+    // DeckComponent isn't declared here, so its input is left on the element
+    function deck(): HTMLElement & { gathering?: boolean } {
+      return fixture.nativeElement.querySelector(".hand > app-deck");
+    }
+
+    it("gathers the deck and shows the result once the last card has turned", fakeAsync(() => {
+      store.setState(appState({room: voted}));
+      create();
+
+      store.setState(appState({room: voted, showVotingResult: true}));
+      fixture.detectChanges();
+
+      expect(deck().gathering).toBeTrue();
+      expect(deck().classList).not.toContain("invisible");
+      expect(fixture.nativeElement.querySelector("app-voting-result")).toBeNull();
+
+      tick(1099);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector("app-voting-result")).withContext("Alex's card is still turning").toBeNull();
+
+      tick(1);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector(".hand > app-voting-result")).not.toBeNull();
+      expect(deck().classList).toContain("invisible");
+    }));
+
+    it("deals the deck back out when a new round starts before the cards have turned", fakeAsync(() => {
+      store.setState(appState({room: voted}));
+      create();
+      store.setState(appState({room: voted, showVotingResult: true}));
+      fixture.detectChanges();
+
+      store.setState(appState({room: voted}));
+      fixture.detectChanges();
+      tick(2000);
+      fixture.detectChanges();
+
+      expect(deck().gathering).toBeFalse();
+      expect(deck().classList).not.toContain("invisible");
+      expect(fixture.nativeElement.querySelector("app-voting-result")).toBeNull();
+    }));
+
+    it("gives a watcher's table the space of the deck they don't have, until the result comes", fakeAsync(() => {
+      store.setState(appState({room: voted}, {currentParticipant: participant("Dmitry", true)}));
+      create();
+
+      expect(fixture.nativeElement.querySelector(".hand")).toBeNull();
+
+      store.setState(appState({room: voted, showVotingResult: true}, {currentParticipant: participant("Dmitry", true)}));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector(".hand")).withContext("the cards are turning").toBeNull();
+
+      tick(1100);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector(".hand > app-voting-result")).not.toBeNull();
+    }));
   });
 
   it("takes the seat back after the page is reloaded", () => {
