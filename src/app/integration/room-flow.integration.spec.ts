@@ -241,6 +241,9 @@ describe("PiPoker room (integration)", () => {
 
     await click(button("Start New Voting"));
     expect(server.rooms.get(roomId)!.votes).toEqual([]);
+    expect(page.querySelector("app-voting-result")!.classList).withContext("the result sinks away").toContain("leaving");
+    await new Promise(resolve => setTimeout(resolve, 400));
+    await settle();
     expect(page.querySelector("app-voting-result")).toBeNull();
     expect(page.querySelector("app-deck")!.classList).not.toContain("invisible");
     expect(deckCards().some(card => card.classList.contains("selected"))).toBeFalse();

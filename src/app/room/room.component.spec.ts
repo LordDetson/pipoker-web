@@ -154,6 +154,33 @@ describe("RoomComponent", () => {
       expect(deck().classList).toContain("invisible");
     }));
 
+    it("lets the result sink away when a new round starts, and then deals the deck out", fakeAsync(() => {
+      store.setState(appState({room: voted}));
+      create();
+      store.setState(appState({room: voted, showVotingResult: true}));
+      fixture.detectChanges();
+      tick(1100);
+      fixture.detectChanges();
+
+      store.setState(appState({room: voted}));
+      fixture.detectChanges();
+
+      const result: HTMLElement = fixture.nativeElement.querySelector(".hand > app-voting-result");
+      expect(result.classList).toContain("leaving");
+      expect(result.style.getPropertyValue("--leave-duration")).toBe("0.4s");
+      expect(deck().gathering).withContext("the deck waits in the pile").toBeTrue();
+
+      tick(399);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector("app-voting-result")).not.toBeNull();
+
+      tick(1);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector("app-voting-result")).toBeNull();
+      expect(deck().gathering).toBeFalse();
+      expect(deck().classList).not.toContain("invisible");
+    }));
+
     it("deals the deck back out when a new round starts before the cards have turned", fakeAsync(() => {
       store.setState(appState({room: voted}));
       create();
@@ -161,8 +188,6 @@ describe("RoomComponent", () => {
       fixture.detectChanges();
 
       store.setState(appState({room: voted}));
-      fixture.detectChanges();
-      tick(2000);
       fixture.detectChanges();
 
       expect(deck().gathering).toBeFalse();

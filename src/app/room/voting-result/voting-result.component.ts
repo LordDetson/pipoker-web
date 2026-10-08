@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from "@ngrx/store";
-import {Observable, map} from "rxjs";
+import {Observable, filter, map} from "rxjs";
 import * as RoomSelector from "../../store/room/room.selector";
 import {HistoryRound, Tally} from "../../store/room/room.selector";
 
@@ -41,8 +41,11 @@ export function votingResultView(round: HistoryRound): VotingResultView {
 })
 export class VotingResultComponent {
 
-  result$: Observable<VotingResultView | undefined> = this.store.select(RoomSelector.revealedRoundSelector)
-    .pipe(map(round => round && votingResultView(round)));
+  // The round stays shown while the result sinks away at the start of the next round, see RoomComponent
+  result$: Observable<VotingResultView> = this.store.select(RoomSelector.revealedRoundSelector).pipe(
+    filter((round): round is HistoryRound => round !== undefined),
+    map(votingResultView)
+  );
 
   constructor(
     private store: Store

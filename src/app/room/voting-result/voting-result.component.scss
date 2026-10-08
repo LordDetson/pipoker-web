@@ -124,8 +124,14 @@ p {
   }
 }
 
+// When a new round starts, set by RoomComponent: the result sinks and fades away like the gathered deck did
+:host(.leaving) {
+  animation: sink var(--leave-duration, 0s) ease-in forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .pile-card {
+  .pile-card,
+  :host(.leaving) {
     animation: none;
   }
 }

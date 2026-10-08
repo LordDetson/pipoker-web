@@ -53,6 +53,15 @@ describe("VotingResultComponent", () => {
     expect(fixture.nativeElement.querySelector(".piles")).toBeNull();
   });
 
+  it("keeps the round while it sinks away at the start of the next round", () => {
+    reveal("1h", "4h");
+
+    store.setState(appState({room: room({deck: {cards: cards("1h", "2h", "4h", "1d")}}), showVotingResult: false}));
+    fixture.detectChanges();
+
+    expect(piles().map(pile => pile.label)).toEqual(["1h: 1", "4h: 1"]);
+  });
+
   it("names the leading card and piles the picked cards in the order of the deck", () => {
     reveal("1d", "1h", "1d", "2h", "1d", "1h");
 

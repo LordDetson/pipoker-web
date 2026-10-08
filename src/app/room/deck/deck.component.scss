@@ -42,9 +42,14 @@
   animation: sink calc(var(--reveal-duration, 0s) * 0.4) ease-in calc(var(--reveal-duration, 0s) * 0.6) forwards;
 }
 
-:host(.gathering) app-deck-card {
+// The pile in the middle of the deck: where the cards are gathered, and where they are dealt from, see DeckComponent
+:host(.gathering) app-deck-card,
+:host(.piled) app-deck-card {
   pointer-events: none;
   transform: translate(var(--gather-x, 0), var(--gather-y, 0)) rotate(var(--gather-turn, 0));
+}
+
+:host(.gathering) app-deck-card {
   // Every card starts a bit later and moves a bit faster, so they all lie in the pile at the same moment
   transition: transform calc(var(--reveal-duration, 0s) * 0.6 - var(--gather-order, 0) * 15ms) ease-in-out
     calc(var(--gather-order, 0) * 15ms);
@@ -54,11 +59,13 @@
   z-index: 1;
 }
 
-@keyframes sink {
-  to {
-    opacity: 0;
-    transform: translateY(3rem);
-  }
+:host(.piled) app-deck-card {
+  transition: none;
+}
+
+// Out of the pile to their places in the order of the deck, one shortly after another
+:host(.dealing) app-deck-card {
+  transition: transform var(--deal-duration) ease-out calc(var(--gather-order, 0) * var(--deal-step));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -66,7 +73,8 @@
     animation: none;
   }
 
-  :host(.gathering) app-deck-card {
+  :host(.gathering) app-deck-card,
+  :host(.dealing) app-deck-card {
     transition: none;
   }
 }

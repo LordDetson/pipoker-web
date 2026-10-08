@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit, ChangeDetectionStrategy, Inject, DOCUMENT} from '@angular/core';
 import {Room} from "../models/room.model";
-import {combineLatest, concat, distinctUntilChanged, filter, map, Observable, of, Subject, switchMap, take, takeUntil, timer} from "rxjs";
+import {concat, distinctUntilChanged, filter, map, Observable, of, Subject, switchMap, switchScan, take, takeUntil, timer} from "rxjs";
 import {select, Store} from "@ngrx/store";
 import * as RoomSelector from "../store/room/room.selector";
 import * as RoomAction from "../store/room/room.action";
@@ -14,14 +14,18 @@ import {JOIN_RIGHT_AWAY} from "../common/invitation-link";
 export enum RevealStage {
   voting = "voting",
   gathering = "gathering",
-  result = "result"
+  result = "result",
+  leaving = "leaving"
 }
 
 export interface Reveal {
   stage: RevealStage;
-  // How long the revealed cards take to turn over, all of them
+  // How long the stage moves: the revealed cards turning over, all of them, while the deck gathers and the result is
+  // shown, the result sinking away while it leaves
   seconds: number;
 }
+
+const VOTING: Reveal = {stage: RevealStage.voting, seconds: 0};
 
 @Component({
   selector: 'app-room',
@@ -39,12 +43,14 @@ export class RoomComponent implements OnInit, OnDestroy {
   showVotingResult$: Observable<boolean> = this.store.pipe(select(RoomSelector.showVotingResultSelector));
   // While the revealed cards turn over, the deck gathers into a pile, which then sinks and fades away; the result
   // takes its place once the last card has turned. Cards that are already revealed when the person gets to the
-  // table are shown turned, so the result comes at once.
+  // table are shown turned, so the result comes at once. When a new round starts, the result sinks and fades away
+  // like the pile did, and then the deck is dealt out again.
   reveal$: Observable<Reveal> = this.joined$.pipe(
     filter(joined => joined),
     take(1),
     switchMap(() => this.showVotingResult$.pipe(distinctUntilChanged())),
-    switchMap((shown, index) => !shown ? of({stage: RevealStage.voting, seconds: 0})
+    // Only a result that is shown sinks away: a round started while the cards still turned deals the deck out at once
+    switchScan((previous, shown, index) => !shown ? (previous.stage === RevealStage.result ? this.leave() : of(VOTING))
       : index === 0 ? of({stage: RevealStage.result, seconds: 0})
       : this.store.pipe(select(RoomSelector.flipDelaysSelector), take(1), switchMap(delays => {
         // The last card starts turning after the longest delay
@@ -53,7 +59,7 @@ export class RoomComponent implements OnInit, OnDestroy {
           of({stage: RevealStage.gathering, seconds}),
           timer(1000 * seconds).pipe(map(() => ({stage: RevealStage.result, seconds})))
         );
-      })))
+      })), VOTING)
   );
   readonly RevealStage = RevealStage;
   gone$: Observable<RoomStatus.closed | RoomStatus.missing | undefined> = this.store.pipe(select(RoomSelector.goneSelector));
@@ -92,6 +98,17 @@ export class RoomComponent implements OnInit, OnDestroy {
     });
     this.joined$.pipe(filter(joined => joined), take(1), takeUntil(this.ngDestroyed$))
       .subscribe(() => this.joinRightAway = false);
+  }
+
+  // The result sinks away in half the time a card takes to turn over
+  private leave(): Observable<Reveal> {
+    const seconds = this.flipSeconds() / 2;
+    return concat(of({stage: RevealStage.leaving, seconds}), timer(1000 * seconds).pipe(map(() => VOTING)));
+  }
+
+  // Both while the result is shown and while it sinks away
+  showsResult(reveal: Reveal): boolean {
+    return reveal.stage === RevealStage.result || reveal.stage === RevealStage.leaving;
   }
 
   // How long a card takes to turn over, the transition of the page (none until the page has started)
