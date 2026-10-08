@@ -1,4 +1,4 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {ComponentFixture, fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {NO_ERRORS_SCHEMA} from "@angular/core";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {DeckComponent} from "./deck.component";
@@ -96,4 +96,32 @@ describe("DeckComponent", () => {
 
     expect(host.classList).not.toContain("gathering");
   });
+
+  it("deals the cards out of a pile in the middle of the deck when it comes", fakeAsync(() => {
+    create(3);
+    const host: HTMLElement = fixture.nativeElement;
+
+    expect(host.classList).toContain("dealing");
+    expect(deckCards().map(card => card.style.getPropertyValue("--gather-order"))).toEqual(["0", "1", "2"]);
+
+    // 0.6 s for a card, and every next card 0.03 s later
+    tick(689);
+    expect(host.classList).toContain("dealing");
+    tick(1);
+    expect(host.classList).not.toContain("dealing");
+  }));
+
+  it("does not deal a deck that comes while the result is shown until the next round", fakeAsync(() => {
+    fixture.componentRef.setInput("gathering", true);
+    create(3);
+    const host: HTMLElement = fixture.nativeElement;
+
+    expect(host.classList).not.toContain("dealing");
+    expect(deckCards()[0].style.getPropertyValue("--gather-x")).not.toBe("");
+
+    fixture.componentRef.setInput("gathering", false);
+    fixture.detectChanges();
+    expect(host.classList).toContain("dealing");
+    tick(690);
+  }));
 });

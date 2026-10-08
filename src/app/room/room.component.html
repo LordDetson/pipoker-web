@@ -37,12 +37,13 @@
     </app-table>
     <!-- The result takes the place of the deck, which keeps its size so the table does not jump when the cards are revealed.
          The deck gathers into a pile and fades away for as long as the cards turn over. A watcher has no deck, so their
-         table takes the whole height until the result comes. -->
+         table takes the whole height until the result comes. The result sinks away the same way when a new round starts. -->
     <ng-container *ngIf="reveal$ | async as reveal">
-      <div *ngIf="!(watcher$ | async) || reveal.stage === RevealStage.result" class="hand">
+      <div *ngIf="!(watcher$ | async) || showsResult(reveal)" class="hand">
         <app-deck [gathering]="reveal.stage !== RevealStage.voting" [style.--reveal-duration]="reveal.seconds + 's'"
-                  [class.invisible]="reveal.stage === RevealStage.result"/>
-        <app-voting-result *ngIf="reveal.stage === RevealStage.result"/>
+                  [class.invisible]="showsResult(reveal)"/>
+        <app-voting-result *ngIf="showsResult(reveal)" [class.leaving]="reveal.stage === RevealStage.leaving"
+                           [style.--leave-duration]="reveal.seconds + 's'"/>
       </div>
     </ng-container>
   </ng-template>

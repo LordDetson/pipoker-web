@@ -23,6 +23,15 @@ html, body {
   transition: all var(--common-transition-duration) ease 0s;
 }
 
+// The gathered deck and then the result under the table go down and fade away, see DeckComponent and
+// VotingResultComponent
+@keyframes sink {
+  to {
+    opacity: 0;
+    transform: translateY(3rem);
+  }
+}
+
 /*
  * The start page and the page joining a room: the form, and what PiPoker is.
  * Narrow screens stack them. From 992px the description stands beside the form. The columns are capped
