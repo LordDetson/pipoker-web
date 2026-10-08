@@ -7,5 +7,5 @@ export const environment = {
   apiUrl: window.location.origin + "/api",
   invitationUrl: window.location.origin + "/room/",
   // The page where people can support the project; the header shows no support link while it is empty
-  supportUrl: "https://boosty.to/detson"
+  supportUrl: "https://lorddetson.github.io/"
 };
