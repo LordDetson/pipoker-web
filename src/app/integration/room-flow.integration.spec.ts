@@ -234,6 +234,8 @@ describe("PiPoker room (integration)", () => {
     await waitForCardsToTurn();
     expect(page.querySelector("app-voting-result .headline")!.textContent!.trim()).toBe("Votes split · 1 each for 4h, 1d");
     expect(page.querySelector("app-deck")!.classList).withContext("the result is shown in place of the deck").toContain("invisible");
+    const room: HTMLElement = page.querySelector("app-room")!;
+    expect(room.scrollHeight).withContext("the sunken deck doesn't make the page scroll").toBe(room.clientHeight);
     expect(tableCards()).toEqual([
       {nickname: "Dmitry", voted: true, value: "4h"},
       {nickname: "Alex", voted: true, value: "1d"}
