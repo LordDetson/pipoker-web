@@ -35,3 +35,20 @@
 :host(.invisible) app-deck-card {
   transition: none;
 }
+
+// The cards slide into a pile one shortly after another, the chosen card on top
+:host(.gathering) app-deck-card {
+  pointer-events: none;
+  transform: translate(var(--gather-x, 0), var(--gather-y, 0)) rotate(var(--gather-turn, 0));
+  transition: transform 0.6s ease-in-out calc(var(--gather-order, 0) * 15ms);
+}
+
+:host(.gathering) app-deck-card.selected {
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host(.gathering) app-deck-card {
+    transition: none;
+  }
+}

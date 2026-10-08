@@ -36,10 +36,13 @@
       </div>
     </app-table>
     <!-- The result takes the place of the deck, which keeps its size so the table does not jump when the cards are revealed.
-         A watcher has no deck, so their table takes the whole height until the result comes. -->
-    <div *ngIf="!(watcher$ | async) || (showVotingResult$ | async)" class="hand">
-      <app-deck [class.invisible]="showVotingResult$ | async"/>
-      <app-voting-result *ngIf="showVotingResult$ | async"/>
-    </div>
+         The deck gathers into a pile while the cards turn over. A watcher has no deck, so their table takes the whole
+         height until the result comes. -->
+    <ng-container *ngIf="revealStage$ | async as stage">
+      <div *ngIf="!(watcher$ | async) || stage === RevealStage.result" class="hand">
+        <app-deck [gathering]="stage !== RevealStage.voting" [class.invisible]="stage === RevealStage.result"/>
+        <app-voting-result *ngIf="stage === RevealStage.result"/>
+      </div>
+    </ng-container>
   </ng-template>
 </ng-template>

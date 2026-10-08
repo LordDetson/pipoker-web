@@ -73,4 +73,27 @@ describe("DeckComponent", () => {
 
     expect(rows()).toEqual([1, 1, 1]);
   });
+
+  it("gathers every card in the middle of the deck and deals them back out", () => {
+    create(3);
+    const host: HTMLElement = fixture.nativeElement;
+    host.style.display = "block";
+    deckCards().forEach(card => card.style.display = "block");
+
+    fixture.componentRef.setInput("gathering", true);
+    fixture.detectChanges();
+
+    expect(host.classList).toContain("gathering");
+    const middle = host.getBoundingClientRect().left + host.getBoundingClientRect().width / 2;
+    deckCards().forEach(card => {
+      const place = card.getBoundingClientRect();
+      expect(place.left + place.width / 2 + parseFloat(card.style.getPropertyValue("--gather-x")))
+        .toBeCloseTo(middle, 0);
+    });
+
+    fixture.componentRef.setInput("gathering", false);
+    fixture.detectChanges();
+
+    expect(host.classList).not.toContain("gathering");
+  });
 });
