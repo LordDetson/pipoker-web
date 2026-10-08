@@ -38,11 +38,13 @@ app-table:last-child {
 
 /* The deck and the result share one cell, which gets as narrow as the page: the deck measures its own width
    to lay itself out in rows, so the cell must not keep the width of its current rows. The result gets at least
-   this height when the deck is shorter or, for a watcher, missing. */
+   this height when the deck is shorter or, for a watcher, missing. The gathered deck and the leaving result sink
+   below the cell and stay there invisible, which would make the page scroll, so the cell cuts off what goes out of it. */
 .hand {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   min-height: max(8rem, 23vh);
+  overflow: hidden;
 }
 
 .hand > * {
