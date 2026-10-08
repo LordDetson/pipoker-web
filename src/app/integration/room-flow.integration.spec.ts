@@ -18,7 +18,7 @@ import {TableComponent} from "../room/table/table.component";
 import {DeckComponent} from "../room/deck/deck.component";
 import {DeckCardComponent} from "../room/deck/deck-card/deck-card.component";
 import {TableCardComponent} from "../room/table/table-card/table-card.component";
-import {VotingResultChartComponent} from "../room/voting-result-chart/voting-result-chart.component";
+import {VotingResultComponent} from "../room/voting-result/voting-result.component";
 import {metaReducers, reducers} from "../store/intex";
 import {RoomEffect} from "../store/room/room.effect";
 import {ParticipantEffect} from "../store/participant/participant.effect";
@@ -61,7 +61,7 @@ describe("PiPoker room (integration)", () => {
         DeckComponent,
         DeckCardComponent,
         TableCardComponent,
-        VotingResultChartComponent,
+        VotingResultComponent,
         HistoryComponent,
         AboutComponent,
         TimerComponent,
@@ -224,8 +224,8 @@ describe("PiPoker room (integration)", () => {
     // The last vote reveals the cards
     server.vote(roomId, "Alex", "1d");
     await settle();
-    expect(page.querySelector("app-voting-result-chart canvas")).not.toBeNull();
-    expect(page.querySelector("app-deck")!.classList).withContext("the chart is shown in place of the deck").toContain("invisible");
+    expect(page.querySelector("app-voting-result .headline")!.textContent!.trim()).toBe("Votes split · 1 each for 4h, 1d");
+    expect(page.querySelector("app-deck")!.classList).withContext("the result is shown in place of the deck").toContain("invisible");
     expect(tableCards()).toEqual([
       {nickname: "Dmitry", voted: true, value: "4h"},
       {nickname: "Alex", voted: true, value: "1d"}
@@ -233,7 +233,7 @@ describe("PiPoker room (integration)", () => {
 
     await click(button("Start New Voting"));
     expect(server.rooms.get(roomId)!.votes).toEqual([]);
-    expect(page.querySelector("app-voting-result-chart")).toBeNull();
+    expect(page.querySelector("app-voting-result")).toBeNull();
     expect(page.querySelector("app-deck")!.classList).not.toContain("invisible");
     expect(deckCards().some(card => card.classList.contains("selected"))).toBeFalse();
     expect(tableCards().every(card => !card.voted)).toBeTrue();
@@ -247,11 +247,11 @@ describe("PiPoker room (integration)", () => {
     await settle();
 
     await click(deckCard("4h").querySelector(".card-body")!);
-    expect(page.querySelector("app-voting-result-chart")).withContext("Alex hasn't voted yet").toBeNull();
+    expect(page.querySelector("app-voting-result")).withContext("Alex hasn't voted yet").toBeNull();
 
     server.vote(roomId, "Alex", "1d");
     await settle();
-    expect(page.querySelector("app-voting-result-chart canvas")).withContext("the watcher isn't waited for").not.toBeNull();
+    expect(page.querySelector("app-voting-result .piles")).withContext("the watcher isn't waited for").not.toBeNull();
     expect(tableCards()).toEqual([
       {nickname: "Dmitry", voted: true, value: "4h"},
       {nickname: "Alex", voted: true, value: "1d"}

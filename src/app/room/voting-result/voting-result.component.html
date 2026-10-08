@@ -1,0 +1,29 @@
+<ng-container *ngIf="result$ | async as result">
+  <p class="headline">
+    <ng-container *ngIf="result.leaders.length === 1; else split">
+      <span class="leading-card">{{result.leaders[0]}}</span>
+      <span class="detail" *ngIf="result.most === result.total; else majority">{{"result.unanimous" | translate}}</span>
+      <ng-template #majority>
+        <span class="detail">
+          {{"result.majority" | translate: {count: result.most, total: result.total, agreement: result.agreement} }}
+        </span>
+      </ng-template>
+    </ng-container>
+    <ng-template #split>
+      <span class="detail">{{"result.split" | translate: {count: result.most, cards: result.leaders.join(", ")} }}</span>
+    </ng-template>
+  </p>
+  <!-- Piles get narrower when a lot of different cards are picked, and take another row on a phone -->
+  <ul class="piles" [attr.aria-label]="'result.title' | translate">
+    <li *ngFor="let entry of result.tally; trackBy: cardOf" class="pile" [class.leader]="entry.count === result.most"
+        [title]="entry.card + ': ' + entry.count" [style.--value-length]="entry.card.length">
+      <div class="stack" [style.--layers]="layers(entry.count).length">
+        <span *ngFor="let layer of layers(entry.count)" class="pile-card" [style.--layer]="layer">{{entry.card}}</span>
+      </div>
+      <span class="count">×{{entry.count}}</span>
+    </li>
+  </ul>
+  <p *ngIf="result.tally.length > 1" class="spread">
+    {{"result.spread" | translate: {from: result.tally[0].card, to: result.tally[result.tally.length - 1].card} }}
+  </p>
+</ng-container>

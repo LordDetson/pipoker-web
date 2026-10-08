@@ -9,7 +9,6 @@ import {RoomStatus} from "../store/room/room-state";
 import * as ParticipantAction from "../store/participant/participant.action";
 import * as ParticipantSelector from "../store/participant/participant.selector";
 import {SeatStorage} from "../common/seat-storage";
-import {loadDoughnutChart} from "./voting-result-chart/voting-result-chart.component";
 import {JOIN_RIGHT_AWAY} from "../common/invitation-link";
 
 @Component({
@@ -61,9 +60,6 @@ export class RoomComponent implements OnInit, OnDestroy {
     });
     this.joined$.pipe(filter(joined => joined), take(1), takeUntil(this.ngDestroyed$))
       .subscribe(() => this.joinRightAway = false);
-    // The chart of the votes is loaded while people vote, so it is ready when the cards are revealed.
-    // If loading fails now, the chart tries again when it is shown.
-    loadDoughnutChart().catch(() => undefined);
   }
 
   ngOnDestroy(): void {

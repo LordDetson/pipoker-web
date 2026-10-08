@@ -1,0 +1,131 @@
+// Takes the place of the deck under the table without changing its height, see .hand in RoomComponent
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+
+p {
+  margin: 0;
+  text-align: center;
+}
+
+.headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  column-gap: 0.75rem;
+}
+
+.leading-card {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.detail {
+  color: var(--bs-secondary-color);
+}
+
+.piles {
+  display: flex;
+  flex-wrap: wrap;
+  // Piles grow upwards, so the counts stay in one line
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.5rem min(14px, 1.5vw);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// The card, a pile of it and its count. The sizes follow the width of the pile, which shrinks on a narrow screen.
+.pile {
+  --card-width: min(40px, 70cqi);
+  --layer-offset: min(4px, 7cqi);
+  flex: 0 1 60px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  container-type: inline-size;
+}
+
+// A phone has more height than width under the table: a lot of different cards take two rows of larger piles
+@media (max-width: 575.98px) {
+  .pile {
+    flex-basis: 40px;
+  }
+}
+
+.stack {
+  position: relative;
+  width: calc(var(--card-width) + (var(--layers) - 1) * var(--layer-offset));
+  height: calc(var(--card-width) * 1.35 + (var(--layers) - 1) * var(--layer-offset));
+}
+
+// Looks like the revealed cards on the table; every next card lies a bit up and to the right
+.pile-card {
+  position: absolute;
+  left: calc(var(--layer) * var(--layer-offset));
+  bottom: calc(var(--layer) * var(--layer-offset));
+  width: var(--card-width);
+  aspect-ratio: 1 / 1.35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: #f8f9fa;
+  color: #212529;
+  font-weight: 600;
+  // Long values and narrow piles get a smaller font to fit on the card
+  font-size: min(0.95rem, 52px / var(--value-length), 91cqi / var(--value-length));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  animation: deal 0.4s ease-out backwards;
+  animation-delay: calc(var(--layer) * 0.08s);
+}
+
+.count {
+  font-size: min(0.9rem, 40cqi);
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+}
+
+.leader {
+  .pile-card {
+    border-color: rgba(255, 255, 255, 0.9);
+    background-color: var(--bs-blue);
+    color: white;
+  }
+
+  .count {
+    color: var(--bs-emphasis-color);
+  }
+}
+
+.spread {
+  font-size: 0.85rem;
+  color: var(--bs-secondary-color);
+}
+
+@keyframes deal {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pile-card {
+    animation: none;
+  }
+}
