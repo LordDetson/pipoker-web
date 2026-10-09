@@ -28,6 +28,8 @@ const en = {
   "header.language": "Language",
   "header.theme": "Theme",
   "header.menu": "Menu",
+  "header.guide": "Guide",
+  "header.guideTitle": "How to run Planning Poker",
   "feedback.button": "Feedback",
   "feedback.title": "Feedback",
   "feedback.kind": "What it is about",
@@ -174,7 +176,8 @@ const en = {
   "about.free": "Free and without registration.",
   "about.anyDevice": "Works in the browser on a computer and on a phone.",
   "about.ownDeck": "Ready decks (Fibonacci, story points, hours, T-shirt sizes) and your own saved decks.",
-  "about.watchers": "Watchers follow the vote without voting."
+  "about.watchers": "Watchers follow the vote without voting.",
+  "about.guide": "How to run Planning Poker: a step-by-step guide"
 };
 
 export type TranslationKey = keyof typeof en;
@@ -191,6 +194,8 @@ const ru: Record<TranslationKey, string> = {
   "header.language": "Язык",
   "header.theme": "Тема",
   "header.menu": "Меню",
+  "header.guide": "Как провести",
+  "header.guideTitle": "Как провести Planning Poker",
   "feedback.button": "Обратная связь",
   "feedback.title": "Обратная связь",
   "feedback.kind": "О чём сообщение",
@@ -335,7 +340,8 @@ const ru: Record<TranslationKey, string> = {
   "about.free": "Бесплатно и без регистрации.",
   "about.anyDevice": "Работает в браузере на компьютере и на телефоне.",
   "about.ownDeck": "Готовые колоды (Фибоначчи, story points, часы, размеры футболок) и свои сохранённые колоды.",
-  "about.watchers": "Наблюдатели следят за голосованием, не голосуя."
+  "about.watchers": "Наблюдатели следят за голосованием, не голосуя.",
+  "about.guide": "Как провести Planning Poker: руководство по шагам"
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {en, ru};

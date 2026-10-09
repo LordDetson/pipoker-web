@@ -68,6 +68,17 @@ describe("I18nService", () => {
     expect(description.content).toBe(translations.en["meta.description"]);
   });
 
+  it("tells the current language and every one picked after it", () => {
+    const i18n = create(["ru-RU"]);
+    const languages: string[] = [];
+    i18n.language$.subscribe(language => languages.push(language));
+
+    i18n.choose("en");
+    i18n.choose("ru");
+
+    expect(languages).toEqual(["ru", "en", "ru"]);
+  });
+
   it("fills in placeholders", () => {
     const i18n = create(["en-US"]);
 

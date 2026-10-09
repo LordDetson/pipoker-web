@@ -1,0 +1,70 @@
+<article class="guide text-body-secondary common-transition">
+  <!-- Not a <header>: the themes paint every header element as the page's top bar -->
+  <div class="mb-4">
+    <h1 class="text-body-emphasis">{{content.heading}}</h1>
+    <p class="lead">{{content.lead}}</p>
+  </div>
+
+  <section>
+    <h2 class="text-body-emphasis">{{content.what.title}}</h2>
+    <p *ngFor="let paragraph of content.what.text">{{paragraph}}</p>
+  </section>
+
+  <section>
+    <h2 class="text-body-emphasis">{{content.why.title}}</h2>
+    <ul>
+      <li *ngFor="let item of content.why.items">{{item}}</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="text-body-emphasis">{{content.decks.title}}</h2>
+    <p>{{content.decks.intro}}</p>
+    <dl class="decks">
+      <ng-container *ngFor="let deck of content.decks.items">
+        <dt class="text-body-emphasis">{{deck.name}} <small class="fw-normal text-body-secondary">({{deck.cards}})</small></dt>
+        <dd>{{deck.when}}</dd>
+      </ng-container>
+    </dl>
+    <p>{{content.decks.ownDeck}}</p>
+  </section>
+
+  <section>
+    <h2 class="text-body-emphasis">{{content.steps.title}}</h2>
+    <p>{{content.steps.intro}}</p>
+    <ol class="steps">
+      <li *ngFor="let step of content.steps.items" class="step" [class.with-phone]="step.image?.phone">
+        <h3 class="text-body-emphasis">{{step.title}}</h3>
+        <div class="step-body">
+          <div>
+            <p *ngFor="let paragraph of step.text">{{paragraph}}</p>
+            <aside class="in-pipoker">
+              <strong class="text-body-emphasis">{{content.steps.inPiPoker}}</strong>
+              <p *ngFor="let paragraph of step.inPiPoker">{{paragraph}}</p>
+            </aside>
+          </div>
+          <figure *ngIf="step.image as image" class="screenshot" [class.phone]="image.phone">
+            <img [src]="imageUrl(image.file)" [alt]="image.alt" loading="lazy"
+                 [width]="image.phone ? 585 : 1366" [height]="image.phone ? 1266 : 768">
+          </figure>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <h2 class="text-body-emphasis">{{content.mistakes.title}}</h2>
+    <dl class="mistakes">
+      <ng-container *ngFor="let mistake of content.mistakes.items">
+        <dt class="text-body-emphasis">{{mistake.title}}</dt>
+        <dd>{{mistake.text}}</dd>
+      </ng-container>
+    </dl>
+  </section>
+
+  <section class="try-it text-center">
+    <h2 class="text-body-emphasis">{{content.tryIt.title}}</h2>
+    <p>{{content.tryIt.text}}</p>
+    <a routerLink="/" class="btn btn-primary btn-lg">{{content.tryIt.button}}</a>
+  </section>
+</article>

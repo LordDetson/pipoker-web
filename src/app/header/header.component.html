@@ -23,6 +23,12 @@
       <span class="button-label">{{"header.invite" | translate}}</span>
     </button>
     <ng-container *ngIf="!taken('settings-menu'); else settingsMenu">
+      <!-- Inside a room the guide would take the person away from the table, so it is offered outside one -->
+      <a *ngIf="!roomId" routerLink="/guide" class="btn btn-outline-secondary common-transition d-flex align-items-center gap-2 guide-link"
+         [title]="'header.guideTitle' | translate">
+        <ng-container *ngTemplateOutlet="bookIcon"/>
+        <span class="button-label">{{"header.guide" | translate}}</span>
+      </a>
       <a *ngIf="supportUrl" class="btn common-transition d-flex align-items-center gap-1 support-link"
          [href]="supportUrl" target="_blank" rel="noopener" [title]="'header.supportTitle' | translate">
         <span class="heart-icon" aria-hidden="true">&#9829;</span>
@@ -58,6 +64,12 @@
       </svg>
     </button>
     <div ngbDropdownMenu>
+      <a *ngIf="!roomId" ngbDropdownItem routerLink="/guide" class="d-flex align-items-center gap-2 guide-item"
+         [title]="'header.guideTitle' | translate">
+        <ng-container *ngTemplateOutlet="bookIcon"/>
+        {{"header.guideTitle" | translate}}
+      </a>
+      <div *ngIf="!roomId" class="dropdown-divider"></div>
       <a *ngIf="supportUrl" ngbDropdownItem class="d-flex align-items-center gap-2 support-item"
          [href]="supportUrl" target="_blank" rel="noopener" [title]="'header.supportTitle' | translate">
         <span class="heart-icon" aria-hidden="true">&#9829;</span>
@@ -78,4 +90,11 @@
       </div>
     </div>
   </div>
+</ng-template>
+
+<ng-template #bookIcon>
+  <svg class="book-icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor"
+       stroke-width="1.6" stroke-linejoin="round">
+    <path d="M10 5.5C8.5 4 6 3.5 3 3.5v12c3 0 5.5.5 7 2 1.5-1.5 4-2 7-2v-12c-3 0-5.5.5-7 2zM10 5.5v12"/>
+  </svg>
 </ng-template>

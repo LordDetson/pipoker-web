@@ -30,6 +30,7 @@
 .without-tagline .tagline,
 .logo-only .wordmark,
 .language-flag-only .language-select .button-label,
+.guide-icon-only .guide-link .button-label,
 .support-heart-only .support-link .button-label,
 .invite-icon-only .invitation-link .button-label {
   display: none;
@@ -77,16 +78,28 @@
   --bs-btn-focus-shadow-rgb: 241, 95, 44;
 }
 
+.book-icon {
+  flex-shrink: 0;
+}
+
 .heart-icon {
   font-size: 1.2rem;
   line-height: 1;
 }
 
-.support-item > .heart-icon {
+.support-item > .book-icon {
+  flex-shrink: 0;
+}
+
+.heart-icon {
   color: #f15f2c;
 }
 
-.support-link:hover > .heart-icon {
+.support-link:hover > .book-icon {
+  flex-shrink: 0;
+}
+
+.heart-icon {
   transform: scale(1.15);
 }
 

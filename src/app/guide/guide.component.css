@@ -1,0 +1,76 @@
+/* A reading column: the line length of a book, centred; the fixed feedback button never covers the last lines */
+.guide {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2rem 1rem calc(var(--feedback-button-height, 2rem) + 2.5rem);
+  line-height: 1.6;
+}
+
+section {
+  margin-top: 2.5rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  font-size: 1.2rem;
+}
+
+.steps {
+  padding-left: 1.5rem;
+}
+
+.step {
+  margin-top: 2rem;
+}
+
+/* How the step is done in PiPoker stands apart from the method itself */
+.in-pipoker {
+  border-left: 3px solid var(--bs-primary);
+  padding-left: 1rem;
+  margin: 1rem 0;
+}
+
+.in-pipoker > p:last-child {
+  margin-bottom: 0;
+}
+
+.screenshot {
+  margin: 1rem 0 0;
+}
+
+.screenshot img {
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+/* A phone screenshot is tall: beside the text where there is room, otherwise narrow and centred */
+.screenshot.phone {
+  max-width: 14rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  .with-phone .step-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 12rem;
+    column-gap: 1.5rem;
+    align-items: start;
+  }
+
+  .with-phone .screenshot {
+    margin: 0;
+  }
+}
+
+.try-it {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+}

@@ -13,6 +13,7 @@ export const COMPACT_STEPS = [
   "without-tagline",
   "small-room-name",
   "language-flag-only",
+  "guide-icon-only",
   "support-heart-only",
   "invite-icon-only",
   "logo-only",
