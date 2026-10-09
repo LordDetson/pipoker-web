@@ -9,6 +9,7 @@ import {CreateRoomInfo} from "../models/create-room.model";
 import {EstimateDto, RoomCreationDto, RoomDto, TaskDto, TimerDto} from "../models/room-dto.model";
 import {ErrorEvent, RoomEvent, RoomEventType} from "../models/room-event";
 import {RoomDestinations} from "../common/room-destinations";
+import {VisitService} from "./visit.service";
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,8 @@ import {RoomDestinations} from "../common/room-destinations";
 export class RoomService {
 
   constructor(
-    private roomWebSocketService: RoomWebSocketService
+    private roomWebSocketService: RoomWebSocketService,
+    private visits: VisitService
   ) {
   }
 
@@ -26,6 +28,10 @@ export class RoomService {
       deck: {cards: createRoomInfo.deck.cards.map(card => card.value)},
       participants: [{nickname: createRoomInfo.nickname, watcher: createRoomInfo.watcher}]
     };
+    const source = this.visits.source;
+    if (source !== undefined) {
+      roomCreation.source = source;
+    }
     return this.exchange(RoomDestinations.create(), roomCreation,
       this.roomWebSocketService.watch<RoomDto>(RoomDestinations.created).pipe(
         map(room => toRoom(room))

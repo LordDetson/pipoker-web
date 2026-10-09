@@ -6,6 +6,7 @@ import {Room} from "../models/room.model";
 import {Participant} from "../models/participant.model";
 import {Vote} from "../models/vote";
 import {RoomEventType} from "../models/room-event";
+import {VisitDto, VisitService} from "./visit.service";
 
 class FakeRoomWebSocketService {
   sent: { destination: string, body: any }[] = [];
@@ -44,10 +45,16 @@ describe("RoomService", () => {
   const roomId = "4f9c7a52-2d5e-4c5b-9a8e-0a1b2c3d4e5f";
   let service: RoomService;
   let webSocket: FakeRoomWebSocketService;
+  // The source of the tab's visit, as the VisitService would tell it
+  let visitSource: VisitDto | undefined;
 
   beforeEach(() => {
+    visitSource = undefined;
     TestBed.configureTestingModule({
-      providers: [{provide: RoomWebSocketService, useClass: FakeRoomWebSocketService}]
+      providers: [
+        {provide: RoomWebSocketService, useClass: FakeRoomWebSocketService},
+        {provide: VisitService, useValue: {get source() { return visitSource; }}}
+      ]
     });
     service = TestBed.inject(RoomService);
     webSocket = TestBed.inject(RoomWebSocketService) as unknown as FakeRoomWebSocketService;
@@ -82,6 +89,19 @@ describe("RoomService", () => {
     expect(room!.deck.cards).toEqual([{value: "1h"}, {value: "1d"}]);
     expect(room!.participants).toEqual([{nickname: "Dmitry", watcher: false}]);
     expect(room!.votingResult.map.size).toBe(0);
+  });
+
+  it("tells the server where the creator came from when the visit was reported", () => {
+    visitSource = {from: "habr"};
+
+    service.create({
+      nickname: "Dmitry",
+      roomName: "Sprint",
+      deck: {cards: [{value: "1h"}]},
+      watcher: false
+    }).subscribe();
+
+    expect(webSocket.sent[0].body.source).toEqual({from: "habr"});
   });
 
   it("loads a room with its votes", () => {
