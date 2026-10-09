@@ -5,14 +5,17 @@ import {GUIDE} from "./guide-content";
 import {BROWSER_LANGUAGES, I18nService} from "../i18n/i18n.service";
 import {AppConstants} from "../common/app-constants";
 import {translations} from "../i18n/translations";
+import {VisitService} from "../services/visit.service";
 
 describe("GuideComponent", () => {
   let fixture: ComponentFixture<GuideComponent>;
+  let visits: jasmine.SpyObj<VisitService>;
   let description: HTMLMetaElement;
   let canonical: HTMLLinkElement;
 
   beforeEach(() => {
     localStorage.removeItem(AppConstants.language);
+    visits = jasmine.createSpyObj<VisitService>("VisitService", ["report"]);
     description = document.createElement("meta");
     description.name = "description";
     document.head.appendChild(description);
@@ -31,12 +34,22 @@ describe("GuideComponent", () => {
   function render(browserLanguages: string[]): HTMLElement {
     TestBed.configureTestingModule({
       imports: [GuideComponent],
-      providers: [provideRouter([]), {provide: BROWSER_LANGUAGES, useValue: browserLanguages}]
+      providers: [
+        provideRouter([]),
+        {provide: BROWSER_LANGUAGES, useValue: browserLanguages},
+        {provide: VisitService, useValue: visits}
+      ]
     });
     fixture = TestBed.createComponent(GuideComponent);
     fixture.detectChanges();
     return fixture.nativeElement;
   }
+
+  it("reports the visit, since people land on the guide from search", () => {
+    render(["en-US"]);
+
+    expect(visits.report).toHaveBeenCalledTimes(1);
+  });
 
   it("explains Planning Poker step by step, with how each step is done in PiPoker", () => {
     const guide = render(["en-US"]);

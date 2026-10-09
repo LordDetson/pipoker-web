@@ -13,19 +13,23 @@ import {AboutComponent} from "../about/about.component";
 import {ErrorCode} from "../models/room-event";
 import {MyDecks, PRESET_DECKS} from "../common/decks";
 import {Router} from "@angular/router";
+import {VisitService} from "../services/visit.service";
 
 describe("CreateRoomComponent", () => {
   let fixture: ComponentFixture<CreateRoomComponent>;
   let store: MockStore;
+  let visits: jasmine.SpyObj<VisitService>;
 
   beforeEach(() => {
     localStorage.clear();
+    visits = jasmine.createSpyObj<VisitService>("VisitService", ["report"]);
     TestBed.configureTestingModule({
       declarations: [CreateRoomComponent, AboutComponent],
       imports: [ReactiveFormsModule, TranslatePipe, ServerErrorPipe],
       providers: [
         provideMockStore({initialState: appState()}),
-        {provide: RoomService, useValue: {}}
+        {provide: RoomService, useValue: {}},
+        {provide: VisitService, useValue: visits}
       ]
     });
     store = TestBed.inject(MockStore);
@@ -70,6 +74,12 @@ describe("CreateRoomComponent", () => {
   function submitButton(): HTMLButtonElement {
     return fixture.nativeElement.querySelector("button[type=submit]");
   }
+
+  it("reports the visit when the start page opens", () => {
+    create();
+
+    expect(visits.report).toHaveBeenCalledTimes(1);
+  });
 
   it("starts with the default deck and an empty form", () => {
     create();

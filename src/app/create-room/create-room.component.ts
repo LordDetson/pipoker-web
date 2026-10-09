@@ -13,6 +13,7 @@ import {I18nService} from "../i18n/i18n.service";
 import {TranslationKey} from "../i18n/translations";
 import {MyDecks, NamedDeck, PRESET_DECKS, sameCards} from "../common/decks";
 import {invitationValidator, JOIN_RIGHT_AWAY, roomIdFromInvitation} from "../common/invitation-link";
+import {VisitService} from "../services/visit.service";
 
 interface CreateRoomFormGroup {
   nickname: FormControl<string>;
@@ -51,11 +52,13 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     private roomService: RoomService,
     private store: Store,
     private i18n: I18nService,
-    private router: Router
+    private router: Router,
+    private visits: VisitService
   ) {
   }
 
   ngOnInit(): void {
+    this.visits.report();
     const nickname: string = localStorage.getItem(AppConstants.lastNickname) ?? "";
     const roomName: string = localStorage.getItem(AppConstants.lastRoomName) ?? "";
     const deck: string = localStorage.getItem(AppConstants.lastDeck) ?? AppConstants.defaultDeck;

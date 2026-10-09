@@ -1,4 +1,5 @@
 import {Participant} from "./participant.model";
+import {VisitDto} from "../services/visit.service";
 
 export interface DeckDto {
   cards: string[];
@@ -60,4 +61,6 @@ export interface RoomCreationDto {
   name: string;
   deck: DeckDto;
   participants: Participant[];
+  // Where the creator came to the site from, for the activity dashboard; left out when no visit was reported
+  source?: VisitDto;
 }
