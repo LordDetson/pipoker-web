@@ -1,4 +1,5 @@
 import {Inject, Injectable, InjectionToken, DOCUMENT} from "@angular/core";
+import {Observable, ReplaySubject} from "rxjs";
 import {Language, LANGUAGES, LanguageOption, TranslationKey, translations} from "./translations";
 import {AppConstants} from "../common/app-constants";
 
@@ -29,6 +30,9 @@ export function detectLanguage(browserLanguages: readonly string[]): Language {
 export class I18nService {
 
   language: Language;
+  // The current language and every one picked after it, for pages that put texts outside their template
+  private readonly languageSubject = new ReplaySubject<Language>(1);
+  readonly language$: Observable<Language> = this.languageSubject.asObservable();
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -58,5 +62,6 @@ export class I18nService {
     this.language = language;
     this.document.documentElement.lang = language;
     this.document.querySelector('meta[name="description"]')?.setAttribute("content", this.translate("meta.description"));
+    this.languageSubject.next(language);
   }
 }

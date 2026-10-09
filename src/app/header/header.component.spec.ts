@@ -9,6 +9,7 @@ import {AppConstants} from "../common/app-constants";
 import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 import {TranslatePipe} from "../i18n/translate.pipe";
 import {ThemeSwitcherComponent} from "./theme-switcher/theme-switcher.component";
+import {provideRouter, RouterLink} from "@angular/router";
 
 describe("HeaderComponent", () => {
   let fixture: ComponentFixture<HeaderComponent>;
@@ -20,8 +21,9 @@ describe("HeaderComponent", () => {
     clipboard = jasmine.createSpyObj<Clipboard>("Clipboard", ["copy"]);
     TestBed.configureTestingModule({
       declarations: [HeaderComponent, ThemeSwitcherComponent],
-      imports: [TranslatePipe, NgbDropdownModule],
+      imports: [TranslatePipe, NgbDropdownModule, RouterLink],
       providers: [
+        provideRouter([]),
         provideMockStore({initialState: appState({room: room({id: "room-1", name: "Planning"})})}),
         {provide: Clipboard, useValue: clipboard}
       ],
@@ -53,6 +55,21 @@ describe("HeaderComponent", () => {
   });
 
   afterEach(() => localStorage.removeItem(AppConstants.language));
+
+  function guideLink(): HTMLAnchorElement | null {
+    return fixture.nativeElement.querySelector("a.guide-link");
+  }
+
+  it("leads to the guide outside a room, where nobody is at a table to leave", () => {
+    expect(guideLink()).toBeNull();
+
+    store.setState({...appState(), roomState: roomState({room: room({id: "", name: ""})})});
+    fixture.detectChanges();
+
+    expect(guideLink()?.getAttribute("href")).toBe("/guide");
+    expect(guideLink()?.textContent?.trim()).toBe("Guide");
+    expect(guideLink()?.title).toBe("How to run Planning Poker");
+  });
 
   it("says what PiPoker is under its name", () => {
     expect(fixture.nativeElement.querySelector(".tagline").textContent).toBe("Free Planning Poker for teams");
@@ -210,6 +227,21 @@ describe("HeaderComponent", () => {
       expect(Array.from(menu.querySelectorAll("[lang]")).map(item => item.textContent!.trim()))
         .toEqual(["Русский", "English"]);
       expect(menu.querySelector(".theme-switcher")).not.toBeNull();
+    });
+
+    it("offers the guide in the menu outside a room", () => {
+      store.setState({...appState(), roomState: roomState({room: room({id: "", name: ""})})});
+      // Without a room name and the invitation button the menu comes only on a very narrow screen
+      fixture.nativeElement.style.width = "240px";
+      fixture.componentInstance.fit();
+
+      expect(guideLink()).toBeNull();
+      fixture.nativeElement.querySelector(".settings-dropdown [ngbDropdownToggle]").click();
+      fixture.detectChanges();
+
+      const item: HTMLAnchorElement = fixture.nativeElement.querySelector(".settings-dropdown a.guide-item");
+      expect(item.getAttribute("href")).toBe("/guide");
+      expect(item.textContent!.trim()).toBe("How to run Planning Poker");
     });
 
     it("opens the menu that a narrowing window brings", async () => {
