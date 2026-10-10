@@ -6,17 +6,18 @@
 
 **Free online Planning Poker for agile teams. No sign-up, works in any browser.**
 
-[**pipoker.app**](https://pipoker.app) &nbsp;·&nbsp;
+[**pipoker.app**](https://pipoker.app/?from=github) &nbsp;·&nbsp;
 [Backend](https://github.com/LordDetson/pipoker-app) &nbsp;·&nbsp;
-[Server setup](https://github.com/LordDetson/pipoker-docker-config) &nbsp;·&nbsp;
-[Support the project](https://lorddetson.github.io/)
+[Server setup](https://github.com/LordDetson/pipoker-docker-config)
 
 [![CI](https://github.com/LordDetson/pipoker-web/actions/workflows/ci.yml/badge.svg)](https://github.com/LordDetson/pipoker-web/actions/workflows/ci.yml)
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Fpipoker.app&label=pipoker.app)](https://pipoker.app)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fpipoker.app&label=pipoker.app)](https://pipoker.app/?from=github)
 [![License](https://img.shields.io/github/license/LordDetson/pipoker-web)](LICENSE)
 ![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)
 ![NgRx](https://img.shields.io/badge/NgRx-22-BA2BD2?logo=ngrx&logoColor=white)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
+
+[![Support the project](https://img.shields.io/badge/%F0%9F%A7%A1_Support_the_project-lorddetson.github.io-ff8c00?style=for-the-badge)](https://lorddetson.github.io/)
 
 <img src="docs/screenshots/revealed-dark.png" alt="A PiPoker room after the cards are revealed" width="860">
 
@@ -118,7 +119,7 @@ minutes. A commit checked on QA goes to PROD through the **Promote to PROD** wor
 ## Contributing
 
 Ideas, bug reports and pull requests are welcome. Open an [issue](https://github.com/LordDetson/pipoker-web/issues)
-or use the **Feedback** button on [pipoker.app](https://pipoker.app). If PiPoker helps your team, you can
+or use the **Feedback** button on [pipoker.app](https://pipoker.app/?from=github). If PiPoker helps your team, you can
 [support its development](https://lorddetson.github.io/).
 
 ## License
