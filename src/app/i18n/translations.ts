@@ -63,6 +63,11 @@ const en = {
   "form.deckHelp": "Pick a ready deck or type your own cards separated by \";\" and save them under a name: "
     + "your decks are kept in this browser. A deck holds up to 20 cards, each unique and at most 6 characters long.",
   "form.watcher": "Join as watcher",
+  "form.watcherHintLabel": "Who is a watcher",
+  "form.watcherHint": "A watcher is in the room with everyone and can do all that a voter does: name the task, "
+    + "start the timer, reveal the cards, accept the estimate, look through the history. The only thing a watcher "
+    + "can't do is vote: they have no deck and no seat at the table. In the room you can switch between watching "
+    + "and voting at any time.",
   "form.createRoom": "Create Room",
   "form.joinRoom": "Join Room",
   "form.invitation": "Have an invitation?",
@@ -229,6 +234,11 @@ const ru: Record<TranslationKey, string> = {
   "form.deckHelp": "Выберите готовую колоду или впишите свои карты через «;» и сохраните их под своим названием: "
     + "ваши колоды хранятся в этом браузере. В колоде до 20 карт, значения не повторяются и содержат не больше 6 символов.",
   "form.watcher": "Войти как наблюдатель",
+  "form.watcherHintLabel": "Кто такой наблюдатель",
+  "form.watcherHint": "Наблюдатель находится в комнате вместе со всеми и может делать всё то же, что и участник: "
+    + "задавать задачу, запускать таймер, вскрывать карты, принимать оценку, смотреть историю. Он только не "
+    + "голосует: у него нет колоды и места за столом. В комнате можно в любой момент переключиться между "
+    + "наблюдением и голосованием.",
   "form.createRoom": "Создать комнату",
   "form.joinRoom": "Войти в комнату",
   "form.invitation": "Есть приглашение?",

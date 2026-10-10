@@ -3,7 +3,7 @@ import {RouterTestingModule} from "@angular/router/testing";
 import {Router} from "@angular/router";
 import {Location} from "@angular/common";
 import {ReactiveFormsModule} from "@angular/forms";
-import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
+import {NgbDropdownModule, NgbPopoverModule} from "@ng-bootstrap/ng-bootstrap";
 import {StoreModule} from "@ngrx/store";
 import {EffectsModule} from "@ngrx/effects";
 import {AppComponent} from "../app.component";
@@ -36,6 +36,7 @@ import {HistoryComponent} from "../room/history/history.component";
 import {TaskComponent} from "../room/task/task.component";
 import {EstimateComponent} from "../room/estimate/estimate.component";
 import {RoleSwitchComponent} from "../room/role-switch/role-switch.component";
+import {WatcherHintComponent} from "../watcher-hint/watcher-hint.component";
 
 // Runs the whole client (components, store, effects and services) against an in-memory imitation
 // of the pipoker-app STOMP API. Only the STOMP connection itself is replaced.
@@ -67,11 +68,13 @@ describe("PiPoker room (integration)", () => {
         TimerComponent,
         TaskComponent,
         EstimateComponent,
-        RoleSwitchComponent
+        RoleSwitchComponent,
+        WatcherHintComponent
       ],
       imports: [
         RouterTestingModule.withRoutes(routes),
         NgbDropdownModule,
+        NgbPopoverModule,
         ReactiveFormsModule,
         StoreModule.forRoot(reducers, {
           metaReducers,

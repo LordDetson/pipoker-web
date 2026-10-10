@@ -3,7 +3,7 @@ import {BrowserModule} from '@angular/platform-browser';
 
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {NgbDropdownModule} from '@ng-bootstrap/ng-bootstrap';
+import {NgbDropdownModule, NgbPopoverModule} from '@ng-bootstrap/ng-bootstrap';
 import {CreateRoomComponent} from './create-room/create-room.component';
 import {HeaderComponent} from './header/header.component';
 import {ThemeSwitcherComponent} from './header/theme-switcher/theme-switcher.component';
@@ -30,6 +30,7 @@ import {storeDevtools} from "../env/store-devtools";
 import {HistoryComponent} from './room/history/history.component';
 import {TaskComponent} from './room/task/task.component';
 import {EstimateComponent} from './room/estimate/estimate.component';
+import {WatcherHintComponent} from './watcher-hint/watcher-hint.component';
 
 @NgModule({
   declarations: [
@@ -50,12 +51,14 @@ import {EstimateComponent} from './room/estimate/estimate.component';
     TimerComponent,
     TaskComponent,
     EstimateComponent,
-    RoleSwitchComponent
+    RoleSwitchComponent,
+    WatcherHintComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     NgbDropdownModule,
+    NgbPopoverModule,
     FormsModule,
     ReactiveFormsModule,
     StoreModule.forRoot(reducers, {

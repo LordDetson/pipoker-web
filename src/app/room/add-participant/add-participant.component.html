@@ -22,6 +22,7 @@
       <label class="form-check-label" for="watcherInput">
         {{"form.watcher" | translate}}
       </label>
+      <app-watcher-hint/>
     </div>
     <div *ngIf="error$ | async as error" class="alert alert-danger" role="alert">{{error | serverError}}</div>
     <div class="d-grid gap-2">
