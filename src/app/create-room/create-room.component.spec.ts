@@ -1,5 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
+import {NgbPopoverModule} from "@ng-bootstrap/ng-bootstrap";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {CreateRoomComponent} from "./create-room.component";
 import {RoomService} from "../services/room.service";
@@ -10,6 +11,7 @@ import {RoomStatus} from "../store/room/room-state";
 import {TranslatePipe} from "../i18n/translate.pipe";
 import {ServerErrorPipe} from "../i18n/server-error.pipe";
 import {AboutComponent} from "../about/about.component";
+import {WatcherHintComponent} from "../watcher-hint/watcher-hint.component";
 import {ErrorCode} from "../models/room-event";
 import {MyDecks, PRESET_DECKS} from "../common/decks";
 import {Router} from "@angular/router";
@@ -24,8 +26,8 @@ describe("CreateRoomComponent", () => {
     localStorage.clear();
     visits = jasmine.createSpyObj<VisitService>("VisitService", ["report"]);
     TestBed.configureTestingModule({
-      declarations: [CreateRoomComponent, AboutComponent],
-      imports: [ReactiveFormsModule, TranslatePipe, ServerErrorPipe],
+      declarations: [CreateRoomComponent, AboutComponent, WatcherHintComponent],
+      imports: [ReactiveFormsModule, NgbPopoverModule, TranslatePipe, ServerErrorPipe],
       providers: [
         provideMockStore({initialState: appState()}),
         {provide: RoomService, useValue: {}},

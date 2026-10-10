@@ -1,0 +1,13 @@
+<button type="button" class="watcher-hint"
+        [ngbPopover]="'form.watcherHint' | translate" triggers="manual" [autoClose]="false"
+        placement="top bottom end" popoverClass="watcher-hint-popover"
+        [attr.aria-label]="'form.watcherHintLabel' | translate"
+        (mouseenter)="open()" (mouseleave)="close()" (focus)="open()" (blur)="close()" (click)="open()"
+        (keydown.escape)="close()">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+    <circle cx="8" cy="8" r="6.75" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M6.25 6.25a1.75 1.75 0 113 1.25c-.6.45-1.25.8-1.25 1.75" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="8" cy="11.5" r=".9" fill="currentColor"/>
+  </svg>
+</button>

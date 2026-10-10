@@ -1,5 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
+import {NgbPopoverModule} from "@ng-bootstrap/ng-bootstrap";
 import {ActivatedRoute} from "@angular/router";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {of, Subject} from "rxjs";
@@ -12,6 +13,7 @@ import {RoomStatus} from "../../store/room/room-state";
 import {TranslatePipe} from "../../i18n/translate.pipe";
 import {ServerErrorPipe} from "../../i18n/server-error.pipe";
 import {AboutComponent} from "../../about/about.component";
+import {WatcherHintComponent} from "../../watcher-hint/watcher-hint.component";
 import {ErrorCode} from "../../models/room-event";
 
 describe("AddParticipantComponent", () => {
@@ -25,8 +27,8 @@ describe("AddParticipantComponent", () => {
     roomService = jasmine.createSpyObj<RoomService>("RoomService", ["checkIfNicknameExist"]);
     roomService.checkIfNicknameExist.and.callFake((id, nickname) => of(takenNicknames.includes(nickname.toLowerCase())));
     TestBed.configureTestingModule({
-      declarations: [AddParticipantComponent, AboutComponent],
-      imports: [ReactiveFormsModule, TranslatePipe, ServerErrorPipe],
+      declarations: [AddParticipantComponent, AboutComponent, WatcherHintComponent],
+      imports: [ReactiveFormsModule, NgbPopoverModule, TranslatePipe, ServerErrorPipe],
       providers: [
         provideMockStore({initialState: appState()}),
         {provide: RoomService, useValue: roomService},

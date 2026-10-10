@@ -53,3 +53,8 @@ html, body {
     column-gap: 2rem;
   }
 }
+
+// The hint about watchers next to "Join as watcher" holds a few lines, a little wider than a popover by default
+.watcher-hint-popover {
+  --bs-popover-max-width: 20rem;
+}
