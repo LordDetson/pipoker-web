@@ -1,5 +1,5 @@
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
-import {NgZone} from "@angular/core";
+import {NgZone, PLATFORM_ID} from "@angular/core";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {RoomWebSocketService, STOMP_CLIENT_FACTORY} from "./room-web-socket.service";
 import {FakeStompClient} from "../testing/fake-stomp";
@@ -434,7 +434,7 @@ describe("RoomWebSocketService", () => {
           listeners.push({listener, capture});
         }
       });
-      const pageService = new RoomWebSocketService(store, TestBed.inject(NgZone), TestBed.inject(STOMP_CLIENT_FACTORY), [1000]);
+      const pageService = new RoomWebSocketService(store, TestBed.inject(NgZone), TestBed.inject(STOMP_CLIENT_FACTORY), [1000], TestBed.inject(PLATFORM_ID));
       pageService.watch("/topic/test").subscribe();
       const client = connectedClient();
       const event = new PageTransitionEvent("pagehide", {persisted: false});

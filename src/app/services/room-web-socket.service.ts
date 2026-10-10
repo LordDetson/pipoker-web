@@ -1,4 +1,5 @@
-import {inject, Inject, Injectable, InjectionToken, NgZone, OnDestroy} from '@angular/core';
+import {inject, Inject, Injectable, InjectionToken, NgZone, OnDestroy, PLATFORM_ID} from '@angular/core';
+import {isPlatformBrowser} from "@angular/common";
 import SockJS from "sockjs-client";
 import * as Stomp from "stompjs";
 import {BehaviorSubject, EMPTY, filter, Observable, share, Subject, Subscription, switchMap, take} from "rxjs";
@@ -14,8 +15,9 @@ import {toTimer} from "../models/room.model";
 export const STOMP_CLIENT_FACTORY = new InjectionToken<() => any>("STOMP client factory", {
   providedIn: "root",
   factory: () => {
-    // stompjs takes its heartbeat timers from the Stomp object it puts on window
-    const stomp = (window as any).Stomp;
+    // stompjs takes its heartbeat timers from the Stomp object it puts on window. The build prerenders the start
+    // page without a browser, and no connection is made there
+    const stomp = isPlatformBrowser(inject(PLATFORM_ID)) ? (window as any).Stomp : undefined;
     if (stomp) {
       inject(NgZone).runOutsideAngular(() => tickHeartbeatInWorker(stomp));
     }
@@ -58,13 +60,20 @@ export class RoomWebSocketService implements OnDestroy {
   private readonly onOnline = () => this.reconnectNow();
   private readonly onPageHide = (event: PageTransitionEvent) => this.sayPageClosed(event);
   private pageClosedSaid = false;
+  // False while the build prerenders the start page: there is no window to listen to, and no page closes
+  private readonly browser: boolean;
 
   constructor(
     private store: Store,
     private zone: NgZone,
     @Inject(STOMP_CLIENT_FACTORY) private createStompClient: () => any,
-    @Inject(RECONNECT_DELAYS) private reconnectDelays: number[]
+    @Inject(RECONNECT_DELAYS) private reconnectDelays: number[],
+    @Inject(PLATFORM_ID) platform: Object
   ) {
+    this.browser = isPlatformBrowser(platform);
+    if (!this.browser) {
+      return;
+    }
     // No need to wait for the next attempt when the browser is back online
     window.addEventListener("online", this.onOnline);
     // Firefox can stop the script that is running while a page closes, and then the page-closed mark is not sent.
@@ -75,9 +84,11 @@ export class RoomWebSocketService implements OnDestroy {
   }
 
   ngOnDestroy() {
-    window.removeEventListener("online", this.onOnline);
-    window.removeEventListener("pagehide", this.onPageHide, true);
-    window.removeEventListener("pagehide", this.onPageHide);
+    if (this.browser) {
+      window.removeEventListener("online", this.onOnline);
+      window.removeEventListener("pagehide", this.onPageHide, true);
+      window.removeEventListener("pagehide", this.onPageHide);
+    }
     this.disconnect();
   }
 

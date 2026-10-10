@@ -1,4 +1,5 @@
-import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy, Inject, PLATFORM_ID} from '@angular/core';
+import {isPlatformBrowser} from "@angular/common";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Router} from "@angular/router";
 import {AppConstants} from "../common/app-constants";
@@ -35,7 +36,7 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
   ngDestroyed$ = new Subject<void>();
   error$: Observable<unknown> = this.store.select(RoomSelector.errorSelector);
   readonly presetDecks = PRESET_DECKS;
-  myDecks: NamedDeck[] = MyDecks.load();
+  myDecks: NamedDeck[] = [];
   // The deck picked in the list: "preset:<id>", "mine:<name>", or "" while the cards match none of them
   selectedDeck: string = "";
   // The name a new deck will be saved under
@@ -53,16 +54,21 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     private store: Store,
     private i18n: I18nService,
     private router: Router,
-    private visits: VisitService
+    private visits: VisitService,
+    @Inject(PLATFORM_ID) private platform: Object
   ) {
   }
 
   ngOnInit(): void {
     this.visits.report();
-    const nickname: string = localStorage.getItem(AppConstants.lastNickname) ?? "";
-    const roomName: string = localStorage.getItem(AppConstants.lastRoomName) ?? "";
-    const deck: string = localStorage.getItem(AppConstants.lastDeck) ?? AppConstants.defaultDeck;
-    const watcher: boolean = JSON.parse(localStorage.getItem(AppConstants.lastWatcher) as string) ?? false;
+    // The build prerenders the start page without a browser, and then nothing is remembered
+    const browser = isPlatformBrowser(this.platform);
+    const remembered = (key: string) => browser ? localStorage.getItem(key) : null;
+    this.myDecks = browser ? MyDecks.load() : [];
+    const nickname: string = remembered(AppConstants.lastNickname) ?? "";
+    const roomName: string = remembered(AppConstants.lastRoomName) ?? "";
+    const deck: string = remembered(AppConstants.lastDeck) ?? AppConstants.defaultDeck;
+    const watcher: boolean = JSON.parse(remembered(AppConstants.lastWatcher) as string) ?? false;
     this.createRoomForm = new FormGroup<CreateRoomFormGroup>({
       nickname: new FormControl<string>(nickname, {
         nonNullable: true,

@@ -52,7 +52,13 @@ describe("I18nService", () => {
     expect(i18n.language).toBe("en");
     expect(document.documentElement.lang).toBe("en");
     expect(localStorage.getItem(AppConstants.language)).toBe("en");
-    expect(new I18nService(document, ["ru-RU"]).language).toBe("en");
+    expect(new I18nService(document, ["ru-RU"], "browser").language).toBe("en");
+  });
+
+  it("takes the language given where there is no browser, as in the build that prerenders the pages", () => {
+    localStorage.setItem(AppConstants.language, "en");
+
+    expect(new I18nService(document, ["ru"], "server").language).toBe("ru");
   });
 
   it("puts the description in the language picked", () => {

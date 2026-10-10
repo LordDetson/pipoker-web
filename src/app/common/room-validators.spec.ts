@@ -47,7 +47,7 @@ describe("RoomValidators", () => {
 
   function i18n(language: string): I18nService {
     localStorage.removeItem(AppConstants.language);
-    return new I18nService(document, [language]);
+    return new I18nService(document, [language], "browser");
   }
 
   it("describes every validation error", () => {

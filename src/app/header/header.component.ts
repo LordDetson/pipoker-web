@@ -1,4 +1,5 @@
-import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, ViewChild, ChangeDetectionStrategy} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, ViewChild, ChangeDetectionStrategy, Inject, PLATFORM_ID} from '@angular/core';
+import {isPlatformBrowser} from "@angular/common";
 import {select, Store} from "@ngrx/store";
 import {combineLatest, Subscription} from "rxjs";
 import {idSelector, nameSelector} from "../store/room/room.selector";
@@ -51,7 +52,8 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
     private changeDetector: ChangeDetectorRef,
     private host: ElementRef<HTMLElement>,
     private ngZone: NgZone,
-    public i18n: I18nService
+    public i18n: I18nService,
+    @Inject(PLATFORM_ID) private platform: Object
   ) {
     this.roomSubscription = combineLatest([
       this.store.pipe(select(idSelector)),
@@ -66,6 +68,10 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    // The build prerenders the pages without a browser, where nothing has a width: the header is left whole
+    if (!isPlatformBrowser(this.platform)) {
+      return;
+    }
     // The header's own size is fixed by CSS, so fitting its content never triggers the observer again.
     // The observer reports outside Angular's zone, where the buttons fit creates would not update the page on click.
     this.resizeObserver = new ResizeObserver(() => this.ngZone.run(() => this.fit()));
