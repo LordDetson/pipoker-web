@@ -87,19 +87,12 @@
   line-height: 1;
 }
 
-.support-item > .book-icon {
-  flex-shrink: 0;
-}
-
-.heart-icon {
+/* On the orange button the heart stays white; in the settings menu it carries the orange itself */
+.support-item > .heart-icon {
   color: #f15f2c;
 }
 
-.support-link:hover > .book-icon {
-  flex-shrink: 0;
-}
-
-.heart-icon {
+.support-link:hover > .heart-icon {
   transform: scale(1.15);
 }
 
