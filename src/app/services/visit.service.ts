@@ -1,4 +1,5 @@
-import {Injectable} from "@angular/core";
+import {Inject, Injectable, PLATFORM_ID} from "@angular/core";
+import {isPlatformBrowser} from "@angular/common";
 import {environment} from "../../env/env";
 
 // Where a page was opened from, as the page knows it. The server turns it into one of a fixed set of sources
@@ -17,17 +18,22 @@ const VISIT_KEY = "visit";
 @Injectable({providedIn: "root"})
 export class VisitService {
 
+  constructor(@Inject(PLATFORM_ID) private platform: Object) {
+  }
+
   // Called by the pages a visitor lands on (the start page and the guide), not by a room, which people get
-  // to by an invitation
-  report(search: string = location.search, referrer: string = document.referrer): void {
-    if (this.source !== undefined) {
+  // to by an invitation. The page's own address and referrer are taken unless given.
+  report(search?: string, referrer?: string): void {
+    // The build prerenders the pages without a browser: that is no visit
+    if (!isPlatformBrowser(this.platform) || this.source !== undefined) {
       return;
     }
     const visit: VisitDto = {};
-    const from = new URLSearchParams(search).get("from")?.trim();
+    const from = new URLSearchParams(search ?? location.search).get("from")?.trim();
     if (from) {
       visit.from = from;
     }
+    referrer ??= document.referrer;
     if (referrer) {
       visit.referrer = referrer;
     }

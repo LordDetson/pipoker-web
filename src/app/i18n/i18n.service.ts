@@ -1,4 +1,5 @@
-import {Inject, Injectable, InjectionToken, DOCUMENT} from "@angular/core";
+import {Inject, Injectable, InjectionToken, DOCUMENT, PLATFORM_ID} from "@angular/core";
+import {isPlatformBrowser} from "@angular/common";
 import {Observable, ReplaySubject} from "rxjs";
 import {Language, LANGUAGES, LanguageOption, TranslationKey, translations} from "./translations";
 import {AppConstants} from "../common/app-constants";
@@ -36,10 +37,12 @@ export class I18nService {
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
-    @Inject(BROWSER_LANGUAGES) browserLanguages: readonly string[]
+    @Inject(BROWSER_LANGUAGES) browserLanguages: readonly string[],
+    @Inject(PLATFORM_ID) platform: Object
   ) {
-    // The language picked in the header wins over the browser's one
-    const chosen = localStorage.getItem(AppConstants.language);
+    // The language picked in the header wins over the browser's one. The build, which prerenders the pages
+    // without a browser, has none picked
+    const chosen = isPlatformBrowser(platform) ? localStorage.getItem(AppConstants.language) : null;
     this.setLanguage(chosen === "en" || chosen === "ru" ? chosen : detectLanguage(browserLanguages));
   }
 

@@ -81,7 +81,9 @@ npm start          # http://localhost:4200
 
 The development server expects the backend on http://localhost:8080 (see `src/env/env.ts`); the quickest way to
 run one is `server/compose.yml` in [pipoker-docker-config](https://github.com/LordDetson/pipoker-docker-config).
-The production build (`npm run build`) connects to `/ws` on the domain it is served from.
+The production build (`npm run build`) connects to `/ws` on the domain it is served from. It also renders the start
+page and the guide to HTML (`index.html`, `guide/index.html`, see `src/app/app.routes.server.ts`), so search engines
+that run no JavaScript see their content; the other pages start from `index.csr.html`.
 
 ## Tests
 

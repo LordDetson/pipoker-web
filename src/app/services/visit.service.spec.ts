@@ -32,6 +32,13 @@ describe("VisitService", () => {
     expect(service.source).toEqual({});
   });
 
+  it("reports nothing where there is no browser, as in the build that prerenders the pages", () => {
+    new VisitService("server").report("?from=habr", "https://habr.com/");
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(sessionStorage.length).toBe(0);
+  });
+
   it("reports once per tab", () => {
     service.report("?from=tg", "");
     service.report("", "https://example.com/");

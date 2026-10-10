@@ -1,4 +1,5 @@
-import {Inject, Injectable, DOCUMENT} from "@angular/core";
+import {Inject, Injectable, DOCUMENT, PLATFORM_ID} from "@angular/core";
+import {isPlatformBrowser} from "@angular/common";
 import {AppConstants} from "../common/app-constants";
 
 // The colour theme of the page: Bootstrap's one on the body, and the colour of the title bar
@@ -12,9 +13,12 @@ export class ThemeService {
   private light: boolean;
 
   constructor(
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    @Inject(PLATFORM_ID) platform: Object
   ) {
-    this.light = JSON.parse(localStorage.getItem(AppConstants.lastTheme) as string) ?? false;
+    // The build prerenders the pages without a browser; they get the dark theme, like index.html
+    this.light = isPlatformBrowser(platform)
+      && (JSON.parse(localStorage.getItem(AppConstants.lastTheme) as string) ?? false);
     this.apply();
   }
 
