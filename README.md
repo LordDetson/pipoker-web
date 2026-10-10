@@ -17,7 +17,7 @@
 ![NgRx](https://img.shields.io/badge/NgRx-22-BA2BD2?logo=ngrx&logoColor=white)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
 
-[![Support the project](https://img.shields.io/badge/%E2%9D%A4%EF%B8%8F_Support_the_project-lorddetson.github.io-ff4f8b?style=for-the-badge)](https://lorddetson.github.io/)
+[![Support the project](https://img.shields.io/badge/%F0%9F%A7%A1_Support_the_project-lorddetson.github.io-ff8c00?style=for-the-badge)](https://lorddetson.github.io/)
 
 <img src="docs/screenshots/revealed-dark.png" alt="A PiPoker room after the cards are revealed" width="860">
 
