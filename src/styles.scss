@@ -58,3 +58,18 @@ html, body {
 .watcher-hint-popover {
   --bs-popover-max-width: 20rem;
 }
+
+// Words that give way to an icon on a phone, where the top line of the room is short. Screen readers still read them.
+@media (max-width: 575.98px) {
+  .visually-hidden-phone {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+}

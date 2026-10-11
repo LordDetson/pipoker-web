@@ -23,8 +23,7 @@
   display: none;
 }
 
-/* On a phone the task shares the line with the button, so a clock stands in for the word.
-   The word stays for screen readers. */
+/* On a phone the task shares the line with the button, so a clock stands in for the word */
 @media (max-width: 575.98px) {
   .history-toggle {
     display: flex;
@@ -35,15 +34,6 @@
 
   .history-icon {
     display: block;
-  }
-
-  .history-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
   }
 }
 
