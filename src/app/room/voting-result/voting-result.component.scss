@@ -58,13 +58,6 @@ p {
   container-type: inline-size;
 }
 
-// A phone has more height than width under the table: a lot of different cards take two rows of larger piles
-@media (max-width: 575.98px) {
-  .pile {
-    flex-basis: 40px;
-  }
-}
-
 .stack {
   position: relative;
   width: calc(var(--card-width) + (var(--layers) - 1) * var(--layer-offset));
@@ -115,6 +108,34 @@ p {
 .spread {
   font-size: 0.85rem;
   color: var(--bs-secondary-color);
+}
+
+// A phone has more height than width under the table, so the result takes more of it. A few different cards get large
+// piles in one row; a lot of them take two rows of smaller piles.
+@media (max-width: 575.98px) {
+  .leading-card {
+    font-size: 2.75rem;
+  }
+
+  .detail,
+  .spread {
+    font-size: 1.125rem;
+  }
+
+  .pile {
+    --card-width: min(60px, 80cqi);
+    --layer-offset: min(5px, 7cqi);
+    flex-basis: clamp(40px, 100% / var(--piles, 1) - 14px, 80px);
+  }
+
+  .pile-card {
+    border-radius: 8px;
+    font-size: min(1.5rem, 80px / var(--value-length), 100cqi / var(--value-length));
+  }
+
+  .count {
+    font-size: min(1.125rem, 40cqi);
+  }
 }
 
 @keyframes deal {
