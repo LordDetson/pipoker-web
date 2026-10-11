@@ -18,20 +18,29 @@ app-table:last-child {
   padding-bottom: 0.75rem;
 }
 
-/* The status button stays in the very middle of the table, and the timer hangs above it,
-   so the button doesn't move when the timer appears or goes */
+/* The status button and the timer above it stay together in the middle of the table, so the seats at the top and at the
+   bottom keep the same room from them. The place above the button is as tall as the running timer whatever it holds,
+   so the button doesn't move when the timer appears or goes. */
 .table-controls {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* Above the button too, so the menu of lengths or cards covers it rather than going under it.
-   As wide as their content: half of the button's width is all an element placed at its middle would get. */
-.table-controls app-timer, .table-controls app-estimate {
-  position: absolute;
+   As wide as their content: the button may be narrower. */
+.above-button {
+  position: relative;
   z-index: 1;
-  bottom: calc(100% + 0.5rem);
-  left: 50%;
-  transform: translateX(-50%);
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  min-height: 2.375rem;
+}
+
+.above-button > * {
+  grid-area: 1 / 1;
   width: max-content;
 }
 

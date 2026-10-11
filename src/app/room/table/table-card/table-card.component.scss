@@ -66,6 +66,7 @@
 
 .nickname {
   max-width: 100%;
+  // seatLayout counts on this size to keep the seats clear of the controls in the middle of the table
   font-size: max(0.7rem, var(--card-height) * 0.17);
   line-height: 1.2;
   color: rgba(255, 255, 255, 0.9);

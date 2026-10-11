@@ -97,6 +97,44 @@ describe("seatLayout", () => {
     }
   });
 
+  // The seat at the top of a 358x325 table, like the one on a phone, comes down to the controls in its middle:
+  // the button and the timer above it
+  const controls = {left: 129, top: 92, right: 229, bottom: 233};
+
+  function seatBoxes(count: number, width: number, height: number, layout = seatLayout(count, width, height, controls)) {
+    const side = Math.min(width, height);
+    const cardHeight = layout.cardSize * side;
+    const seatHeight = cardHeight * 1.06 + Math.max(0.7 * 16, cardHeight * 0.17) * 1.2;
+    return layout.seats.map(seat => ({
+      left: seat.x / 100 * width - layout.seatWidth * side / 2,
+      right: seat.x / 100 * width + layout.seatWidth * side / 2,
+      top: seat.y / 100 * height - seatHeight / 2,
+      bottom: seat.y / 100 * height + seatHeight / 2
+    }));
+  }
+
+  it("keeps the seats clear of the controls in the middle of the table by making them smaller", () => {
+    const covering = seatBoxes(6, 358, 325, seatLayout(6, 358, 325));
+    expect(covering[3].bottom).withContext("the seat at the top without the controls").toBeGreaterThan(controls.top);
+
+    const layout = seatLayout(6, 358, 325, controls);
+    expect(layout.cardSize).toBeLessThan(0.2);
+    expect(layout.cardSize).toBeGreaterThan(0.15);
+    for (const seat of seatBoxes(6, 358, 325)) {
+      const clear = seat.bottom <= controls.top || seat.top >= controls.bottom
+        || seat.right <= controls.left || seat.left >= controls.right;
+      expect(clear).withContext(JSON.stringify(seat)).toBeTrue();
+    }
+  });
+
+  it("keeps full-size cards when the seats are clear of the controls anyway", () => {
+    expect(seatLayout(6, 800, 400, {left: 340, top: 160, right: 460, bottom: 240})).toEqual(seatLayout(6, 800, 400));
+  });
+
+  it("makes the cards no smaller than half of the full size, even if the seats still touch the controls", () => {
+    expect(seatLayout(6, 358, 325, {left: 0, top: 0, right: 358, bottom: 325}).cardSize).toBe(0.1);
+  });
+
   it("has no seats at an empty table", () => {
     expect(seatLayout(0, 220, 100)).toEqual({cardSize: 0.2, seatWidth: 0.2 * 1.5, seats: []});
   });

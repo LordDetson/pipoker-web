@@ -4,7 +4,7 @@ import {Participant, sameNickname} from "../../models/participant.model";
 import {select, Store} from "@ngrx/store";
 import * as RoomSelector from "../../store/room/room.selector";
 import * as ParticipantSelector from "../../store/participant/participant.selector";
-import {Point, seatLayout} from "./seat-layout";
+import {Box, Point, seatLayout} from "./seat-layout";
 
 interface Seat extends Point {
   participant: Participant;
@@ -28,30 +28,39 @@ export class TableComponent implements AfterViewInit, OnDestroy {
   @ViewChild("felt", {static: true})
   felt: ElementRef<HTMLElement>;
 
+  // What the room puts in the middle of the table: the status button and the timer or the estimate above it
+  @ViewChild("center", {static: true})
+  center: ElementRef<HTMLElement>;
+
   private participants$: Observable<Participant[]> = this.store.pipe(select(RoomSelector.participantsSelector));
   watchers$: Observable<Participant[]> = this.participants$.pipe(
     map(participants => participants.filter(participant => participant.watcher)));
-  // The table fits the space the page gives it, so people are seated once it is measured. The ResizeObserver reports
-  // the size before the table is first painted, so the seats appear at their places and sizes right away.
-  private tableSize$ = new ReplaySubject<{ width: number, height: number }>(1);
+  // The table fits the space the page gives it, so people are seated once it is measured, and kept clear of the controls
+  // in the middle of it. The ResizeObserver reports the sizes before the table is first painted, so the seats appear
+  // at their places and sizes right away.
+  private tableSize$ = new ReplaySubject<{ width: number, height: number, controls?: Box }>(1);
   table$: Observable<TableView> = combineLatest([
     this.participants$,
     this.store.pipe(select(ParticipantSelector.currentParticipantSelector)),
     this.tableSize$
   ]).pipe(map(([participants, viewer, size]) => {
     const voters = seatingOrder(participants, viewer);
-    const layout = seatLayout(voters.length, size.width, size.height);
+    const layout = seatLayout(voters.length, size.width, size.height, size.controls);
     return {
       cardSize: layout.cardSize,
       seatWidth: layout.seatWidth,
       seats: voters.map((participant, index) => ({participant, ...layout.seats[index]}))
     };
   }));
-  private resizeObserver = new ResizeObserver(([entry]) => {
-    const {width, height} = entry.contentRect;
+  // Watches the table and each of the controls, which change their size when the timer starts or the cards are revealed
+  private resizeObserver = new ResizeObserver(() => {
+    const felt = this.felt.nativeElement;
+    const width = felt.clientWidth;
+    const height = felt.clientHeight;
     // A table that is not shown has no size, and nothing to seat people at
     if (width > 0 && height > 0) {
-      this.ngZone.run(() => this.tableSize$.next({width, height}));
+      const controls = this.controlsBox();
+      this.ngZone.run(() => this.tableSize$.next({width, height, controls}));
     }
   });
 
@@ -63,6 +72,9 @@ export class TableComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.resizeObserver.observe(this.felt.nativeElement);
+    for (const control of this.controls()) {
+      this.resizeObserver.observe(control);
+    }
   }
 
   ngOnDestroy(): void {
@@ -71,6 +83,29 @@ export class TableComponent implements AfterViewInit, OnDestroy {
 
   nicknameOf(index: number, seat: Seat): string {
     return seat.participant.nickname;
+  }
+
+  // The controls are the elements the room puts in the middle of the table and the parts of each of them: the timer and
+  // the estimate are placed out of the flow, above the button
+  private controls(): Element[] {
+    return Array.from(this.center.nativeElement.querySelectorAll(":scope > *, :scope > * > *"));
+  }
+
+  // The box around the controls that are shown, in pixels from the top left corner of the felt
+  private controlsBox(): Box | undefined {
+    const felt = this.felt.nativeElement;
+    const origin = felt.getBoundingClientRect();
+    const left = origin.left + felt.clientLeft;
+    const top = origin.top + felt.clientTop;
+    return this.controls()
+      .map(control => control.getBoundingClientRect())
+      .filter(rect => rect.width > 0 && rect.height > 0)
+      .reduce<Box | undefined>((box, rect) => ({
+        left: Math.min(box?.left ?? Infinity, rect.left - left),
+        top: Math.min(box?.top ?? Infinity, rect.top - top),
+        right: Math.max(box?.right ?? -Infinity, rect.right - left),
+        bottom: Math.max(box?.bottom ?? -Infinity, rect.bottom - top)
+      }), undefined);
   }
 }
 

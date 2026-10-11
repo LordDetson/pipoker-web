@@ -75,7 +75,8 @@ describe("RoomComponent", () => {
     create();
 
     expect(renderedChildren()).toEqual(["app-role-switch", "app-history", "app-task", "app-table", "div"]);
-    expect(fixture.nativeElement.querySelector("app-table > .table-controls > app-timer + app-estimate + app-buttons")).not.toBeNull();
+    expect(fixture.nativeElement.querySelector("app-table > .table-controls > .above-button > app-timer + app-estimate")).not.toBeNull();
+    expect(fixture.nativeElement.querySelector("app-table > .table-controls > .above-button + app-buttons")).not.toBeNull();
     expect(fixture.nativeElement.querySelector(".hand > app-deck").classList).not.toContain("invisible");
     expect(fixture.nativeElement.querySelector("app-voting-result")).toBeNull();
   });
@@ -87,11 +88,18 @@ describe("RoomComponent", () => {
     const buttons: HTMLElement = controls.querySelector("app-buttons")!;
     buttons.style.display = "block";
     buttons.style.height = "40px";
-    timer.style.height = "48px";
+    timer.style.display = "block";
+    timer.style.height = "0";
+    const withoutTimer = buttons.getBoundingClientRect().top - controls.getBoundingClientRect().top;
 
-    expect(controls.offsetHeight).withContext("the timer takes no room next to the button").toBe(40);
-    expect(timer.getBoundingClientRect().bottom).withContext("the timer is above the button")
-      .toBeLessThanOrEqual(buttons.getBoundingClientRect().top);
+    // The toggle that starts the timer is lower than the running timer
+    for (const height of ["31px", "38px"]) {
+      timer.style.height = height;
+      expect(buttons.getBoundingClientRect().top - controls.getBoundingClientRect().top).withContext(height)
+        .toBe(withoutTimer);
+      expect(timer.getBoundingClientRect().bottom).withContext("the timer is above the button")
+        .toBeLessThanOrEqual(buttons.getBoundingClientRect().top);
+    }
   });
 
   it("opens the menu of the timer over the status button", () => {
