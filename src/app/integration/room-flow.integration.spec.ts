@@ -202,7 +202,7 @@ describe("PiPoker room (integration)", () => {
     await click(page.querySelector<HTMLElement>(".language-select [ngbDropdownToggle]")!);
     await click(page.querySelector<HTMLElement>(".language-select [ngbDropdownItem][lang=ru]")!);
 
-    expect(page.querySelector("app-about h2")!.textContent).toBe("Что такое PiPoker?");
+    expect(page.querySelector("app-about h1")!.textContent).toBe("Что такое PiPoker?");
     await type("#nicknameInput", "D");
     expect(page.querySelector("#nicknameInput + .invalid-feedback")!.textContent)
       .toBe("Поле «Имя» должно содержать не меньше 2 символов");
@@ -213,6 +213,19 @@ describe("PiPoker room (integration)", () => {
 
     expect(button("Пригласить")).toBeDefined();
     expect(button("Голосование...").disabled).toBeTrue();
+  });
+
+  it("speaks the language of the address it is opened by, and changes the address with the language", async () => {
+    await open("/ru");
+
+    expect(page.querySelector("app-about h1")!.textContent).toBe("Что такое PiPoker?");
+    expect(page.querySelector<HTMLAnchorElement>("app-about a.guide-link")!.getAttribute("href")).toBe("/ru/guide");
+
+    await click(page.querySelector<HTMLElement>(".language-select [ngbDropdownToggle]")!);
+    await click(page.querySelector<HTMLElement>(".language-select [ngbDropdownItem][lang=en]")!);
+
+    expect(TestBed.inject(Router).url).toBe("/en");
+    expect(page.querySelector("app-about h1")!.textContent).toBe("What is PiPoker?");
   });
 
   it("plays a whole voting round with another participant", async () => {

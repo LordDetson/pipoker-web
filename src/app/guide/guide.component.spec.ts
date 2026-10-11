@@ -4,7 +4,7 @@ import {GuideComponent} from "./guide.component";
 import {GUIDE} from "./guide-content";
 import {BROWSER_LANGUAGES, I18nService} from "../i18n/i18n.service";
 import {AppConstants} from "../common/app-constants";
-import {translations} from "../i18n/translations";
+import {Language} from "../i18n/translations";
 import {VisitService} from "../services/visit.service";
 
 describe("GuideComponent", () => {
@@ -28,10 +28,12 @@ describe("GuideComponent", () => {
     localStorage.removeItem(AppConstants.language);
     description.remove();
     canonical.remove();
+    document.head.querySelectorAll('link[rel="alternate"]').forEach(link => link.remove());
     document.title = "";
   });
 
-  function render(browserLanguages: string[]): HTMLElement {
+  // addressLanguage: the language of the address the guide is opened by, as the route's guard sets it
+  function render(browserLanguages: string[], addressLanguage: Language | null = null): HTMLElement {
     TestBed.configureTestingModule({
       imports: [GuideComponent],
       providers: [
@@ -40,6 +42,7 @@ describe("GuideComponent", () => {
         {provide: VisitService, useValue: visits}
       ]
     });
+    TestBed.inject(I18nService).useAddressLanguage(addressLanguage);
     fixture = TestBed.createComponent(GuideComponent);
     fixture.detectChanges();
     return fixture.nativeElement;
@@ -98,12 +101,19 @@ describe("GuideComponent", () => {
 
     expect(document.title).toBe(GUIDE.en.title);
     expect(description.content).toBe(GUIDE.en.description);
+  });
 
-    fixture.destroy();
+  it("names its address in each language, and on an address with a language takes it as the canonical one", () => {
+    const guide = render(["ru-RU"], "en");
 
-    expect(document.title).toBe("PiPoker");
-    expect(description.content).toBe(translations.en["meta.description"]);
-    expect(canonical.href).toBe("https://pipoker.app/");
+    expect(document.title).toBe(GUIDE.en.title);
+    expect(canonical.href).toBe("https://pipoker.app/en/guide");
+    const alternate = (hreflang: string) =>
+      document.head.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${hreflang}"]`)!.href;
+    expect(alternate("ru")).toBe("https://pipoker.app/ru/guide");
+    expect(alternate("en")).toBe("https://pipoker.app/en/guide");
+    expect(alternate("x-default")).toBe("https://pipoker.app/guide");
+    expect(guide.querySelector<HTMLAnchorElement>(".try-it a.btn")!.getAttribute("href")).toBe("/en");
   });
 
   it("leads back to the start page to create a room", () => {
