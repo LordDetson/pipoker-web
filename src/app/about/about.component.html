@@ -1,5 +1,5 @@
 <section class="text-body-secondary common-transition">
-  <h2 class="fs-4 text-body-emphasis">{{"about.title" | translate}}</h2>
+  <h1 class="fs-4 text-body-emphasis">{{"about.title" | translate}}</h1>
   <p>{{"about.description" | translate}}</p>
   <div class="row">
     <div class="col-12 col-md-6 col-lg-12">
@@ -20,5 +20,5 @@
       </ul>
     </div>
   </div>
-  <p class="mb-0"><a routerLink="/guide" class="guide-link">{{"about.guide" | translate}}</a></p>
+  <p class="mb-0"><a [routerLink]="i18n.address('/guide')" class="guide-link">{{"about.guide" | translate}}</a></p>
 </section>

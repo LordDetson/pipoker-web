@@ -7,7 +7,7 @@ import {I18nService} from "../i18n/i18n.service";
 import {PageMetaService} from "../services/page-meta.service";
 import {VisitService} from "../services/visit.service";
 
-// The guide "How to run Planning Poker" at /guide: what the game is, the decks, the meeting step by step with
+// The guide "How to run Planning Poker" at /guide, /ru/guide and /en/guide: what the game is, the decks, the meeting step by step with
 // the way each step is done in PiPoker, and common mistakes. It is the page search engines find for questions
 // about Planning Poker, so it carries its own title and description. Loaded only when opened, so its texts and
 // screenshots stay out of the start page's bundle.
@@ -29,6 +29,11 @@ export class GuideComponent implements OnInit, OnDestroy {
     return GUIDE[this.i18n.language];
   }
 
+  // The start page in the language of the guide's address, or without one
+  get startAddress(): string {
+    return this.i18n.address("/");
+  }
+
   imageUrl(file: string): string {
     return `/assets/guide/${this.i18n.language}/${file}`;
   }
@@ -37,12 +42,11 @@ export class GuideComponent implements OnInit, OnDestroy {
     this.visits.report();
     this.languageSubscription = this.i18n.language$.subscribe(() => {
       const {title, description} = this.content;
-      this.pageMeta.set({title, description, path: "/guide"});
+      this.pageMeta.set({title, description, page: "/guide"});
     });
   }
 
   ngOnDestroy(): void {
     this.languageSubscription.unsubscribe();
-    this.pageMeta.reset(this.i18n.translate("meta.description"));
   }
 }

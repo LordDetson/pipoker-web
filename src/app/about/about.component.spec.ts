@@ -22,7 +22,7 @@ describe("AboutComponent", () => {
   it("tells what PiPoker is and how it works", () => {
     const about = render(["en-US"]);
 
-    expect(about.querySelector("h2")!.textContent).toBe("What is PiPoker?");
+    expect(about.querySelector("h1")!.textContent).toBe("What is PiPoker?");
     expect(about.querySelectorAll("ol > li").length).toBe(3);
     expect(about.textContent).toContain("Free and without registration.");
   });
@@ -38,7 +38,7 @@ describe("AboutComponent", () => {
   it("speaks Russian to a Russian browser", () => {
     const about = render(["ru-RU"]);
 
-    expect(about.querySelector("h2")!.textContent).toBe("Что такое PiPoker?");
+    expect(about.querySelector("h1")!.textContent).toBe("Что такое PiPoker?");
     expect(about.textContent).toContain("Бесплатно и без регистрации.");
   });
 });

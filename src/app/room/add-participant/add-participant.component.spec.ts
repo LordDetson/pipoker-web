@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
 import {NgbPopoverModule} from "@ng-bootstrap/ng-bootstrap";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, provideRouter, RouterLink} from "@angular/router";
 import {MockStore, provideMockStore} from "@ngrx/store/testing";
 import {of, Subject} from "rxjs";
 import {AddParticipantComponent} from "./add-participant.component";
@@ -28,8 +28,9 @@ describe("AddParticipantComponent", () => {
     roomService.checkIfNicknameExist.and.callFake((id, nickname) => of(takenNicknames.includes(nickname.toLowerCase())));
     TestBed.configureTestingModule({
       declarations: [AddParticipantComponent, AboutComponent, WatcherHintComponent],
-      imports: [ReactiveFormsModule, NgbPopoverModule, TranslatePipe, ServerErrorPipe],
+      imports: [ReactiveFormsModule, NgbPopoverModule, TranslatePipe, ServerErrorPipe, RouterLink],
       providers: [
+        provideRouter([]),
         provideMockStore({initialState: appState()}),
         {provide: RoomService, useValue: roomService},
         {provide: ActivatedRoute, useValue: {snapshot: {params: {id: ROOM_ID}}}}

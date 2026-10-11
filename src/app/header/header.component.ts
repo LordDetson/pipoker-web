@@ -7,6 +7,8 @@ import {Clipboard} from '@angular/cdk/clipboard';
 import {environment} from "../../env/env";
 import {I18nService} from "../i18n/i18n.service";
 import {Language, LANGUAGES, LanguageOption} from "../i18n/translations";
+import {Router} from "@angular/router";
+import {switchAddress} from "../i18n/language-pages";
 
 // What the header gives up, in this order, while its content does not fit into one line of its fixed height.
 // Each step is a class on the header that keeps the steps before it.
@@ -53,6 +55,7 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
     private host: ElementRef<HTMLElement>,
     private ngZone: NgZone,
     public i18n: I18nService,
+    private router: Router,
     @Inject(PLATFORM_ID) private platform: Object
   ) {
     this.roomSubscription = combineLatest([
@@ -100,6 +103,10 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
 
   chooseLanguage(language: Language): void {
     this.i18n.choose(language);
+    // On an address with a language (/en, /en/guide) the page in the other language has its own address
+    if (this.i18n.addressLanguage !== null && this.i18n.addressLanguage !== language) {
+      this.router.navigateByUrl(switchAddress(this.router.url, language));
+    }
     this.fit();
   }
 

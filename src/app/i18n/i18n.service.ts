@@ -3,6 +3,7 @@ import {isPlatformBrowser} from "@angular/common";
 import {Observable, ReplaySubject} from "rxjs";
 import {Language, LANGUAGES, LanguageOption, TranslationKey, translations} from "./translations";
 import {AppConstants} from "../common/app-constants";
+import {LanguagePage, pageAddress} from "./language-pages";
 
 // The languages the browser asks for, most preferred first
 export const BROWSER_LANGUAGES = new InjectionToken<readonly string[]>("Languages preferred by the browser", {
@@ -31,6 +32,8 @@ export function detectLanguage(browserLanguages: readonly string[]): Language {
 export class I18nService {
 
   language: Language;
+  // The language the page's address names (/ru, /en, see language-pages.ts), null on an address without one
+  addressLanguage: Language | null = null;
   // The current language and every one picked after it, for pages that put texts outside their template
   private readonly languageSubject = new ReplaySubject<Language>(1);
   readonly language$: Observable<Language> = this.languageSubject.asObservable();
@@ -48,6 +51,22 @@ export class I18nService {
 
   get current(): LanguageOption {
     return LANGUAGES.find(option => option.code === this.language)!;
+  }
+
+  // Called on opening a page: an address with a language sets it for this visit, without remembering it, so the
+  // next time the site is opened by an address without one it again follows the browser or the header's choice.
+  // An address without one leaves the language as it was.
+  useAddressLanguage(language: Language | null): void {
+    this.addressLanguage = language;
+    if (language !== null && language !== this.language) {
+      this.setLanguage(language);
+    }
+  }
+
+  // The address of a page to link to: in the language of the page's address, so search engines walking the site
+  // stay in one language, or without one
+  address(page: LanguagePage): string {
+    return pageAddress(page, this.addressLanguage);
   }
 
   // Called when the language is picked in the header

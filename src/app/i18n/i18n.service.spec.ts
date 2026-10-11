@@ -74,6 +74,23 @@ describe("I18nService", () => {
     expect(description.content).toBe(translations.en["meta.description"]);
   });
 
+  it("takes the language of the page's address for this visit, without remembering it", () => {
+    const i18n = create(["ru-RU"]);
+
+    i18n.useAddressLanguage("en");
+
+    expect(i18n.language).toBe("en");
+    expect(i18n.addressLanguage).toBe("en");
+    expect(i18n.address("/guide")).toBe("/en/guide");
+    expect(localStorage.getItem(AppConstants.language)).toBeNull();
+
+    // An address without a language keeps the language the visitor already reads
+    i18n.useAddressLanguage(null);
+
+    expect(i18n.language).toBe("en");
+    expect(i18n.address("/guide")).toBe("/guide");
+  });
+
   it("tells the current language and every one picked after it", () => {
     const i18n = create(["ru-RU"]);
     const languages: string[] = [];

@@ -15,6 +15,7 @@ import {TranslationKey} from "../i18n/translations";
 import {MyDecks, NamedDeck, PRESET_DECKS, sameCards} from "../common/decks";
 import {invitationValidator, JOIN_RIGHT_AWAY, roomIdFromInvitation} from "../common/invitation-link";
 import {VisitService} from "../services/visit.service";
+import {PageMetaService} from "../services/page-meta.service";
 
 interface CreateRoomFormGroup {
   nickname: FormControl<string>;
@@ -55,12 +56,18 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     private i18n: I18nService,
     private router: Router,
     private visits: VisitService,
+    private pageMeta: PageMetaService,
     @Inject(PLATFORM_ID) private platform: Object
   ) {
   }
 
   ngOnInit(): void {
     this.visits.report();
+    this.i18n.language$.pipe(takeUntil(this.ngDestroyed$)).subscribe(() => this.pageMeta.set({
+      title: this.i18n.translate("meta.title"),
+      description: this.i18n.translate("meta.description"),
+      page: "/"
+    }));
     // The build prerenders the start page without a browser, and then nothing is remembered
     const browser = isPlatformBrowser(this.platform);
     const remembered = (key: string) => browser ? localStorage.getItem(key) : null;
