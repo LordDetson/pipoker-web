@@ -8,11 +8,11 @@
   padding: 0.75rem 9rem 0;
 }
 
-/* On a phone the corners leave no room beside them, so the line goes under them and takes the whole width */
+/* On a phone the role and history buttons show icons instead of words, so the line stays between them, close to them */
 @media (max-width: 575.98px) {
   :host {
-    min-height: calc(3rem + 2.375rem);
-    padding: 3rem 1rem 0;
+    min-height: calc(0.75rem + var(--room-top-height));
+    padding-inline: calc(1.25rem + var(--room-top-height));
   }
 }
 
@@ -34,6 +34,13 @@
   width: calc(var(--task-icons) * 2.25rem - 0.25rem);
 }
 
+/* On a phone the name needs the place more than being in the very middle */
+@media (max-width: 575.98px) {
+  .task::before {
+    display: none;
+  }
+}
+
 /* A hidden copy of the name under the field gives the field its width */
 .task-field {
   position: relative;
@@ -49,6 +56,19 @@
   padding: 0.375rem 1.75rem;
   font-size: 1.125rem;
   font-weight: 500;
+}
+
+/* On a phone the name keeps no room for the cross: it gets the room only while the name is being changed */
+@media (max-width: 575.98px) {
+  .task-field::after,
+  .task-name {
+    padding-inline: 0.5rem;
+  }
+
+  .task-field:focus-within::after,
+  .task-name:focus {
+    padding-right: 1.75rem;
+  }
 }
 
 .task-field::after {

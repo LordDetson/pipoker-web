@@ -5,7 +5,8 @@
 }
 
 /* The room may put its controls into the top corners: the list stays between them,
-   or goes under them where the screen is too narrow to have room between */
+   or takes the whole width where the screen is too narrow to have room between. The task line above
+   already keeps it under the corners. */
 .watchers {
   display: flex;
   flex-wrap: wrap;
@@ -16,10 +17,14 @@
   padding-inline: var(--corner-controls-width, 0);
 }
 
+/* On a phone the watchers come right under the task */
 @media (max-width: 575.98px) {
+  :host {
+    padding-top: 0.25rem;
+  }
+
   .watchers {
     padding-inline: 0;
-    margin-top: var(--corner-controls-height, 0);
   }
 }
 

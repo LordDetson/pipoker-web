@@ -45,6 +45,20 @@ describe("RoleSwitchComponent", () => {
     expect(toggle().checked).withContext("until everyone hears about the change").toBeFalse();
   });
 
+  it("has a button with an eye that does the same, pressed for a watcher", () => {
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector(".role-button");
+    expect(button.getAttribute("aria-label")).toBe("Watcher");
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+
+    button.click();
+    expect(store.dispatch).toHaveBeenCalledWith(RoomAction.changeRole({watcher: true}));
+
+    store.setState(appState({}, {currentParticipant: participant("Dmitry", true)}));
+    fixture.detectChanges();
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+    expect(button.classList).toContain("watching");
+  });
+
   it("makes a watcher a voter", () => {
     store.setState(appState({}, {currentParticipant: participant("Dmitry", true)}));
     fixture.detectChanges();

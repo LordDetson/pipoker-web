@@ -10,3 +10,32 @@
   min-height: calc(1.5em + 0.5rem + 2 * var(--bs-border-width));
   font-size: 0.875rem;
 }
+
+.role-button {
+  display: none;
+}
+
+/* On a phone the button with the eye takes the place of the switch. It is as tall as the field of the task beside it,
+   so the whole line is level, see TaskComponent. */
+@media (max-width: 575.98px) {
+  .form-switch {
+    display: none;
+  }
+
+  .role-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--room-top-height);
+    height: var(--room-top-height);
+    padding: 0;
+    color: var(--bs-secondary-color);
+    border-color: var(--bs-border-color);
+  }
+
+  /* The blue of the link icons beside the task */
+  .role-button.watching {
+    color: var(--bs-link-color);
+    border-color: var(--bs-link-color);
+  }
+}
