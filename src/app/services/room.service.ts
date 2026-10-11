@@ -32,6 +32,9 @@ export class RoomService {
     if (source !== undefined) {
       roomCreation.source = source;
     }
+    if (createRoomInfo.humanCheckToken) {
+      roomCreation.humanCheckToken = createRoomInfo.humanCheckToken;
+    }
     return this.exchange(RoomDestinations.create(), roomCreation,
       this.roomWebSocketService.watch<RoomDto>(RoomDestinations.created).pipe(
         map(room => toRoom(room))

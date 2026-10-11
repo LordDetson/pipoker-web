@@ -16,15 +16,22 @@ import {ErrorCode} from "../models/room-event";
 import {MyDecks, PRESET_DECKS} from "../common/decks";
 import {provideRouter, Router, RouterLink} from "@angular/router";
 import {VisitService} from "../services/visit.service";
+import {HumanCheckRun, HumanCheckService} from "../human-check/human-check.service";
 
 describe("CreateRoomComponent", () => {
   let fixture: ComponentFixture<CreateRoomComponent>;
   let store: MockStore;
   let visits: jasmine.SpyObj<VisitService>;
+  let humanCheckService: jasmine.SpyObj<HumanCheckService>;
+  let humanCheck: jasmine.SpyObj<HumanCheckRun>;
 
   beforeEach(() => {
     localStorage.clear();
     visits = jasmine.createSpyObj<VisitService>("VisitService", ["report"]);
+    humanCheck = jasmine.createSpyObj<HumanCheckRun>("HumanCheckRun", ["token", "reset", "remove"]);
+    humanCheck.token.and.resolveTo("token-1");
+    humanCheckService = jasmine.createSpyObj<HumanCheckService>("HumanCheckService", ["start"]);
+    humanCheckService.start.and.returnValue(humanCheck);
     TestBed.configureTestingModule({
       declarations: [CreateRoomComponent, AboutComponent, WatcherHintComponent],
       imports: [ReactiveFormsModule, NgbPopoverModule, TranslatePipe, ServerErrorPipe, RouterLink],
@@ -32,7 +39,8 @@ describe("CreateRoomComponent", () => {
         provideRouter([]),
         provideMockStore({initialState: appState()}),
         {provide: RoomService, useValue: {}},
-        {provide: VisitService, useValue: visits}
+        {provide: VisitService, useValue: visits},
+        {provide: HumanCheckService, useValue: humanCheckService}
       ]
     });
     store = TestBed.inject(MockStore);
@@ -141,7 +149,7 @@ describe("CreateRoomComponent", () => {
     expect(store.dispatch).not.toHaveBeenCalled();
   });
 
-  it("creates a room with the deck split into cards", () => {
+  it("creates a room with the deck split into cards", async () => {
     create();
     type("nicknameInput", "Dmitry");
     type("roomNameInput", "Sprint");
@@ -149,10 +157,53 @@ describe("CreateRoomComponent", () => {
     input("watcherInput").click();
 
     submitButton().click();
+    await fixture.whenStable();
 
     expect(store.dispatch).toHaveBeenCalledWith(RoomAction.create({
-      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d", "1w")}, watcher: true}
+      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d", "1w")}, watcher: true,
+        humanCheckToken: "token-1"}
     }));
+  });
+
+  it("starts the human check when the form is first touched, not when the page opens", () => {
+    create();
+    expect(humanCheckService.start).not.toHaveBeenCalled();
+
+    input("nicknameInput").dispatchEvent(new FocusEvent("focusin", {bubbles: true}));
+    input("roomNameInput").dispatchEvent(new FocusEvent("focusin", {bubbles: true}));
+
+    expect(humanCheckService.start).toHaveBeenCalledOnceWith(jasmine.any(HTMLDivElement), "room");
+  });
+
+  it("waits for the human check before creating the room, and runs it again for the next try", async () => {
+    let finish!: (token: string | undefined) => void;
+    humanCheck.token.and.returnValue(new Promise(resolve => finish = resolve));
+    create();
+    type("nicknameInput", "Dmitry");
+    type("roomNameInput", "Sprint");
+    type("deckInput", "1h; 1d");
+
+    submitButton().click();
+    fixture.detectChanges();
+    expect(store.dispatch).not.toHaveBeenCalled();
+    expect(submitButton().disabled).toBeTrue();
+    expect(submitButton().querySelector(".spinner-border")).not.toBeNull();
+
+    finish(undefined);
+    await fixture.whenStable();
+    expect(store.dispatch).toHaveBeenCalledWith(RoomAction.create({
+      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d")}, watcher: false}
+    }));
+    expect(humanCheck.reset).toHaveBeenCalled();
+  });
+
+  it("stops the human check when the page closes", () => {
+    create();
+    input("nicknameInput").dispatchEvent(new FocusEvent("focusin", {bubbles: true}));
+
+    fixture.destroy();
+
+    expect(humanCheck.remove).toHaveBeenCalled();
   });
 
   it("explains what is wrong with a field", () => {
@@ -167,16 +218,18 @@ describe("CreateRoomComponent", () => {
     expect(feedback("deckInput")).toBe("Card values can be at most 6 characters long: forever");
   });
 
-  it("sends trimmed names and cards", () => {
+  it("sends trimmed names and cards", async () => {
     create();
     type("nicknameInput", " Dmitry ");
     type("roomNameInput", " Sprint ");
     type("deckInput", " 1h ;1d;; 1w ");
 
     submitButton().click();
+    await fixture.whenStable();
 
     expect(store.dispatch).toHaveBeenCalledWith(RoomAction.create({
-      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d", "1w")}, watcher: false}
+      createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d", "1w")}, watcher: false,
+        humanCheckToken: "token-1"}
     }));
   });
 

@@ -37,6 +37,12 @@ describe("FeedbackService", () => {
     expect(await service.send(feedback)).toBe("limited");
   });
 
+  it("tells when the human check didn't pass", async () => {
+    fetchSpy.and.resolveTo(new Response(null, {status: 403}));
+
+    expect(await service.send(feedback)).toBe("notHuman");
+  });
+
   it("tells when the server didn't pass the feedback on", async () => {
     fetchSpy.and.resolveTo(new Response(null, {status: 503}));
 

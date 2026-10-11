@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, ChangeDetectionStrategy, Inject, PLATFORM_ID} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy, ElementRef, Inject, PLATFORM_ID, ViewChild} from '@angular/core';
 import {isPlatformBrowser} from "@angular/common";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Router} from "@angular/router";
@@ -7,6 +7,7 @@ import {RoomService} from "../services/room.service";
 import {Store} from "@ngrx/store";
 import * as RoomAction from "../store/room/room.action";
 import {Card} from "../models/card.model";
+import {CreateRoomInfo} from "../models/create-room.model";
 import {Observable, Subject, takeUntil} from "rxjs";
 import {parseDeck, RoomValidators, validationMessage} from "../common/room-validators";
 import * as RoomSelector from "../store/room/room.selector";
@@ -15,7 +16,11 @@ import {TranslationKey} from "../i18n/translations";
 import {MyDecks, NamedDeck, PRESET_DECKS, sameCards} from "../common/decks";
 import {invitationValidator, JOIN_RIGHT_AWAY, roomIdFromInvitation} from "../common/invitation-link";
 import {VisitService} from "../services/visit.service";
+import {HumanCheckRun, HumanCheckService} from "../human-check/human-check.service";
 import {PageMetaService} from "../services/page-meta.service";
+
+// What the human check runs for; the server asks for it before it creates a room
+export const HUMAN_CHECK_ACTION = "room";
 
 interface CreateRoomFormGroup {
   nickname: FormControl<string>;
@@ -42,6 +47,8 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
   selectedDeck: string = "";
   // The name a new deck will be saved under
   deckName: string = "";
+  // The room waits for the human check to finish
+  creating = false;
   // An invitation link pasted here opens its room. The installed app has no address bar to paste it into
   readonly invitationForm = new FormGroup({
     link: new FormControl<string>("", {
@@ -50,12 +57,17 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     })
   });
 
+  @ViewChild("humanCheck", {static: true})
+  private humanCheckContainer!: ElementRef<HTMLElement>;
+  private humanCheck?: HumanCheckRun;
+
   constructor(
     private roomService: RoomService,
     private store: Store,
     private i18n: I18nService,
     private router: Router,
     private visits: VisitService,
+    private humanCheckService: HumanCheckService,
     private pageMeta: PageMetaService,
     @Inject(PLATFORM_ID) private platform: Object
   ) {
@@ -108,6 +120,7 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.ngDestroyed$.next();
     this.ngDestroyed$.complete();
+    this.humanCheck?.remove();
   }
 
   errorMessage(field: keyof CreateRoomFormGroup, label: TranslationKey): string | undefined {
@@ -156,18 +169,36 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     return mine ? "mine:" + mine.name : "";
   }
 
-  createRoom(): void {
-    if (this.createRoomForm.valid) {
-      const cards: Card[] = parseDeck(this.createRoomForm.value.deck!).map(value => ({value}));
-      this.store.dispatch(RoomAction.create({
-        createRoomInfo: {
-          nickname: this.createRoomForm.value.nickname!.trim(),
-          roomName: this.createRoomForm.value.roomName!.trim(),
-          deck: {cards},
-          watcher: this.createRoomForm.value.watcher!
-        }
-      }));
+  // The human check starts when the person first touches the form, while they fill it in. Visitors who only look,
+  // and the build that prerenders the page, don't load Cloudflare's script
+  startHumanCheck(): void {
+    if (!this.humanCheck && isPlatformBrowser(this.platform)) {
+      this.humanCheck = this.humanCheckService.start(this.humanCheckContainer.nativeElement, HUMAN_CHECK_ACTION);
     }
+  }
+
+  async createRoom(): Promise<void> {
+    if (this.createRoomForm.invalid || this.creating) {
+      return;
+    }
+    const cards: Card[] = parseDeck(this.createRoomForm.value.deck!).map(value => ({value}));
+    const createRoomInfo: CreateRoomInfo = {
+      nickname: this.createRoomForm.value.nickname!.trim(),
+      roomName: this.createRoomForm.value.roomName!.trim(),
+      deck: {cards},
+      watcher: this.createRoomForm.value.watcher!
+    };
+    // A form remembered from the last visit may be sent without touching it
+    this.startHumanCheck();
+    this.creating = true;
+    const humanCheckToken = await this.humanCheck?.token();
+    this.creating = false;
+    if (humanCheckToken) {
+      createRoomInfo.humanCheckToken = humanCheckToken;
+    }
+    this.store.dispatch(RoomAction.create({createRoomInfo}));
+    // A token passes once, so another try, after a refusal, needs a new one
+    this.humanCheck?.reset();
   }
 
   joinByInvitation(): void {

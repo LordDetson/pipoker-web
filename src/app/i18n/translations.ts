@@ -55,6 +55,7 @@ const en = {
   "feedback.sent": "Thank you, the message has been sent.",
   "feedback.limited": "You have sent several messages lately. Try again in an hour.",
   "feedback.failed": "The message wasn't sent. Try again a bit later.",
+  "feedback.notHuman": "We couldn't make sure a person is sending this. Try sending it again.",
 
   "form.nickname": "Nickname",
   "form.nicknamePlaceholder": "Choose your display name",
@@ -108,6 +109,7 @@ const en = {
   "serverError.cardsRevealed": "The cards are already revealed. This can be done in the next round",
   "serverError.roundNotRevealed": "The estimate is accepted after the cards are revealed and before a new voting starts",
   "serverError.invalidData": "The server didn't accept the data. Check it and try again",
+  "serverError.notHuman": "We couldn't make sure a person is creating the room. Try again",
   "serverError.unexpected": "Something went wrong on the server. Try again",
 
   "room.returning": "Returning to the table",
@@ -227,6 +229,7 @@ const ru: Record<TranslationKey, string> = {
   "feedback.sent": "Спасибо, сообщение отправлено.",
   "feedback.limited": "Вы недавно отправили несколько сообщений. Попробуйте через час.",
   "feedback.failed": "Сообщение не отправилось. Попробуйте чуть позже.",
+  "feedback.notHuman": "Не удалось убедиться, что сообщение отправляет человек. Попробуйте отправить ещё раз.",
 
   "form.nickname": "Имя",
   "form.nicknamePlaceholder": "Как вас будут видеть другие",
@@ -280,6 +283,7 @@ const ru: Record<TranslationKey, string> = {
   "serverError.cardsRevealed": "Карты уже раскрыты. Это можно сделать в следующем раунде",
   "serverError.roundNotRevealed": "Оценку принимают после того, как карты открыты, и до нового голосования",
   "serverError.invalidData": "Сервер не принял данные. Проверьте их и попробуйте снова",
+  "serverError.notHuman": "Не удалось убедиться, что комнату создаёт человек. Попробуйте ещё раз",
   "serverError.unexpected": "На сервере что-то пошло не так. Попробуйте ещё раз",
 
   "room.returning": "Возвращаем вас за стол",

@@ -91,6 +91,18 @@ describe("RoomService", () => {
     expect(room!.votingResult.map.size).toBe(0);
   });
 
+  it("sends the human check's token when the page got one", () => {
+    service.create({
+      nickname: "Dmitry",
+      roomName: "Sprint",
+      deck: {cards: [{value: "1h"}]},
+      watcher: false,
+      humanCheckToken: "token-1"
+    }).subscribe();
+
+    expect(webSocket.sent[0].body.humanCheckToken).toBe("token-1");
+  });
+
   it("tells the server where the creator came from when the visit was reported", () => {
     visitSource = {from: "habr"};
 
