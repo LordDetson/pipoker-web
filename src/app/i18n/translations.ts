@@ -53,6 +53,7 @@ const en = {
   "feedback.sent": "Thank you, the message has been sent.",
   "feedback.limited": "You have sent several messages lately. Try again in an hour.",
   "feedback.failed": "The message wasn't sent. Try again a bit later.",
+  "feedback.notHuman": "We couldn't make sure a person is sending this. Try sending it again.",
 
   "form.nickname": "Nickname",
   "form.nicknamePlaceholder": "Choose your display name",
@@ -224,6 +225,7 @@ const ru: Record<TranslationKey, string> = {
   "feedback.sent": "Спасибо, сообщение отправлено.",
   "feedback.limited": "Вы недавно отправили несколько сообщений. Попробуйте через час.",
   "feedback.failed": "Сообщение не отправилось. Попробуйте чуть позже.",
+  "feedback.notHuman": "Не удалось убедиться, что сообщение отправляет человек. Попробуйте отправить ещё раз.",
 
   "form.nickname": "Имя",
   "form.nicknamePlaceholder": "Как вас будут видеть другие",

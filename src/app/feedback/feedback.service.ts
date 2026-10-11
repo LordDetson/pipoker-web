@@ -23,6 +23,8 @@ export interface Feedback {
   window: string;
   time: string;
   timeZone: string;
+  // What the human check gave the page, see HumanCheckService
+  humanCheckToken?: string;
 }
 
 // What the person tells about: something that doesn't work, something PiPoker could do, or what they think of it
@@ -31,8 +33,9 @@ export type FeedbackKind = "problem" | "idea" | "review";
 // Voting: the cards are hidden. Revealed: the cards are on the table, the estimate may be accepted already.
 export type RoundStage = "voting" | "revealed";
 
-// Sent: the server passed the feedback on. Limited: the browser sent too many messages lately. Failed: anything else.
-export type FeedbackResult = "sent" | "limited" | "failed";
+// Sent: the server passed the feedback on. Limited: the browser sent too many messages lately. Not human: the human
+// check didn't pass. Failed: anything else.
+export type FeedbackResult = "sent" | "limited" | "notHuman" | "failed";
 
 // Like "2026-10-05 17:05:00 +03:00": the person's local time, which they will mention if they write back
 export function localTime(date: Date): string {
@@ -44,7 +47,8 @@ export function localTime(date: Date): string {
 }
 
 // The page, the browser and the time, cut to the server's limits. Nothing about the room's people or votes.
-export function describeBrowser(language: string, now: Date): Omit<Feedback, "kind" | "message" | "contact" | "roomId"> {
+export function describeBrowser(language: string, now: Date):
+  Omit<Feedback, "kind" | "message" | "contact" | "roomId" | "humanCheckToken"> {
   return {
     page: location.href.slice(0, 500),
     browser: navigator.userAgent.slice(0, 500),
@@ -92,7 +96,14 @@ export class FeedbackService {
       if (response.ok) {
         return "sent";
       }
-      return response.status === 429 ? "limited" : "failed";
+      switch (response.status) {
+        case 429:
+          return "limited";
+        case 403:
+          return "notHuman";
+        default:
+          return "failed";
+      }
     } catch {
       return "failed";
     }

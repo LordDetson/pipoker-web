@@ -5,15 +5,22 @@ import {FeedbackComponent} from "./feedback.component";
 import {FeedbackService} from "./feedback.service";
 import {appState, participant, room, votes} from "../testing/test-data";
 import {I18nService} from "../i18n/i18n.service";
+import {HumanCheckRun, HumanCheckService} from "../human-check/human-check.service";
 
 describe("FeedbackComponent", () => {
   let fixture: ComponentFixture<FeedbackComponent>;
   let feedback: jasmine.SpyObj<FeedbackService>;
   let activeModal: jasmine.SpyObj<NgbActiveModal>;
+  let humanCheckService: jasmine.SpyObj<HumanCheckService>;
+  let humanCheck: jasmine.SpyObj<HumanCheckRun>;
 
   beforeEach(() => {
     feedback = jasmine.createSpyObj<FeedbackService>("FeedbackService", ["send"]);
     activeModal = jasmine.createSpyObj<NgbActiveModal>("NgbActiveModal", ["close", "dismiss"]);
+    humanCheck = jasmine.createSpyObj<HumanCheckRun>("HumanCheckRun", ["token", "reset", "remove"]);
+    humanCheck.token.and.resolveTo("token-1");
+    humanCheckService = jasmine.createSpyObj<HumanCheckService>("HumanCheckService", ["start"]);
+    humanCheckService.start.and.returnValue(humanCheck);
     TestBed.configureTestingModule({
       imports: [FeedbackComponent],
       providers: [
@@ -23,7 +30,8 @@ describe("FeedbackComponent", () => {
           votingResult: {map: votes({Alex: "1h"})}
         })})}),
         {provide: FeedbackService, useValue: feedback},
-        {provide: NgbActiveModal, useValue: activeModal}
+        {provide: NgbActiveModal, useValue: activeModal},
+        {provide: HumanCheckService, useValue: humanCheckService}
       ]
     });
     TestBed.inject(I18nService).language = "en";
@@ -72,7 +80,8 @@ describe("FeedbackComponent", () => {
       voted: 1,
       round: "voting",
       language: "en",
-      page: location.href
+      page: location.href,
+      humanCheckToken: "token-1"
     }));
     expect(fixture.nativeElement.textContent).toContain("Thank you, the message has been sent.");
     expect(element("form")).toBeNull();
@@ -119,6 +128,24 @@ describe("FeedbackComponent", () => {
     await submit();
 
     expect(element(".alert-danger").textContent).toContain("Try again in an hour");
+    expect(element<HTMLTextAreaElement>("#feedbackMessage").value).toBe("Broken");
+  });
+
+  it("runs the human check for feedback in its own element and stops it on closing", () => {
+    expect(humanCheckService.start).toHaveBeenCalledOnceWith(jasmine.any(HTMLDivElement), "feedback");
+
+    fixture.destroy();
+
+    expect(humanCheck.remove).toHaveBeenCalled();
+  });
+
+  it("says when the human check didn't pass and runs it again for the next try", async () => {
+    feedback.send.and.resolveTo("notHuman");
+    type("#feedbackMessage", "Broken");
+    await submit();
+
+    expect(element(".alert-danger").textContent).toContain("couldn't make sure a person is sending this");
+    expect(humanCheck.reset).toHaveBeenCalled();
     expect(element<HTMLTextAreaElement>("#feedbackMessage").value).toBe("Broken");
   });
 

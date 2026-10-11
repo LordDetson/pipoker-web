@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Injector} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Injector, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {NgFor, NgIf} from "@angular/common";
 import {AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators} from "@angular/forms";
 import {NgbActiveModal, NgbModal} from "@ng-bootstrap/ng-bootstrap";
@@ -9,9 +9,12 @@ import {I18nService} from "../i18n/i18n.service";
 import {TranslatePipe} from "../i18n/translate.pipe";
 import {TranslationKey} from "../i18n/translations";
 import {FeedbackKind, FeedbackResult, FeedbackService, describeBrowser, describeRoom} from "./feedback.service";
+import {HumanCheckRun, HumanCheckService} from "../human-check/human-check.service";
 
 export const MESSAGE_MAX_LENGTH = 2000;
 export const CONTACT_MAX_LENGTH = 200;
+// What the human check runs for; the server takes the token for this action only
+export const HUMAN_CHECK_ACTION = "feedback";
 
 // A kind of feedback as the form shows it: the switch's label, and the question and hint over the message
 interface FeedbackKindOption {
@@ -26,7 +29,8 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
 }
 
 // The feedback form: whether it is a problem, an idea or a review, the message and, if the person wants an answer,
-// how to reach them. Standalone, so that it and the dialog code load with the first click rather than with the site
+// how to reach them. While the person writes, the human check runs unseen and its token goes with the message.
+// Standalone, so that it and the dialog code load with the first click rather than with the site
 // (see openFeedback).
 @Component({
   selector: "app-feedback",
@@ -34,7 +38,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
   imports: [NgFor, NgIf, ReactiveFormsModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.Eager
 })
-export class FeedbackComponent {
+export class FeedbackComponent implements OnInit, OnDestroy {
 
   readonly messageMaxLength = MESSAGE_MAX_LENGTH;
   readonly contactMaxLength = CONTACT_MAX_LENGTH;
@@ -54,8 +58,13 @@ export class FeedbackComponent {
   sent = false;
   error?: TranslationKey;
 
+  @ViewChild("humanCheck", {static: true})
+  private humanCheckContainer!: ElementRef<HTMLElement>;
+  private humanCheck?: HumanCheckRun;
+
   private readonly errors: Record<Exclude<FeedbackResult, "sent">, TranslationKey> = {
     limited: "feedback.limited",
+    notHuman: "feedback.notHuman",
     failed: "feedback.failed"
   };
 
@@ -64,8 +73,17 @@ export class FeedbackComponent {
     private feedback: FeedbackService,
     private store: Store,
     private i18n: I18nService,
-    private changeDetector: ChangeDetectorRef
+    private changeDetector: ChangeDetectorRef,
+    private humanCheckService: HumanCheckService
   ) {
+  }
+
+  ngOnInit(): void {
+    this.humanCheck = this.humanCheckService.start(this.humanCheckContainer.nativeElement, HUMAN_CHECK_ACTION);
+  }
+
+  ngOnDestroy(): void {
+    this.humanCheck?.remove();
   }
 
   // The question and the hint over the message follow the kind the person chose
@@ -85,18 +103,21 @@ export class FeedbackComponent {
       this.store.pipe(select(revealedRoundSelector))
     ]));
     const {kind, message, contact} = this.form.getRawValue();
+    const humanCheckToken = await this.humanCheck?.token();
     const result = await this.feedback.send({
       kind,
       message: message.trim(),
       contact: contact.trim(),
       ...describeRoom(roomState, revealedRound),
-      ...describeBrowser(this.i18n.language, new Date())
+      ...describeBrowser(this.i18n.language, new Date()),
+      humanCheckToken
     });
     this.sending = false;
     if (result === "sent") {
       this.sent = true;
     } else {
       this.error = this.errors[result];
+      this.humanCheck?.reset();
     }
     this.changeDetector.detectChanges();
   }
