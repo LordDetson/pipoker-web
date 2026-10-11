@@ -49,6 +49,7 @@ export enum ErrorCode {
   cardsRevealed = "CARDS_REVEALED",
   roundNotRevealed = "ROUND_NOT_REVEALED",
   invalidData = "INVALID_DATA",
+  notHuman = "NOT_HUMAN",
   unexpected = "UNEXPECTED"
 }
 

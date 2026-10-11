@@ -5,4 +5,6 @@ export interface CreateRoomInfo {
   roomName: string;
   deck: Deck;
   watcher: boolean;
+  // What the human check gave the page, see HumanCheckService
+  humanCheckToken?: string;
 }

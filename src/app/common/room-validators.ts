@@ -93,6 +93,7 @@ const SERVER_ERRORS: Record<ErrorCode, TranslationKey> = {
   [ErrorCode.cardsRevealed]: "serverError.cardsRevealed",
   [ErrorCode.roundNotRevealed]: "serverError.roundNotRevealed",
   [ErrorCode.invalidData]: "serverError.invalidData",
+  [ErrorCode.notHuman]: "serverError.notHuman",
   [ErrorCode.unexpected]: "serverError.unexpected"
 };
 

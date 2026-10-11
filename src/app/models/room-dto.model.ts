@@ -63,4 +63,6 @@ export interface RoomCreationDto {
   participants: Participant[];
   // Where the creator came to the site from, for the activity dashboard; left out when no visit was reported
   source?: VisitDto;
+  // What the human check gave the page; left out when the check is off or gave nothing
+  humanCheckToken?: string;
 }

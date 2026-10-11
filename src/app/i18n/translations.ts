@@ -107,6 +107,7 @@ const en = {
   "serverError.cardsRevealed": "The cards are already revealed. This can be done in the next round",
   "serverError.roundNotRevealed": "The estimate is accepted after the cards are revealed and before a new voting starts",
   "serverError.invalidData": "The server didn't accept the data. Check it and try again",
+  "serverError.notHuman": "We couldn't make sure a person is creating the room. Try again",
   "serverError.unexpected": "Something went wrong on the server. Try again",
 
   "room.returning": "Returning to the table",
@@ -279,6 +280,7 @@ const ru: Record<TranslationKey, string> = {
   "serverError.cardsRevealed": "Карты уже раскрыты. Это можно сделать в следующем раунде",
   "serverError.roundNotRevealed": "Оценку принимают после того, как карты открыты, и до нового голосования",
   "serverError.invalidData": "Сервер не принял данные. Проверьте их и попробуйте снова",
+  "serverError.notHuman": "Не удалось убедиться, что комнату создаёт человек. Попробуйте ещё раз",
   "serverError.unexpected": "На сервере что-то пошло не так. Попробуйте ещё раз",
 
   "room.returning": "Возвращаем вас за стол",
