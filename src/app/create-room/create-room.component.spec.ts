@@ -165,12 +165,9 @@ describe("CreateRoomComponent", () => {
     }));
   });
 
-  it("starts the human check when the form is first touched, not when the page opens", () => {
+  it("starts the human check once, as soon as the page opens", () => {
     create();
-    expect(humanCheckService.start).not.toHaveBeenCalled();
-
     input("nicknameInput").dispatchEvent(new FocusEvent("focusin", {bubbles: true}));
-    input("roomNameInput").dispatchEvent(new FocusEvent("focusin", {bubbles: true}));
 
     expect(humanCheckService.start).toHaveBeenCalledOnceWith(jasmine.any(HTMLDivElement), "room");
   });
@@ -216,7 +213,6 @@ describe("CreateRoomComponent", () => {
 
   it("stops the human check when the page closes", () => {
     create();
-    input("nicknameInput").dispatchEvent(new FocusEvent("focusin", {bubbles: true}));
 
     fixture.destroy();
 

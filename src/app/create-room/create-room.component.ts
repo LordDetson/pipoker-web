@@ -117,6 +117,7 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     this.selectedDeck = this.findDeck(deck);
     this.createRoomForm.get("watcher")?.valueChanges.pipe(takeUntil(this.ngDestroyed$))
       .subscribe(value => localStorage.setItem(AppConstants.lastWatcher, value.toString()));
+    this.startHumanCheck();
   }
 
   ngOnDestroy(): void {
@@ -171,9 +172,9 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     return mine ? "mine:" + mine.name : "";
   }
 
-  // The human check starts when the person first touches the form, while they fill it in. Visitors who only look,
-  // and the build that prerenders the page, don't load Cloudflare's script
-  startHumanCheck(): void {
+  // The human check runs as soon as the page opens in a browser, so its token is ready by the time the person
+  // creates the room, even with a form remembered from the last visit. The build that prerenders the page skips it
+  private startHumanCheck(): void {
     if (!this.humanCheck && isPlatformBrowser(this.platform)) {
       this.humanCheck = this.humanCheckService.start(this.humanCheckContainer.nativeElement, HUMAN_CHECK_ACTION);
     }
@@ -190,8 +191,6 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
       deck: {cards},
       watcher: this.createRoomForm.value.watcher!
     };
-    // A form remembered from the last visit may be sent without touching it
-    this.startHumanCheck();
     // Another try, after a refusal, needs a new token. Asking for it only now, not right after sending, keeps
     // Turnstile from reloading its frame while the page leaves for the room
     if (this.humanCheckTokenSent) {
