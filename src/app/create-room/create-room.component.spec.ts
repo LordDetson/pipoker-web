@@ -194,7 +194,24 @@ describe("CreateRoomComponent", () => {
     expect(store.dispatch).toHaveBeenCalledWith(RoomAction.create({
       createRoomInfo: {nickname: "Dmitry", roomName: "Sprint", deck: {cards: cards("1h", "1d")}, watcher: false}
     }));
-    expect(humanCheck.reset).toHaveBeenCalled();
+    expect(humanCheck.reset).not.toHaveBeenCalled();
+  });
+
+  it("asks the human check for a new token only when the room is created again", async () => {
+    humanCheck.token.and.returnValue(Promise.resolve("token-1"));
+    create();
+    type("nicknameInput", "Dmitry");
+    type("roomNameInput", "Sprint");
+    type("deckInput", "1h; 1d");
+
+    submitButton().click();
+    await fixture.whenStable();
+    expect(humanCheck.reset).not.toHaveBeenCalled();
+
+    submitButton().click();
+    await fixture.whenStable();
+    expect(humanCheck.reset).toHaveBeenCalledTimes(1);
+    expect(store.dispatch).toHaveBeenCalledTimes(2);
   });
 
   it("stops the human check when the page closes", () => {

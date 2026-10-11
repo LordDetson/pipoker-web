@@ -60,6 +60,8 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
   @ViewChild("humanCheck", {static: true})
   private humanCheckContainer!: ElementRef<HTMLElement>;
   private humanCheck?: HumanCheckRun;
+  // The last token went with a create request: it passes once
+  private humanCheckTokenSent = false;
 
   constructor(
     private roomService: RoomService,
@@ -190,6 +192,11 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     };
     // A form remembered from the last visit may be sent without touching it
     this.startHumanCheck();
+    // Another try, after a refusal, needs a new token. Asking for it only now, not right after sending, keeps
+    // Turnstile from reloading its frame while the page leaves for the room
+    if (this.humanCheckTokenSent) {
+      this.humanCheck?.reset();
+    }
     this.creating = true;
     const humanCheckToken = await this.humanCheck?.token();
     this.creating = false;
@@ -197,8 +204,7 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
       createRoomInfo.humanCheckToken = humanCheckToken;
     }
     this.store.dispatch(RoomAction.create({createRoomInfo}));
-    // A token passes once, so another try, after a refusal, needs a new one
-    this.humanCheck?.reset();
+    this.humanCheckTokenSent = humanCheckToken !== undefined;
   }
 
   joinByInvitation(): void {
