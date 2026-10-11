@@ -71,10 +71,33 @@ jobs:
           # Yandex Webmaster and Google Search Console confirm the site is ours by these files
           curl -sf http://localhost:8080/yandex_c90ecc8c52f19341.html | grep -q 'Verification: c90ecc8c52f19341'
           curl -sf http://localhost:8080/google9a20c15ce7c2be97.html | grep -q 'google-site-verification: google9a20c15ce7c2be97.html'
-          # Every file index.html links by its full address must exist; a missing one would be answered with the app page
-          for path in $(curl -sf http://localhost:8080/ | grep -o 'https://pipoker.app/[^"]\+' | sed 's#^https://pipoker.app##' | sort -u); do
+          # Every file index.html links by its full address must exist; a missing one would be answered with the app page.
+          # The addresses of pages (canonical, hreflang) have no file extension and are checked in the next step
+          for path in $(curl -sf http://localhost:8080/ | grep -o 'https://pipoker.app/[^"]\+\.[a-z]\+"' | tr -d '"' | sed 's#^https://pipoker.app##' | sort -u); do
             served=$(content_type "$path")
             [ -n "$served" ] && [ "$served" != text/html ] || { echo "$path is not served"; exit 1; }
+          done
+
+      - name: Check that the pages search engines show are prerendered in their language
+        run: |
+          # page, expected <html lang>, a text of the page in that language
+          check() {
+            html=$(curl -sf "http://localhost:8080$1") || { echo "$1 is not served"; exit 1; }
+            echo "$html" | grep -q "<html lang=\"$2\"" || { echo "$1 is not in $2"; exit 1; }
+            echo "$html" | grep -qF "$3" || { echo "$1 has no \"$3\""; exit 1; }
+            echo "$html" | grep -q "<link rel=\"canonical\" href=\"https://pipoker.app$4\">" || { echo "$1: wrong canonical"; exit 1; }
+            echo "$html" | grep -q '<link rel="alternate" hreflang="x-default"' || { echo "$1 has no hreflang"; exit 1; }
+          }
+          check / ru "Что такое PiPoker?" /
+          check /ru ru "Что такое PiPoker?" /ru
+          check /en en "What is PiPoker?" /en
+          check /guide ru "Planning Poker" /guide
+          check /ru/guide ru "Planning Poker" /ru/guide
+          check /en/guide en "How to run Planning Poker" /en/guide
+          # Every page the sitemap lists is one of them
+          for url in $(curl -sf http://localhost:8080/sitemap.xml | grep -o '<loc>[^<]*' | cut -c6-); do
+            curl -sf "http://localhost:8080${url#https://pipoker.app}" | grep -qF "<link rel=\"canonical\" href=\"$url\">" \
+              || { echo "$url from the sitemap is not a page of its own"; exit 1; }
           done
 
   image:

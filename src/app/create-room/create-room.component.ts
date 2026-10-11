@@ -17,6 +17,7 @@ import {MyDecks, NamedDeck, PRESET_DECKS, sameCards} from "../common/decks";
 import {invitationValidator, JOIN_RIGHT_AWAY, roomIdFromInvitation} from "../common/invitation-link";
 import {VisitService} from "../services/visit.service";
 import {HumanCheckRun, HumanCheckService} from "../human-check/human-check.service";
+import {PageMetaService} from "../services/page-meta.service";
 
 // What the human check runs for; the server asks for it before it creates a room
 export const HUMAN_CHECK_ACTION = "room";
@@ -67,12 +68,18 @@ export class CreateRoomComponent implements OnInit, OnDestroy {
     private router: Router,
     private visits: VisitService,
     private humanCheckService: HumanCheckService,
+    private pageMeta: PageMetaService,
     @Inject(PLATFORM_ID) private platform: Object
   ) {
   }
 
   ngOnInit(): void {
     this.visits.report();
+    this.i18n.language$.pipe(takeUntil(this.ngDestroyed$)).subscribe(() => this.pageMeta.set({
+      title: this.i18n.translate("meta.title"),
+      description: this.i18n.translate("meta.description"),
+      page: "/"
+    }));
     // The build prerenders the start page without a browser, and then nothing is remembered
     const browser = isPlatformBrowser(this.platform);
     const remembered = (key: string) => browser ? localStorage.getItem(key) : null;

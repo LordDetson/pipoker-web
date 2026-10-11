@@ -24,7 +24,7 @@
     </button>
     <ng-container *ngIf="!taken('settings-menu'); else settingsMenu">
       <!-- Inside a room the guide would take the person away from the table, so it is offered outside one -->
-      <a *ngIf="!roomId" routerLink="/guide" class="btn btn-outline-secondary common-transition d-flex align-items-center gap-2 guide-link"
+      <a *ngIf="!roomId" [routerLink]="i18n.address('/guide')" class="btn btn-outline-secondary common-transition d-flex align-items-center gap-2 guide-link"
          [title]="'header.guideTitle' | translate">
         <ng-container *ngTemplateOutlet="bookIcon"/>
         <span class="button-label">{{"header.guide" | translate}}</span>
@@ -64,7 +64,7 @@
       </svg>
     </button>
     <div ngbDropdownMenu>
-      <a *ngIf="!roomId" ngbDropdownItem routerLink="/guide" class="d-flex align-items-center gap-2 guide-item"
+      <a *ngIf="!roomId" ngbDropdownItem [routerLink]="i18n.address('/guide')" class="d-flex align-items-center gap-2 guide-item"
          [title]="'header.guideTitle' | translate">
         <ng-container *ngTemplateOutlet="bookIcon"/>
         {{"header.guideTitle" | translate}}

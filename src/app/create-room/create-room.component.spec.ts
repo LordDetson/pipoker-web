@@ -14,7 +14,7 @@ import {AboutComponent} from "../about/about.component";
 import {WatcherHintComponent} from "../watcher-hint/watcher-hint.component";
 import {ErrorCode} from "../models/room-event";
 import {MyDecks, PRESET_DECKS} from "../common/decks";
-import {Router} from "@angular/router";
+import {provideRouter, Router, RouterLink} from "@angular/router";
 import {VisitService} from "../services/visit.service";
 import {HumanCheckRun, HumanCheckService} from "../human-check/human-check.service";
 
@@ -34,8 +34,9 @@ describe("CreateRoomComponent", () => {
     humanCheckService.start.and.returnValue(humanCheck);
     TestBed.configureTestingModule({
       declarations: [CreateRoomComponent, AboutComponent, WatcherHintComponent],
-      imports: [ReactiveFormsModule, NgbPopoverModule, TranslatePipe, ServerErrorPipe],
+      imports: [ReactiveFormsModule, NgbPopoverModule, TranslatePipe, ServerErrorPipe, RouterLink],
       providers: [
+        provideRouter([]),
         provideMockStore({initialState: appState()}),
         {provide: RoomService, useValue: {}},
         {provide: VisitService, useValue: visits},
@@ -89,6 +90,12 @@ describe("CreateRoomComponent", () => {
     create();
 
     expect(visits.report).toHaveBeenCalledTimes(1);
+  });
+
+  it("tells search engines the start page's title with what people search for", () => {
+    create();
+
+    expect(document.title).toBe("PiPoker — free online Planning Poker");
   });
 
   it("starts with the default deck and an empty form", () => {

@@ -9,7 +9,8 @@ import {AppConstants} from "../common/app-constants";
 import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 import {TranslatePipe} from "../i18n/translate.pipe";
 import {ThemeSwitcherComponent} from "./theme-switcher/theme-switcher.component";
-import {provideRouter, RouterLink} from "@angular/router";
+import {provideRouter, Router, RouterLink} from "@angular/router";
+import {I18nService} from "../i18n/i18n.service";
 
 describe("HeaderComponent", () => {
   let fixture: ComponentFixture<HeaderComponent>;
@@ -115,6 +116,26 @@ describe("HeaderComponent", () => {
     chooseLanguage("en");
 
     expect(fixture.nativeElement.querySelector(".tagline").textContent).toBe("Free Planning Poker for teams");
+  });
+
+  it("opens the page's address in the language chosen on a page opened by an address with a language", () => {
+    const router = TestBed.inject(Router);
+    spyOn(router, "navigateByUrl").and.resolveTo(true);
+    spyOnProperty(router, "url").and.returnValue("/en/guide?from=hn");
+    TestBed.inject(I18nService).useAddressLanguage("en");
+
+    chooseLanguage("ru");
+
+    expect(router.navigateByUrl).toHaveBeenCalledOnceWith("/ru/guide?from=hn");
+  });
+
+  it("stays on a page opened by an address without a language", () => {
+    const router = TestBed.inject(Router);
+    spyOn(router, "navigateByUrl");
+
+    chooseLanguage("ru");
+
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
 
   function supportLink(): HTMLAnchorElement | null {
