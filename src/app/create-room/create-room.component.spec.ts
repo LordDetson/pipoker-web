@@ -87,7 +87,7 @@ describe("CreateRoomComponent", () => {
   it("tells search engines the start page's title with what people search for", () => {
     create();
 
-    expect(document.title).toBe("PiPoker — online Planning Poker");
+    expect(document.title).toBe("PiPoker — free online Planning Poker");
   });
 
   it("starts with the default deck and an empty form", () => {
