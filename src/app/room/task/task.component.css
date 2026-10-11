@@ -8,10 +8,11 @@
   padding: 0.75rem 9rem 0;
 }
 
-/* On a phone the switch and the history button show icons instead of words, so the line stays between them */
+/* On a phone the role and history buttons show icons instead of words, so the line stays between them, close to them */
 @media (max-width: 575.98px) {
   :host {
-    padding-inline: 5rem;
+    min-height: calc(0.75rem + var(--room-top-height));
+    padding-inline: calc(1.25rem + var(--room-top-height));
   }
 }
 
@@ -57,11 +58,16 @@
   font-weight: 500;
 }
 
-/* The cross appears on the right only, so on a phone the left side gives its room to the name */
+/* On a phone the name keeps no room for the cross: it gets the room only while the name is being changed */
 @media (max-width: 575.98px) {
   .task-field::after,
   .task-name {
-    padding-left: 0.5rem;
+    padding-inline: 0.5rem;
+  }
+
+  .task-field:focus-within::after,
+  .task-name:focus {
+    padding-right: 1.75rem;
   }
 }
 

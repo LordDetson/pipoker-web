@@ -1,4 +1,7 @@
+/* The line at the top of the room on a phone: the role button, the task and the history button are all as tall as
+   the field of the task */
 :host {
+  --room-top-height: calc(1.6875rem + 0.75rem + 2 * var(--bs-border-width));
   position: relative;
   flex: 1 1 0;
   display: flex;
@@ -18,30 +21,48 @@ app-table:last-child {
   padding-bottom: 0.75rem;
 }
 
-/* The status button and the timer above it stay together in the middle of the table, so the seats at the top and at the
-   bottom keep the same room from them. The place above the button is as tall as the running timer whatever it holds,
-   so the button doesn't move when the timer appears or goes. */
+/* The status button stays in the very middle of the table, and the timer hangs above it,
+   so the button doesn't move when the timer appears or goes */
 .table-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+  position: relative;
 }
 
 /* Above the button too, so the menu of lengths or cards covers it rather than going under it.
-   As wide as their content: the button may be narrower. */
+   As wide as their content: half of the button's width is all an element placed at its middle would get. */
 .above-button {
-  position: relative;
+  position: absolute;
   z-index: 1;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
   display: grid;
   align-items: end;
   justify-items: center;
-  min-height: 2.375rem;
 }
 
 .above-button > * {
   grid-area: 1 / 1;
   width: max-content;
+}
+
+/* On a phone the table is about as tall as wide, so the seats at its top and bottom come close to the middle. There
+   the button and the timer stay together in the middle, which leaves both seats the same room. The place above the
+   button is as tall as the running timer whatever it holds, so the button still doesn't move when the timer appears. */
+@media (max-width: 575.98px) {
+  .table-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .above-button {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    min-height: 2.375rem;
+  }
 }
 
 /* The deck and the result share one cell, which gets as narrow as the page: the deck measures its own width
