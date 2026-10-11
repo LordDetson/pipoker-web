@@ -1,6 +1,6 @@
 <div class="start-page">
   <div>
-    <form [formGroup]="createRoomForm" (submit)="createRoom()" (focusin)="startHumanCheck()">
+    <form [formGroup]="createRoomForm" (submit)="createRoom()">
       <div class="form-group mb-3">
         <label for="nicknameInput" class="form-label">{{"form.nickname" | translate}}</label>
         <input type="text"
