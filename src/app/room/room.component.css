@@ -11,7 +11,6 @@ app-table {
   flex: 1 1 0;
   min-height: 16rem;
   --corner-controls-width: 10rem;
-  --corner-controls-height: 2.25rem;
 }
 
 /* A watcher's table goes down to the bottom of the room, with the same gap as at its sides */

@@ -10,3 +10,32 @@
   min-height: calc(1.5em + 0.5rem + 2 * var(--bs-border-width));
   font-size: 0.875rem;
 }
+
+/* On a phone the task shares the line with the switch, so the eye the watchers are marked with stands in for the word.
+   The word stays for screen readers. */
+.eye-icon {
+  display: none;
+}
+
+@media (max-width: 575.98px) {
+  .form-check-label {
+    display: flex;
+  }
+
+  .eye-icon {
+    display: block;
+    height: 1.25rem;
+    width: 1.25rem;
+    background: url("/assets/svg/eye.svg") no-repeat;
+    background-size: 1.25rem 1.25rem;
+  }
+
+  .role-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+}

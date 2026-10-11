@@ -1,7 +1,12 @@
 <ng-container *ngIf="rounds$ | async as rounds">
   <button type="button" class="history-toggle btn btn-sm btn-outline-secondary"
           aria-controls="roomHistory" [attr.aria-expanded]="open" (click)="toggle()">
-    {{"history.title" | translate}}
+    <!-- A clock with an arrow going back, shown instead of the word on a phone -->
+    <svg class="history-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5v2.5H5M8 5v3l2 1.5" fill="none" stroke="currentColor"
+            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="history-label">{{"history.title" | translate}}</span>&ngsp;
     <span *ngIf="rounds.length" class="badge rounded-pill text-bg-secondary">{{rounds.length}}</span>
   </button>
   <!-- A click anywhere beside the open panel closes it -->
